@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.get('origin')}/Dashboard?success=true`,
-      cancel_url: `${req.headers.get('origin')}/Pricing?canceled=true`,
+      success_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Dashboard?success=true`,
+      cancel_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Pricing?canceled=true`,
       metadata: {
         user_id: user.id,
         period: period,
