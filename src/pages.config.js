@@ -51,6 +51,10 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Pricing from './pages/Pricing';
 import CreateQR from './pages/CreateQR';
+import ViewQR from './pages/ViewQR';
+import EditQR from './pages/EditQR';
+import Analytics from './pages/Analytics';
+import Redirect from './pages/Redirect';
 
 
 export const PAGES = {
@@ -58,6 +62,10 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Pricing": Pricing,
     "CreateQR": CreateQR,
+    "ViewQR": ViewQR,
+    "EditQR": EditQR,
+    "Analytics": Analytics,
+    "Redirect": Redirect,
 }
 
 export const pagesConfig = {
