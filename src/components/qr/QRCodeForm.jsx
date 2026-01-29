@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../pages/utils';
 
 export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   const [formData, setFormData] = useState({
@@ -114,7 +113,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
             <Lock className="h-4 w-4" />
             <AlertDescription>
               Dynamic QR codes are available on Pro plans.{' '}
-              <Link to={createPageUrl('Pricing')} className="font-semibold underline">
+              <Link to="/Pricing" className="font-semibold underline">
                 Upgrade now
               </Link>
             </AlertDescription>

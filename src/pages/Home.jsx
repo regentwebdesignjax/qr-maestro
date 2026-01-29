@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QrCode, Zap, BarChart3, Palette, CheckCircle } from 'lucide-react';
@@ -18,12 +17,12 @@ export default function Home() {
             Create, customize, and track QR codes for your business. Static and dynamic codes with analytics.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link to={createPageUrl('Dashboard')}>
+            <Link to="/Dashboard">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
                 Get Started Free
               </Button>
             </Link>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to="/Pricing">
               <Button size="lg" variant="outline">
                 View Pricing
               </Button>
@@ -102,7 +101,7 @@ export default function Home() {
           <p className="text-gray-600 mb-8">
             Free tier includes 3 static QR codes. Upgrade for unlimited codes and advanced features.
           </p>
-          <Link to={createPageUrl('Dashboard')}>
+          <Link to="/Dashboard">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
               Create Your First QR Code
             </Button>

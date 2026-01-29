@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,7 +25,7 @@ export default function EditQR() {
       const id = urlParams.get('id');
 
       if (!id) {
-        window.location.href = createPageUrl('Dashboard');
+        window.location.href = '/Dashboard';
         return;
       }
 
@@ -35,7 +34,7 @@ export default function EditQR() {
         const qrCodes = await base44.entities.QRCode.filter({ id, created_by: user.email });
         
         if (qrCodes.length === 0 || qrCodes[0].type !== 'dynamic') {
-          window.location.href = createPageUrl('Dashboard');
+          window.location.href = '/Dashboard';
           return;
         }
 
@@ -47,7 +46,7 @@ export default function EditQR() {
         });
       } catch (error) {
         console.error('Error fetching QR code:', error);
-        window.location.href = createPageUrl('Dashboard');
+        window.location.href = '/Dashboard';
       } finally {
         setLoading(false);
       }
@@ -61,7 +60,7 @@ export default function EditQR() {
     try {
       await base44.entities.QRCode.update(qrCode.id, formData);
       alert('QR code updated successfully!');
-      window.location.href = createPageUrl('Dashboard');
+      window.location.href = '/Dashboard';
     } catch (error) {
       console.error('Error updating QR code:', error);
       alert('Failed to update QR code. Please try again.');
@@ -83,7 +82,7 @@ export default function EditQR() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -144,7 +143,7 @@ export default function EditQR() {
             </div>
 
             <div className="flex gap-3">
-              <Link to={createPageUrl('Dashboard')} className="flex-1">
+              <Link to="/Dashboard" className="flex-1">
                 <Button variant="outline" className="w-full">Cancel</Button>
               </Link>
               <Button 

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Zap } from 'lucide-react';
-import { createPageUrl } from './utils';
 
 export default function Pricing() {
   const [user, setUser] = useState(null);
@@ -26,7 +25,7 @@ export default function Pricing() {
 
   const handleUpgrade = async (period) => {
     if (!user) {
-      base44.auth.redirectToLogin(createPageUrl('Pricing'));
+      base44.auth.redirectToLogin('/Pricing');
       return;
     }
 

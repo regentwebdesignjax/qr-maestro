@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../pages/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,7 +44,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
                 <div className="flex items-center gap-2">
                   <span>{qr.scan_count || 0}</span>
                   {isPro && (
-                    <Link to={createPageUrl('Analytics') + '?id=' + qr.id}>
+                    <Link to={'/Analytics?id=' + qr.id}>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                         <BarChart3 className="w-3 h-3" />
                       </Button>
@@ -59,13 +58,13 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   {qr.type === 'dynamic' && (
-                    <Link to={createPageUrl('EditQR') + '?id=' + qr.id}>
+                    <Link to={'/EditQR?id=' + qr.id}>
                       <Button variant="ghost" size="sm">
                         <Edit className="w-4 h-4" />
                       </Button>
                     </Link>
                   )}
-                  <Link to={createPageUrl('ViewQR') + '?id=' + qr.id}>
+                  <Link to={'/ViewQR?id=' + qr.id}>
                     <Button variant="ghost" size="sm">
                       <ExternalLink className="w-4 h-4" />
                     </Button>

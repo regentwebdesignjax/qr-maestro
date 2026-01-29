@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Lock } from 'lucide-react';
@@ -21,7 +20,7 @@ export default function Analytics() {
       const id = urlParams.get('id');
 
       if (!id) {
-        window.location.href = createPageUrl('Dashboard');
+        window.location.href = '/Dashboard';
         return;
       }
 
@@ -39,7 +38,7 @@ export default function Analytics() {
         const qrCodes = await base44.entities.QRCode.filter({ id, created_by: currentUser.email });
         
         if (qrCodes.length === 0) {
-          window.location.href = createPageUrl('Dashboard');
+          window.location.href = '/Dashboard';
           return;
         }
 
@@ -88,7 +87,7 @@ export default function Analytics() {
                 <p className="text-gray-600 mb-6">
                   Upgrade to Pro to access detailed scan analytics, location data, and insights.
                 </p>
-                <Link to={createPageUrl('Pricing')}>
+                <Link to="/Pricing">
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     Upgrade to Pro
                   </Button>
@@ -136,7 +135,7 @@ export default function Analytics() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard

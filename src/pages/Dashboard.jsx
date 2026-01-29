@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +18,7 @@ export default function Dashboard() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
-        base44.auth.redirectToLogin(createPageUrl('Dashboard'));
+        base44.auth.redirectToLogin('/Dashboard');
       }
     };
     fetchUser();
@@ -62,12 +61,12 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link to={createPageUrl('Pricing')}>
+            <Link to="/Pricing">
               <Button variant="outline">
                 {isPro ? 'Manage Subscription' : 'Upgrade to Pro'}
               </Button>
             </Link>
-            <Link to={createPageUrl('CreateQR')}>
+            <Link to="/CreateQR">
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Create QR Code
@@ -136,7 +135,7 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <p className="text-orange-800">
                 You've reached the free tier limit of 3 static QR codes.{' '}
-                <Link to={createPageUrl('Pricing')} className="font-semibold underline">
+                <Link to="/Pricing" className="font-semibold underline">
                   Upgrade to Pro
                 </Link>{' '}
                 for unlimited QR codes, dynamic codes, and analytics.
@@ -160,7 +159,7 @@ export default function Dashboard() {
                 <QrCodeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes yet</h3>
                 <p className="text-gray-600 mb-6">Create your first QR code to get started</p>
-                <Link to={createPageUrl('CreateQR')}>
+                <Link to="/CreateQR">
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Create QR Code

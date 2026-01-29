@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -22,7 +20,7 @@ export default function CreateQR() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
-        base44.auth.redirectToLogin(createPageUrl('CreateQR'));
+        base44.auth.redirectToLogin('/CreateQR');
       }
     };
     fetchUser();
@@ -37,7 +35,7 @@ export default function CreateQR() {
     try {
       await base44.entities.QRCode.create(qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
-      window.location.href = createPageUrl('Dashboard');
+      window.location.href = '/Dashboard';
     } catch (error) {
       console.error('Error saving QR code:', error);
       alert('Failed to save QR code. Please try again.');
@@ -57,7 +55,7 @@ export default function CreateQR() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard

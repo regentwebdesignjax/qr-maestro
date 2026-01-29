@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,14 +18,14 @@ export default function ViewQR() {
       const id = urlParams.get('id');
 
       if (!id) {
-        window.location.href = createPageUrl('Dashboard');
+        window.location.href = '/Dashboard';
         return;
       }
 
       try {
         const qrCodes = await base44.entities.QRCode.filter({ id });
         if (qrCodes.length === 0) {
-          window.location.href = createPageUrl('Dashboard');
+          window.location.href = '/Dashboard';
           return;
         }
 
@@ -80,7 +79,7 @@ export default function ViewQR() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <Link to={createPageUrl('Dashboard')}>
+        <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -153,7 +152,7 @@ export default function ViewQR() {
               </div>
 
               {qrCode.type === 'dynamic' && (
-                <Link to={createPageUrl('EditQR') + '?id=' + qrCode.id}>
+                <Link to={'/EditQR?id=' + qrCode.id}>
                   <Button className="w-full">Edit Dynamic QR</Button>
                 </Link>
               )}
