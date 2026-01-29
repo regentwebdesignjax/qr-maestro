@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
     const { period } = await req.json();
 
     const priceId = period === 'monthly' 
-      ? Deno.env.get('PRO_MONTHLY_ID')
-      : Deno.env.get('PRO_ANNUAL_ID');
+      ? Deno.env.get('PRICE_ID_MONTHLY')
+      : Deno.env.get('PRICE_ID_ANNUAL');
 
     // Check if user already has a Stripe customer ID
     let customerId = user.stripe_customer_id;
