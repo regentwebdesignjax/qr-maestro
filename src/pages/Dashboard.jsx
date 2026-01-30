@@ -31,9 +31,10 @@ export default function Dashboard() {
 
     const handleManageSubscription = async () => {
       try {
-        const { data } = await base44.functions.invoke('createPortalSession');
-        window.location.href = data.url;
+        const response = await base44.functions.invoke('createPortalSession');
+        window.location.href = response.data.url;
       } catch (error) {
+        console.error('Billing portal error:', error);
         alert('Failed to open billing portal');
       }
     };
