@@ -7,6 +7,7 @@ import { Info } from 'lucide-react';
 
 export default function QRCodePreview({ qrData }) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   useEffect(() => {
@@ -20,26 +21,24 @@ export default function QRCodePreview({ qrData }) {
         let content = qrData.content;
         
         if (qrData.type === 'dynamic' && qrData.short_code) {
-          // For dynamic QR codes, use redirect URL
           content = `${window.location.origin}/r/${qrData.short_code}`;
         } else if (qrData.content_type === 'wifi') {
-          // Format WiFi data
           const lines = qrData.content.split('\n');
           const ssid = lines.find(l => l.startsWith('SSID:'))?.split(':')[1]?.trim() || '';
           const password = lines.find(l => l.startsWith('Password:'))?.split(':')[1]?.trim() || '';
           const encryption = lines.find(l => l.startsWith('Encryption:'))?.split(':')[1]?.trim() || 'WPA';
           content = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
         } else if (qrData.content_type === 'vcard') {
-          // Format vCard data
           const lines = qrData.content.split('\n');
           const name = lines.find(l => l.startsWith('Name:'))?.split(':')[1]?.trim() || '';
           const phone = lines.find(l => l.startsWith('Phone:'))?.split(':')[1]?.trim() || '';
           const email = lines.find(l => l.startsWith('Email:'))?.split(':')[1]?.trim() || '';
           const company = lines.find(l => l.startsWith('Company:'))?.split(':')[1]?.trim() || '';
-          
           content = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nORG:${company}\nEND:VCARD`;
         }
 
+        const qrStyle = qrData.design_config?.qr_style || 'squares';
+        
         await QRCode.toCanvas(canvas, content, {
           width: 300,
           margin: 2,
@@ -47,11 +46,64 @@ export default function QRCodePreview({ qrData }) {
             dark: qrData.design_config?.foreground_color || '#000000',
             light: qrData.design_config?.background_color || '#ffffff',
           },
-          errorCorrectionLevel: 'M',
+          errorCorrectionLevel: 'H',
         });
 
-        const url = canvas.toDataURL();
-        setQrCodeUrl(url);
+        // Apply QR style modifications
+        if (qrStyle === 'dots' || qrStyle === 'rounded') {
+          const ctx = canvas.getContext('2d');
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          
+          // Simple style transformation
+          if (qrStyle === 'dots') {
+            // Create dots effect by drawing circles
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.fillStyle = qrData.design_config?.background_color || '#ffffff';
+            tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const moduleSize = Math.floor(canvas.width / 37);
+            tempCtx.fillStyle = qrData.design_config?.foreground_color || '#000000';
+            
+            for (let y = 0; y < canvas.height; y += moduleSize) {
+              for (let x = 0; x < canvas.width; x += moduleSize) {
+                const pixelIndex = (y * canvas.width + x) * 4;
+                if (data[pixelIndex] < 128) {
+                  tempCtx.beginPath();
+                  tempCtx.arc(x + moduleSize / 2, y + moduleSize / 2, moduleSize / 3, 0, Math.PI * 2);
+                  tempCtx.fill();
+                }
+              }
+            }
+            ctx.drawImage(tempCanvas, 0, 0);
+          }
+        }
+
+        // Add logo if provided
+        if (qrData.design_config?.logo_url) {
+          const logo = new Image();
+          logo.crossOrigin = 'anonymous';
+          logo.onload = () => {
+            const ctx = canvas.getContext('2d');
+            const logoSize = canvas.width * 0.2;
+            const x = (canvas.width - logoSize) / 2;
+            const y = (canvas.height - logoSize) / 2;
+            
+            ctx.fillStyle = qrData.design_config?.background_color || '#ffffff';
+            ctx.fillRect(x - 5, y - 5, logoSize + 10, logoSize + 10);
+            ctx.drawImage(logo, x, y, logoSize, logoSize);
+            
+            const url = canvas.toDataURL();
+            setQrCodeUrl(url);
+          };
+          logo.src = qrData.design_config.logo_url;
+        } else {
+          const url = canvas.toDataURL();
+          setQrCodeUrl(url);
+        }
       } catch (error) {
         console.error('Error generating QR code:', error);
       }
@@ -60,21 +112,23 @@ export default function QRCodePreview({ qrData }) {
     generateQR();
   }, [qrData]);
 
-  const handleDownload = (format) => {
-    if (!qrCodeUrl) return;
+  const handleDownload = async (format) => {
+    if (!containerRef.current) return;
 
-    const link = document.createElement('a');
-    link.download = `${qrData.name || 'qrcode'}.${format}`;
-    
-    if (format === 'png') {
-      link.href = qrCodeUrl;
-    } else if (format === 'svg') {
-      // For SVG, we'll use the canvas data as fallback
-      // In a production app, you'd want to generate actual SVG
-      link.href = qrCodeUrl;
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(containerRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${qrData.name || 'qrcode'}.${format}`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Error downloading:', error);
     }
-    
-    link.click();
   };
 
   if (!qrData) {
@@ -88,6 +142,10 @@ export default function QRCodePreview({ qrData }) {
     );
   }
 
+  const frameStyle = qrData.design_config?.frame_style || 'none';
+  const frameText = qrData.design_config?.frame_text || 'Scan Me';
+  const frameColor = qrData.design_config?.frame_color || '#000000';
+
   return (
     <div className="space-y-4">
       {qrData.type === 'dynamic' && (
@@ -100,7 +158,40 @@ export default function QRCodePreview({ qrData }) {
       )}
 
       <div className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-        <canvas ref={canvasRef} />
+        <div ref={containerRef} className="relative inline-block">
+          {/* Frame Wrapper */}
+          {frameStyle !== 'none' && (
+            <div className={`
+              ${frameStyle === 'basic' ? 'border-4 p-4' : ''}
+              ${frameStyle === 'modern' ? 'shadow-xl rounded-2xl p-6 bg-gradient-to-br from-gray-50 to-white' : ''}
+              ${frameStyle === 'badge' ? 'rounded-3xl p-8 shadow-2xl' : ''}
+            `} style={{ 
+              borderColor: frameStyle === 'basic' ? frameColor : 'transparent',
+              background: frameStyle === 'badge' ? `linear-gradient(135deg, ${frameColor}15, ${frameColor}05)` : undefined
+            }}>
+              {/* Frame Text Top */}
+              {frameText && (
+                <div className="text-center mb-4">
+                  <p className="font-bold text-lg" style={{ color: frameColor }}>
+                    {frameText}
+                  </p>
+                </div>
+              )}
+              
+              <canvas ref={canvasRef} />
+              
+              {/* Frame Text Bottom */}
+              {frameStyle === 'modern' && (
+                <div className="text-center mt-4">
+                  <p className="text-sm text-gray-500">Point your camera here</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* No Frame */}
+          {frameStyle === 'none' && <canvas ref={canvasRef} />}
+        </div>
       </div>
 
       <div className="space-y-2">

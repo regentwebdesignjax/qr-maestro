@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Lock } from 'lucide-react';
+import { AlertCircle, Lock, Upload, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 
 export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   const [formData, setFormData] = useState({
@@ -18,9 +19,15 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
-      logo_url: ''
+      logo_url: '',
+      qr_style: 'squares',
+      frame_style: 'none',
+      frame_text: 'Scan Me',
+      frame_color: '#000000'
     }
   });
+
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
 
@@ -33,6 +40,21 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
       ...prev,
       design_config: { ...prev.design_config, [field]: value }
     }));
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const { data } = await base44.integrations.Core.UploadFile({ file });
+      handleDesignChange('logo_url', data.file_url);
+    } catch (error) {
+      alert('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -233,6 +255,135 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
             </div>
           </div>
         </div>
+
+        {/* Pro Features */}
+        {isPro ? (
+          <>
+            {/* QR Style */}
+            <div>
+              <Label htmlFor="qr_style">QR Code Style</Label>
+              <Select 
+                value={formData.design_config.qr_style} 
+                onValueChange={(value) => handleDesignChange('qr_style', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="squares">Squares (Classic)</SelectItem>
+                  <SelectItem value="dots">Dots (Modern)</SelectItem>
+                  <SelectItem value="rounded">Rounded</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Frame Style */}
+            <div>
+              <Label htmlFor="frame_style">Frame Style</Label>
+              <Select 
+                value={formData.design_config.frame_style} 
+                onValueChange={(value) => handleDesignChange('frame_style', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Frame</SelectItem>
+                  <SelectItem value="basic">Basic Frame</SelectItem>
+                  <SelectItem value="modern">Modern Frame</SelectItem>
+                  <SelectItem value="badge">Badge Frame</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Frame Text */}
+            {formData.design_config.frame_style !== 'none' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="frame_text">Frame Text</Label>
+                  <Input
+                    id="frame_text"
+                    placeholder="e.g., Scan Me, Sign Up"
+                    value={formData.design_config.frame_text}
+                    onChange={(e) => handleDesignChange('frame_text', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="frame_color">Frame Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="frame_color"
+                      type="color"
+                      value={formData.design_config.frame_color}
+                      onChange={(e) => handleDesignChange('frame_color', e.target.value)}
+                      className="w-16 h-10"
+                    />
+                    <Input
+                      type="text"
+                      value={formData.design_config.frame_color}
+                      onChange={(e) => handleDesignChange('frame_color', e.target.value)}
+                      placeholder="#000000"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Logo Upload */}
+            <div>
+              <Label htmlFor="logo">Company Logo</Label>
+              {formData.design_config.logo_url ? (
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={formData.design_config.logo_url} 
+                    alt="Logo" 
+                    className="w-16 h-16 object-contain border rounded"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDesignChange('logo_url', '')}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('logo').click()}
+                    disabled={uploadingLogo}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                  </Button>
+                  <p className="text-xs text-gray-500">Max 2MB, PNG/JPG</p>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <Alert>
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              Advanced customization (styles, frames, logos) available on Pro.{' '}
+              <Link to="/Pricing" className="font-semibold underline">
+                Upgrade now
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       {/* Action Buttons */}
