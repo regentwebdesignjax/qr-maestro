@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { QrCode } from 'lucide-react';
+import { QrCode, Shield } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 export default function Layout({ children, currentPageName }) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (error) {
+        setUser(null);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const handleLogin = () => {
     base44.auth.redirectToLogin(window.location.pathname);
   };
@@ -35,6 +49,12 @@ export default function Layout({ children, currentPageName }) {
               <Link to="/Pricing" className="text-gray-700 hover:text-blue-600 transition">
                 Pricing
               </Link>
+              {user?.role === 'admin' && (
+                <Link to="/AdminDashboard" className="text-purple-600 hover:text-purple-700 transition flex items-center gap-1">
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </Link>
+              )}
             </nav>
 
             {/* Auth Buttons */}

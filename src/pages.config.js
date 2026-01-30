@@ -57,6 +57,7 @@ import Redirect from './pages/Redirect';
 import ViewQR from './pages/ViewQR';
 import WhyUs from './pages/WhyUs';
 import FAQ from './pages/FAQ';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +72,7 @@ export const PAGES = {
     "ViewQR": ViewQR,
     "WhyUs": WhyUs,
     "FAQ": FAQ,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
