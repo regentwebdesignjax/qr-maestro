@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QrCode, Zap, BarChart3, Palette, CheckCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function Home() {
+  const handleGetStarted = () => {
+    base44.auth.redirectToLogin('/Dashboard');
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Section */}
@@ -99,11 +103,9 @@ export default function Home() {
           <p className="text-gray-600 mb-8">
             Free tier includes 3 static QR codes. Upgrade for unlimited codes and advanced features.
           </p>
-          <Link to="/Dashboard">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-              Create Your First QR Code
-            </Button>
-          </Link>
+          <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={handleGetStarted}>
+            Create Your First QR Code
+          </Button>
         </div>
       </div>
     </div>
