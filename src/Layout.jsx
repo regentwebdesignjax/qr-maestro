@@ -37,10 +37,20 @@ export default function Layout({ children, currentPageName }) {
   const handleBilling = async () => {
     try {
       const response = await base44.functions.invoke('createPortalSession');
-      window.location.href = response.data.url;
+      console.log('Portal response:', response);
+      if (response.data && response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        console.error('No URL in response:', response);
+        alert('Unable to open billing portal. Please contact support.');
+      }
     } catch (error) {
       console.error('Billing portal error:', error);
-      alert('Failed to open billing portal');
+      if (error.response?.data?.error) {
+        alert(`Error: ${error.response.data.error}`);
+      } else {
+        alert('Failed to open billing portal. Please try again.');
+      }
     }
   };
 
