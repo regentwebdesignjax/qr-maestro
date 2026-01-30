@@ -17,11 +17,9 @@ export default function Home() {
             Create, customize, and track QR codes for your business. Static and dynamic codes with analytics.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link to="/Dashboard">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                Get Started Free
-              </Button>
-            </Link>
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={handleGetStarted}>
+              Get Started Free
+            </Button>
             <Link to="/Pricing">
               <Button size="lg" variant="outline">
                 View Pricing

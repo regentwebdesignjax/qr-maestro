@@ -16,6 +16,11 @@ export default function Dashboard() {
     const fetchUser = async () => {
       try {
         const currentUser = await base44.auth.me();
+        // Redirect admins to admin dashboard
+        if (currentUser.role === 'admin') {
+          window.location.href = '/AdminDashboard';
+          return;
+        }
         setUser(currentUser);
       } catch (error) {
         base44.auth.redirectToLogin('/Dashboard');
