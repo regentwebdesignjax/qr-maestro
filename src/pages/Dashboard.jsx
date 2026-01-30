@@ -14,20 +14,29 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        // Redirect admins to admin dashboard
-        if (currentUser.role === 'admin') {
-          window.location.href = '/AdminDashboard';
-          return;
+        try {
+          const currentUser = await base44.auth.me();
+          // Redirect admins to admin dashboard
+          if (currentUser.role === 'admin') {
+            window.location.href = '/AdminDashboard';
+            return;
+          }
+          setUser(currentUser);
+        } catch (error) {
+          base44.auth.redirectToLogin('/Dashboard');
         }
-        setUser(currentUser);
+      };
+      fetchUser();
+    }, []);
+
+    const handleManageSubscription = async () => {
+      try {
+        const { data } = await base44.functions.invoke('createPortalSession');
+        window.location.href = data.url;
       } catch (error) {
-        base44.auth.redirectToLogin('/Dashboard');
+        alert('Failed to open billing portal');
       }
     };
-    fetchUser();
-  }, []);
 
   const { data: qrCodes = [], isLoading } = useQuery({
     queryKey: ['qr-codes'],
@@ -66,11 +75,17 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link to="/Pricing">
-              <Button variant="outline">
-                {isPro ? 'Manage Subscription' : 'Upgrade to Pro'}
+            {isPro ? (
+              <Button variant="outline" onClick={handleManageSubscription}>
+                Manage Subscription
               </Button>
-            </Link>
+            ) : (
+              <Link to="/Pricing">
+                <Button variant="outline">
+                  Upgrade to Pro
+                </Button>
+              </Link>
+            )}
             <Link to="/CreateQR">
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
