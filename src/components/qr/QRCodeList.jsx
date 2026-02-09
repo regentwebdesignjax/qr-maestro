@@ -7,6 +7,7 @@ import { Edit, Trash2, BarChart3, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function QRCodeList({ qrCodes, isPro, onDelete }) {
+  // isPro already includes admin check from parent component
   const formatContentType = (type) => {
     const types = {
       url: 'URL',

@@ -29,7 +29,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
-  const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
+  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
