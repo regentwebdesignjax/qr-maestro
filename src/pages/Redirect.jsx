@@ -13,7 +13,21 @@ export default function Redirect() {
       }
 
       try {
-        // Find QR code by short code
+        // Check if user is authenticated before making database calls
+        const isAuthenticated = await base44.auth.isAuthenticated();
+        
+        if (!isAuthenticated) {
+          // For unauthenticated users, use backend function to handle redirect
+          const response = await base44.functions.invoke('handleQRRedirect', { short_code: shortCode });
+          if (response.data && response.data.url) {
+            window.location.href = response.data.url;
+          } else {
+            window.location.href = '/';
+          }
+          return;
+        }
+
+        // For authenticated users, proceed normally
         const qrCodes = await base44.entities.QRCode.filter({ short_code: shortCode });
         
         if (qrCodes.length === 0 || !qrCodes[0].is_active) {
