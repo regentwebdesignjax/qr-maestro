@@ -28,7 +28,7 @@ export default function Analytics() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
-        const isPro = currentUser.subscription_tier === 'pro' && currentUser.subscription_status === 'active';
+        const isPro = currentUser.role === 'admin' || (currentUser.subscription_tier === 'pro' && currentUser.subscription_status === 'active');
         
         if (!isPro) {
           setLoading(false);
@@ -64,13 +64,13 @@ export default function Analytics() {
     );
   }
 
-  const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
+  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
 
   if (!isPro) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
-          <Link to={createPageUrl('Dashboard')}>
+          <Link to="/Dashboard">
             <Button variant="ghost" className="mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
