@@ -58,6 +58,7 @@ import Pricing from './pages/Pricing';
 import Redirect from './pages/Redirect';
 import ViewQR from './pages/ViewQR';
 import WhyUs from './pages/WhyUs';
+import MyQRCodes from './pages/MyQRCodes';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Redirect": Redirect,
     "ViewQR": ViewQR,
     "WhyUs": WhyUs,
+    "MyQRCodes": MyQRCodes,
 }
 
 export const pagesConfig = {

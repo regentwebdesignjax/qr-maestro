@@ -78,6 +78,10 @@ export default function Layout({ children, currentPageName }) {
                     <LayoutDashboard className="w-4 h-4" />
                     Dashboard
                   </Link>
+                  <Link to="/MyQRCodes" className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1">
+                    <QrCode className="w-4 h-4" />
+                    My QR Codes
+                  </Link>
                   <Link to="/CreateQR" className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1">
                     <QrCode className="w-4 h-4" />
                     Create QR
