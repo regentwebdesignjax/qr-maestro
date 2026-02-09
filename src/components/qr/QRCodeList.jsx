@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, BarChart3, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, BarChart3, ExternalLink, Download } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function QRCodeList({ qrCodes, isPro, onDelete }) {
@@ -16,6 +16,34 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
       vcard: 'vCard'
     };
     return types[type] || type;
+  };
+
+  const handleDownload = async (qr) => {
+    const QRCode = (await import('qrcode')).default;
+    
+    // Generate QR code content
+    let content = qr.content;
+    if (qr.type === 'dynamic' && qr.short_code) {
+      content = `${window.location.origin}/r/${qr.short_code}`;
+    }
+
+    // Generate QR code as data URL
+    const dataUrl = await QRCode.toDataURL(content, {
+      width: 1024,
+      margin: 2,
+      color: {
+        dark: qr.design_config?.foreground_color || '#000000',
+        light: qr.design_config?.background_color || '#FFFFFF',
+      }
+    });
+
+    // Create download link
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `${qr.name.replace(/[^a-z0-9]/gi, '_')}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -70,6 +98,14 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
                       <ExternalLink className="w-4 h-4" />
                     </Button>
                   </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => handleDownload(qr)}
+                    title="Download QR Code"
+                  >
+                    <Download className="w-4 h-4 text-blue-600" />
+                  </Button>
                   <Button 
                     variant="ghost" 
                     size="sm"
