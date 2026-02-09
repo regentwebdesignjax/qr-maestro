@@ -13,48 +13,14 @@ export default function Redirect() {
       }
 
       try {
-        // Check if user is authenticated before making database calls
-        const isAuthenticated = await base44.auth.isAuthenticated();
+        // Always use backend function to handle redirects (works for both authenticated and public users)
+        const response = await base44.functions.invoke('handleQRRedirect', { short_code: shortCode });
         
-        if (!isAuthenticated) {
-          // For unauthenticated users, use backend function to handle redirect
-          const response = await base44.functions.invoke('handleQRRedirect', { short_code: shortCode });
-          if (response.data && response.data.url) {
-            window.location.href = response.data.url;
-          } else {
-            window.location.href = '/';
-          }
-          return;
-        }
-
-        // For authenticated users, proceed normally
-        const qrCodes = await base44.entities.QRCode.filter({ short_code: shortCode });
-        
-        if (qrCodes.length === 0 || !qrCodes[0].is_active) {
+        if (response.data && response.data.url) {
+          window.location.href = response.data.url;
+        } else {
           window.location.href = '/';
-          return;
         }
-
-        const qrCode = qrCodes[0];
-
-        // Track the scan
-        try {
-          await base44.entities.Scan.create({
-            qr_code_id: qrCode.id,
-            device_type: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-            browser: navigator.userAgent.split(' ').pop().split('/')[0],
-          });
-
-          // Update scan count
-          await base44.entities.QRCode.update(qrCode.id, {
-            scan_count: (qrCode.scan_count || 0) + 1
-          });
-        } catch (error) {
-          console.error('Error tracking scan:', error);
-        }
-
-        // Redirect to destination
-        window.location.href = qrCode.content;
       } catch (error) {
         console.error('Error handling redirect:', error);
         window.location.href = '/';
