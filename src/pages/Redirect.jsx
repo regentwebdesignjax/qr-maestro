@@ -13,11 +13,19 @@ export default function Redirect() {
       }
 
       try {
-        // Always use backend function to handle redirects (works for both authenticated and public users)
-        const response = await base44.functions.invoke('handleQRRedirect', { short_code: shortCode });
+        // Call the backend function directly via fetch to avoid auth requirements
+        const response = await fetch('/api/functions/handleQRRedirect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ short_code: shortCode })
+        });
         
-        if (response.data && response.data.url) {
-          window.location.href = response.data.url;
+        const data = await response.json();
+        
+        if (data && data.url) {
+          window.location.href = data.url;
         } else {
           window.location.href = '/';
         }
