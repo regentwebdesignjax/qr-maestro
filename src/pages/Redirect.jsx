@@ -13,24 +13,41 @@ export default function Redirect() {
       }
 
       try {
-        // Call the backend function directly via fetch to avoid auth requirements
-        const response = await fetch('/api/functions/handleQRRedirect', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ short_code: shortCode })
-        });
+        // Call the backend function using the Base44 SDK
+        // The function uses service role internally, so it should work without user auth
+        const response = await base44.functions.invoke('handleQRRedirect', { short_code: shortCode });
         
-        const data = await response.json();
+        console.log('Redirect response:', response);
         
-        if (data && data.url) {
-          window.location.href = data.url;
+        if (response.data && response.data.url) {
+          console.log('Redirecting to:', response.data.url);
+          window.location.href = response.data.url;
         } else {
+          console.error('No URL in response');
           window.location.href = '/';
         }
       } catch (error) {
         console.error('Error handling redirect:', error);
+        console.error('Error details:', error.response?.data);
+        // If there's an authentication error, try direct API call
+        try {
+          const directResponse = await fetch(`${window.location.origin}/_functions/handleQRRedirect`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ short_code: shortCode })
+          });
+          
+          const data = await directResponse.json();
+          if (data && data.url) {
+            window.location.href = data.url;
+            return;
+          }
+        } catch (fallbackError) {
+          console.error('Fallback error:', fallbackError);
+        }
+        
         window.location.href = '/';
       }
     };
