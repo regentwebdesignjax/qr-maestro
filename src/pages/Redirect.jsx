@@ -37,8 +37,8 @@ export default function Redirect() {
         
         if (data && data.url) {
           console.log('Redirect: redirecting to:', data.url);
-          // Use window.location.href for external redirects
-          window.location.href = data.url;
+          // Force immediate redirect with replace to prevent back button issues
+          window.location.replace(data.url);
         } else {
           console.error('Redirect: no URL in data');
           setError(true);
