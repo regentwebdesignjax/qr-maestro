@@ -8,14 +8,22 @@ export default function Redirect() {
       const urlParams = new URLSearchParams(window.location.search);
       const shortCode = urlParams.get('code');
 
+      console.log('=== REDIRECT PAGE LOADED ===');
+      console.log('Full URL:', window.location.href);
+      console.log('Short code extracted:', shortCode);
+
       if (!shortCode) {
+        console.error('No short code found, redirecting home');
         window.location.href = '/';
         return;
       }
 
       try {
-        console.log('Redirect: fetching for shortCode:', shortCode);
-        const response = await fetch(`${window.location.origin}/_functions/handleQRRedirect`, {
+        const fetchUrl = `${window.location.origin}/_functions/handleQRRedirect`;
+        console.log('Fetching from:', fetchUrl);
+        console.log('Request body:', { short_code: shortCode });
+        
+        const response = await fetch(fetchUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -23,29 +31,34 @@ export default function Redirect() {
           body: JSON.stringify({ short_code: shortCode })
         });
         
-        console.log('Redirect: response status:', response.status);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (!response.ok) {
-          console.error('Redirect: response not OK');
+          const errorText = await response.text();
+          console.error('Response not OK. Body:', errorText);
           setError(true);
           setTimeout(() => window.location.href = '/', 2000);
           return;
         }
 
         const data = await response.json();
-        console.log('Redirect: data received:', data);
+        console.log('Response data:', JSON.stringify(data, null, 2));
         
         if (data && data.url) {
-          console.log('Redirect: redirecting to:', data.url);
-          // Force immediate redirect with replace to prevent back button issues
-          window.location.replace(data.url);
+          console.log('=== REDIRECTING NOW TO:', data.url);
+          // Try multiple redirect methods
+          setTimeout(() => {
+            window.location.href = data.url;
+          }, 100);
         } else {
-          console.error('Redirect: no URL in data');
+          console.error('No URL in response data');
           setError(true);
           setTimeout(() => window.location.href = '/', 2000);
         }
       } catch (err) {
-        console.error('Redirect: error caught:', err);
+        console.error('Exception caught:', err);
+        console.error('Error details:', err.message, err.stack);
         setError(true);
         setTimeout(() => window.location.href = '/', 2000);
       }
