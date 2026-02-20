@@ -37,8 +37,14 @@ Deno.serve(async (req) => {
       console.error('Error tracking scan:', error);
     }
 
+    // Ensure the URL has a protocol
+    let redirectUrl = qrCode.content;
+    if (!/^https?:\/\//i.test(redirectUrl)) {
+      redirectUrl = 'https://' + redirectUrl;
+    }
+
     // Return the URL to redirect to
-    return Response.json({ url: qrCode.content });
+    return Response.json({ url: redirectUrl });
   } catch (error) {
     console.error('Error in handleQRRedirect:', error);
     return Response.json({ error: error.message }, { status: 500 });
