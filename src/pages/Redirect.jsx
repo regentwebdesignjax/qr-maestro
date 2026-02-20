@@ -14,6 +14,7 @@ export default function Redirect() {
       }
 
       try {
+        console.log('Redirect: fetching for shortCode:', shortCode);
         const response = await fetch(`${window.location.origin}/_functions/handleQRRedirect`, {
           method: 'POST',
           headers: {
@@ -22,22 +23,29 @@ export default function Redirect() {
           body: JSON.stringify({ short_code: shortCode })
         });
         
+        console.log('Redirect: response status:', response.status);
+        
         if (!response.ok) {
+          console.error('Redirect: response not OK');
           setError(true);
           setTimeout(() => window.location.href = '/', 2000);
           return;
         }
 
         const data = await response.json();
+        console.log('Redirect: data received:', data);
         
         if (data && data.url) {
-          // Immediate redirect
-          window.location.replace(data.url);
+          console.log('Redirect: redirecting to:', data.url);
+          // Use window.location.href for external redirects
+          window.location.href = data.url;
         } else {
+          console.error('Redirect: no URL in data');
           setError(true);
           setTimeout(() => window.location.href = '/', 2000);
         }
       } catch (err) {
+        console.error('Redirect: error caught:', err);
         setError(true);
         setTimeout(() => window.location.href = '/', 2000);
       }
