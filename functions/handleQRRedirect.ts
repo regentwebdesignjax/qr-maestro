@@ -2,8 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
+    // No authentication required - use service role for all operations
     const base44 = createClientFromRequest(req);
-    const { short_code } = await req.json();
+    
+    const body = await req.json();
+    const short_code = body.short_code;
 
     if (!short_code) {
       return Response.json({ error: 'Short code required' }, { status: 400 });
