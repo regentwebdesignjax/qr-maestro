@@ -35,7 +35,7 @@ export default function ViewQR() {
         // Generate QR code image
         let content = qr.content;
         if (qr.type === 'dynamic' && qr.short_code) {
-          content = `${window.location.origin}/r/${qr.short_code}`;
+          content = `${window.location.origin}/Redirect?code=${qr.short_code}`;
         }
 
         const canvas = document.createElement('canvas');
@@ -141,7 +141,7 @@ export default function ViewQR() {
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Short URL</p>
                   <p className="font-medium break-all">
-                    {window.location.origin}/r/{qrCode.short_code}
+                    {window.location.origin}/Redirect?code={qrCode.short_code}
                   </p>
                 </div>
               )}

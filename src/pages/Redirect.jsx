@@ -5,10 +5,10 @@ export default function Redirect() {
 
   useEffect(() => {
     const handleRedirect = async () => {
-      const pathParts = window.location.pathname.split('/');
-      const shortCode = pathParts[pathParts.length - 1];
+      const urlParams = new URLSearchParams(window.location.search);
+      const shortCode = urlParams.get('code');
 
-      if (!shortCode || shortCode === 'r') {
+      if (!shortCode) {
         window.location.href = '/';
         return;
       }
