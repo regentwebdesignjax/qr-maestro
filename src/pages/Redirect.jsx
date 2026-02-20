@@ -1,18 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function Redirect() {
+  const [error, setError] = useState(false);
+
   useEffect(() => {
     const handleRedirect = async () => {
       const pathParts = window.location.pathname.split('/');
       const shortCode = pathParts[pathParts.length - 1];
 
-      if (!shortCode) {
+      if (!shortCode || shortCode === 'r') {
         window.location.href = '/';
         return;
       }
 
       try {
-        // Call the backend function directly without SDK to avoid auth requirements
         const response = await fetch(`${window.location.origin}/_functions/handleQRRedirect`, {
           method: 'POST',
           headers: {
@@ -21,16 +22,24 @@ export default function Redirect() {
           body: JSON.stringify({ short_code: shortCode })
         });
         
+        if (!response.ok) {
+          setError(true);
+          setTimeout(() => window.location.href = '/', 2000);
+          return;
+        }
+
         const data = await response.json();
         
         if (data && data.url) {
-          window.location.href = data.url;
+          // Immediate redirect
+          window.location.replace(data.url);
         } else {
-          window.location.href = '/';
+          setError(true);
+          setTimeout(() => window.location.href = '/', 2000);
         }
-      } catch (error) {
-        console.error('Error handling redirect:', error);
-        window.location.href = '/';
+      } catch (err) {
+        setError(true);
+        setTimeout(() => window.location.href = '/', 2000);
       }
     };
 
