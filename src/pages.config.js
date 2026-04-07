@@ -56,7 +56,6 @@ import FAQ from './pages/FAQ';
 import Home from './pages/Home';
 import MyQRCodes from './pages/MyQRCodes';
 import Pricing from './pages/Pricing';
-import Redirect from './pages/Redirect';
 import ViewQR from './pages/ViewQR';
 import WhyUs from './pages/WhyUs';
 import __Layout from './Layout.jsx';
@@ -72,7 +71,6 @@ export const PAGES = {
     "Home": Home,
     "MyQRCodes": MyQRCodes,
     "Pricing": Pricing,
-    "Redirect": Redirect,
     "ViewQR": ViewQR,
     "WhyUs": WhyUs,
 }

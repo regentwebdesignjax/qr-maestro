@@ -25,7 +25,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
     // Generate QR code content
     let content = qr.content;
     if (qr.type === 'dynamic' && qr.short_code) {
-      content = `${window.location.origin}/r/${qr.short_code}`;
+      content = `${window.location.origin}/_functions/redirect?code=${qr.short_code}`;
     }
 
     // Generate QR code as data URL

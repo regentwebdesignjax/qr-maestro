@@ -141,7 +141,7 @@ export default function EditQR() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-sm text-gray-600 mb-1">Short URL (unchangeable)</p>
               <p className="font-mono text-sm break-all">
-                {window.location.origin}/r/{qrCode.short_code}
+                {window.location.origin}/_functions/redirect?code={qrCode.short_code}
               </p>
             </div>
 
