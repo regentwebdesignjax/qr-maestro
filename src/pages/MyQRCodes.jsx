@@ -8,9 +8,18 @@ import { Plus, QrCode as QrCodeIcon } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 
+const DEFAULT_FOLDERS = [
+  { id: 'all', name: 'All QR Codes', locked: true },
+  { id: 'marketing', name: 'Marketing Campaigns', locked: false },
+  { id: 'storefront', name: 'Store Front', locked: false },
+];
+
 export default function MyQRCodes() {
   const [user, setUser] = useState(null);
   const [activeFolder, setActiveFolder] = useState('all');
+  const [folders, setFolders] = useState(DEFAULT_FOLDERS);
+  // Map of qrCode.id -> folderId (in-memory; persisted to DB later)
+  const [qrFolderMap, setQrFolderMap] = useState({});
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -36,6 +45,17 @@ export default function MyQRCodes() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['qr-codes'] }),
   });
 
+  const handleMoveToFolder = (qrIds, folderId) => {
+    setQrFolderMap(prev => {
+      const next = { ...prev };
+      qrIds.forEach(id => {
+        if (folderId === 'all') delete next[id];
+        else next[id] = folderId;
+      });
+      return next;
+    });
+  };
+
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -47,6 +67,10 @@ export default function MyQRCodes() {
   const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
+
+  const visibleQrCodes = activeFolder === 'all'
+    ? qrCodes
+    : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -98,39 +122,50 @@ export default function MyQRCodes() {
 
         {/* Main Layout: Sidebar + Content */}
         <div className="flex gap-6 items-start">
-          {/* Folders Sidebar */}
           <aside className="w-56 shrink-0">
-            <FoldersSidebar activeFolder={activeFolder} onFolderChange={setActiveFolder} />
+            <FoldersSidebar
+              folders={folders}
+              activeFolder={activeFolder}
+              onFolderChange={setActiveFolder}
+              onFoldersChange={setFolders}
+            />
           </aside>
 
-          {/* QR Codes Table */}
           <div className="flex-1 min-w-0">
             <Card>
               <CardHeader>
-                <CardTitle>QR Codes</CardTitle>
+                <CardTitle>{folders.find(f => f.id === activeFolder)?.name || 'All QR Codes'}</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                   </div>
-                ) : qrCodes.length === 0 ? (
+                ) : visibleQrCodes.length === 0 ? (
                   <div className="text-center py-12">
                     <QrCodeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes yet</h3>
-                    <p className="text-gray-600 mb-6">Create your first QR code to get started</p>
-                    <Link to="/CreateQR">
-                      <Button className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create QR Code
-                      </Button>
-                    </Link>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {activeFolder === 'all' ? 'No QR codes yet' : 'No QR codes in this folder'}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {activeFolder === 'all' ? 'Create your first QR code to get started' : 'Move QR codes here by selecting them and using "Move to Folder"'}
+                    </p>
+                    {activeFolder === 'all' && (
+                      <Link to="/CreateQR">
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          <Plus className="w-4 h-4 mr-2" /> Create QR Code
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 ) : (
                   <QRCodeList
-                    qrCodes={qrCodes}
+                    qrCodes={visibleQrCodes}
                     isPro={isPro}
+                    folders={folders}
+                    qrFolderMap={qrFolderMap}
                     onDelete={(id) => deleteQRMutation.mutate(id)}
+                    onMoveToFolder={handleMoveToFolder}
                   />
                 )}
               </CardContent>
