@@ -64,7 +64,7 @@ export default function CreateQR() {
 
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Create QR Code</h1>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Form Section */}
           <Card>
             <CardHeader>
@@ -80,15 +80,17 @@ export default function CreateQR() {
             </CardContent>
           </Card>
 
-          {/* Preview Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <QRCodePreview qrData={qrData} />
-            </CardContent>
-          </Card>
+          {/* Sticky Preview Section */}
+          <div className="lg:sticky lg:top-24">
+            <Card>
+              <CardHeader>
+                <CardTitle>Live Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <QRCodePreview qrData={qrData} />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
