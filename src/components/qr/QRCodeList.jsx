@@ -1,44 +1,89 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Edit, Trash2, BarChart3, ExternalLink, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { base44 } from '@/api/base44Client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+const formatContentType = (type) => ({ url: 'URL', text: 'Text', wifi: 'WiFi', vcard: 'vCard' }[type] || type);
 
 export default function QRCodeList({ qrCodes, isPro, onDelete }) {
-  // isPro already includes admin check from parent component
-  const formatContentType = (type) => {
-    const types = {
-      url: 'URL',
-      text: 'Text',
-      wifi: 'WiFi',
-      vcard: 'vCard'
-    };
-    return types[type] || type;
+  const [selected, setSelected] = useState(new Set());
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+  const queryClient = useQueryClient();
+
+  // Bulk delete
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids) => Promise.all(ids.map(id => base44.entities.QRCode.delete(id))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
+      setSelected(new Set());
+    },
+  });
+
+  // Inline rename
+  const renameMutation = useMutation({
+    mutationFn: ({ id, name }) => base44.entities.QRCode.update(id, { name }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['qr-codes'] }),
+  });
+
+  const allSelected = qrCodes.length > 0 && selected.size === qrCodes.length;
+
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(qrCodes.map(qr => qr.id)));
+  };
+
+  const toggleOne = (id) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Delete ${selected.size} QR code(s)?`)) {
+      bulkDeleteMutation.mutate([...selected]);
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    const QRCode = (await import('qrcode')).default;
+    for (const id of selected) {
+      const qr = qrCodes.find(q => q.id === id);
+      if (!qr) continue;
+      const content = qr.type === 'dynamic' && qr.short_code
+        ? `${window.location.origin}/_functions/redirect?code=${qr.short_code}`
+        : qr.content;
+      const dataUrl = await QRCode.toDataURL(content, {
+        width: 1024, margin: 2,
+        color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },
+      });
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `${qr.name.replace(/[^a-z0-9]/gi, '_')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleDownload = async (qr) => {
     const QRCode = (await import('qrcode')).default;
-    
-    // Generate QR code content
-    let content = qr.content;
-    if (qr.type === 'dynamic' && qr.short_code) {
-      content = `${window.location.origin}/_functions/redirect?code=${qr.short_code}`;
-    }
-
-    // Generate QR code as data URL
+    const content = qr.type === 'dynamic' && qr.short_code
+      ? `${window.location.origin}/_functions/redirect?code=${qr.short_code}`
+      : qr.content;
     const dataUrl = await QRCode.toDataURL(content, {
-      width: 1024,
-      margin: 2,
-      color: {
-        dark: qr.design_config?.foreground_color || '#000000',
-        light: qr.design_config?.background_color || '#FFFFFF',
-      }
+      width: 1024, margin: 2,
+      color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },
     });
-
-    // Create download link
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = `${qr.name.replace(/[^a-z0-9]/gi, '_')}.png`;
@@ -47,96 +92,145 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
     document.body.removeChild(link);
   };
 
+  const startEdit = (qr) => {
+    setEditingId(qr.id);
+    setEditingName(qr.name);
+  };
+
+  const commitEdit = (id) => {
+    if (editingName.trim()) {
+      renameMutation.mutate({ id, name: editingName.trim() });
+    }
+    setEditingId(null);
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Content Type</TableHead>
-            <TableHead>Scans</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {qrCodes.map((qr) => (
-            <TableRow key={qr.id}>
-              <TableCell className="font-medium">{qr.name}</TableCell>
-              <TableCell>
-                <Badge variant={qr.type === 'dynamic' ? 'default' : 'secondary'}>
-                  {qr.type === 'static' ? 'Static' : 'Dynamic'}
-                </Badge>
-              </TableCell>
-              <TableCell>{formatContentType(qr.content_type)}</TableCell>
-              <TableCell>
-                {qr.type === 'static' ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="italic text-gray-400 text-sm">Untrackable</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Static QR codes cannot be tracked. Upgrade to Pro to create dynamic, trackable codes.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span>{qr.scan_count || 0}</span>
-                    {isPro && (
-                      <Link to={'/Analytics?id=' + qr.id}>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <BarChart3 className="w-3 h-3" />
-                        </Button>
+    <div className="relative">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">
+                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+              </TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Content Type</TableHead>
+              <TableHead>Scans</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {qrCodes.map((qr) => (
+              <TableRow key={qr.id} className={selected.has(qr.id) ? 'bg-blue-50' : ''}>
+                <TableCell>
+                  <Checkbox checked={selected.has(qr.id)} onCheckedChange={() => toggleOne(qr.id)} />
+                </TableCell>
+                <TableCell className="font-medium">
+                  {editingId === qr.id ? (
+                    <div className="flex items-center gap-1">
+                      <Input
+                        autoFocus
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') commitEdit(qr.id); if (e.key === 'Escape') cancelEdit(); }}
+                        className="h-7 text-sm"
+                      />
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => commitEdit(qr.id)}>
+                        <Check className="w-3.5 h-3.5 text-green-600" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={cancelEdit}>
+                        <X className="w-3.5 h-3.5 text-gray-400" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 group">
+                      <span>{qr.name}</span>
+                      <button onClick={() => startEdit(qr)} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Pencil className="w-3.5 h-3.5 text-gray-400 hover:text-gray-700" />
+                      </button>
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={qr.type === 'dynamic' ? 'default' : 'secondary'}>
+                    {qr.type === 'static' ? 'Static' : 'Dynamic'}
+                  </Badge>
+                </TableCell>
+                <TableCell>{formatContentType(qr.content_type)}</TableCell>
+                <TableCell>
+                  {qr.type === 'static' ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className="italic text-gray-400 text-sm">Untrackable</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Static QR codes cannot be tracked. Upgrade to Pro to create dynamic, trackable codes.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>{qr.scan_count || 0}</span>
+                      {isPro && (
+                        <Link to={'/Analytics?id=' + qr.id}>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <BarChart3 className="w-3 h-3" />
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="text-gray-600">
+                  {format(new Date(qr.created_date), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    {qr.type === 'dynamic' && (
+                      <Link to={'/EditQR?id=' + qr.id}>
+                        <Button variant="ghost" size="sm"><Edit className="w-4 h-4" /></Button>
                       </Link>
                     )}
-                  </div>
-                )}
-              </TableCell>
-              <TableCell className="text-gray-600">
-                {format(new Date(qr.created_date), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  {qr.type === 'dynamic' && (
-                    <Link to={'/EditQR?id=' + qr.id}>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                    <Link to={'/ViewQR?id=' + qr.id}>
+                      <Button variant="ghost" size="sm"><ExternalLink className="w-4 h-4" /></Button>
                     </Link>
-                  )}
-                  <Link to={'/ViewQR?id=' + qr.id}>
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="w-4 h-4" />
+                    <Button variant="ghost" size="sm" onClick={() => handleDownload(qr)} title="Download">
+                      <Download className="w-4 h-4 text-blue-600" />
                     </Button>
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleDownload(qr)}
-                    title="Download QR Code"
-                  >
-                    <Download className="w-4 h-4 text-blue-600" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this QR code?')) {
-                        onDelete(qr.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                    <Button variant="ghost" size="sm" onClick={() => { if (confirm('Delete this QR code?')) onDelete(qr.id); }}>
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Floating Bulk Action Bar */}
+      {selected.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl">
+          <span className="text-sm font-medium">{selected.size} selected</span>
+          <div className="w-px h-5 bg-gray-600" />
+          <Button size="sm" variant="ghost" className="text-white hover:bg-gray-700 hover:text-white gap-2" onClick={handleBulkDownload}>
+            <Download className="w-4 h-4" /> Bulk Download
+          </Button>
+          <Button size="sm" variant="ghost" className="text-red-400 hover:bg-gray-700 hover:text-red-300 gap-2"
+            onClick={handleBulkDelete} disabled={bulkDeleteMutation.isPending}>
+            <Trash2 className="w-4 h-4" />
+            {bulkDeleteMutation.isPending ? 'Deleting...' : 'Bulk Delete'}
+          </Button>
+          <button onClick={() => setSelected(new Set())} className="ml-1 text-gray-400 hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
