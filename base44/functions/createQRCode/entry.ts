@@ -22,10 +22,7 @@ Deno.serve(async (req) => {
       qrCodeData.short_code = null;
     }
 
-    // Always set created_by to the authenticated user
-    qrCodeData.created_by = user.email;
-
-    const created = await base44.asServiceRole.entities.QRCode.create(qrCodeData);
+    const created = await base44.entities.QRCode.create(qrCodeData);
 
     return Response.json({ qrCode: created });
   } catch (error) {
