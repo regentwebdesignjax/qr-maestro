@@ -58,7 +58,10 @@ export default function EditQR() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.QRCode.update(qrCode.id, formData);
+      await base44.entities.QRCode.update(qrCode.id, {
+        name: formData.name,
+        content: formData.content,
+      });
       alert('QR code updated successfully!');
       window.location.href = '/Dashboard';
     } catch (error) {

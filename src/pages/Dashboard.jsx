@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon, Lock } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 
 export default function Dashboard() {
@@ -149,13 +149,23 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Total Scans
+                Total Tracked Scans
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
-                {qrCodes.reduce((sum, qr) => sum + (qr.scan_count || 0), 0)}
-              </div>
+              {isPro ? (
+                <div className="text-3xl font-bold">
+                  {qrCodes.reduce((sum, qr) => sum + (qr.scan_count || 0), 0)}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="text-3xl font-bold">0</div>
+                  <Lock className="w-5 h-5 text-gray-400" />
+                  <Link to="/Pricing" className="text-sm text-blue-600 hover:underline">
+                    Upgrade to unlock analytics
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

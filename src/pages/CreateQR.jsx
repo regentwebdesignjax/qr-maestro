@@ -33,7 +33,7 @@ export default function CreateQR() {
   const handleSave = async (qrCodeData) => {
     setSaving(true);
     try {
-      await base44.entities.QRCode.create(qrCodeData);
+      await base44.functions.invoke('createQRCode', qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
     } catch (error) {

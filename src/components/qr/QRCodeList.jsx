@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Edit, Trash2, BarChart3, ExternalLink, Download } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -70,16 +71,29 @@ export default function QRCodeList({ qrCodes, isPro, onDelete }) {
               </TableCell>
               <TableCell>{formatContentType(qr.content_type)}</TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <span>{qr.scan_count || 0}</span>
-                  {isPro && (
-                    <Link to={'/Analytics?id=' + qr.id}>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <BarChart3 className="w-3 h-3" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                {qr.type === 'static' ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="italic text-gray-400 text-sm">Untrackable</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Static QR codes cannot be tracked. Upgrade to Pro to create dynamic, trackable codes.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>{qr.scan_count || 0}</span>
+                    {isPro && (
+                      <Link to={'/Analytics?id=' + qr.id}>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <BarChart3 className="w-3 h-3" />
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                )}
               </TableCell>
               <TableCell className="text-gray-600">
                 {format(new Date(qr.created_date), 'MMM d, yyyy')}
