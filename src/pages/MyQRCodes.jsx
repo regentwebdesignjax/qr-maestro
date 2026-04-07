@@ -4,14 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, QrCode as QrCodeIcon, FolderOpen, Folder } from 'lucide-react';
+import { Plus, QrCode as QrCodeIcon } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
-
-const MOCK_FOLDERS = [
-  { id: 'all', name: 'All QR Codes', icon: FolderOpen },
-  { id: 'marketing', name: 'Marketing Campaigns', icon: Folder },
-  { id: 'storefront', name: 'Store Front', icon: Folder },
-];
+import FoldersSidebar from '../components/qr/FoldersSidebar';
 
 export default function MyQRCodes() {
   const [user, setUser] = useState(null);
@@ -105,45 +100,14 @@ export default function MyQRCodes() {
         <div className="flex gap-6 items-start">
           {/* Folders Sidebar */}
           <aside className="w-56 shrink-0">
-            <Card>
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Folders</CardTitle>
-              </CardHeader>
-              <CardContent className="px-2 pb-4">
-                <nav className="space-y-0.5">
-                  {MOCK_FOLDERS.map(({ id, name, icon: Icon }) => (
-                    <button
-                      key={id}
-                      onClick={() => setActiveFolder(id)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                        activeFolder === id
-                          ? 'bg-blue-50 text-blue-700 font-medium'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 shrink-0 ${activeFolder === id ? 'text-blue-600' : 'text-gray-400'}`} />
-                      <span className="truncate">{name}</span>
-                    </button>
-                  ))}
-                </nav>
-
-                <div className="mt-4 px-3">
-                  <button className="w-full flex items-center gap-2 text-sm text-gray-400 hover:text-blue-600 transition-colors py-1">
-                    <Plus className="w-3.5 h-3.5" />
-                    New Folder
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
+            <FoldersSidebar activeFolder={activeFolder} onFolderChange={setActiveFolder} />
           </aside>
 
           {/* QR Codes Table */}
           <div className="flex-1 min-w-0">
             <Card>
               <CardHeader>
-                <CardTitle>
-                  {MOCK_FOLDERS.find(f => f.id === activeFolder)?.name || 'All QR Codes'}
-                </CardTitle>
+                <CardTitle>QR Codes</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
