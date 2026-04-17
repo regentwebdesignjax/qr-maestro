@@ -1,17 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
-  }
-
   try {
     let short_code;
 
@@ -23,9 +12,7 @@ Deno.serve(async (req) => {
       short_code = queryCode;
     } else {
       let body = {};
-      try {
-        body = await req.json();
-      } catch (_) {}
+      try { body = await req.json(); } catch (_) {}
       short_code = body.code || body.short_code;
     }
 
@@ -42,28 +29,26 @@ Deno.serve(async (req) => {
 
     const qrCode = qrCodes[0];
 
-    // Track scan asynchronously (don't await)
+    // Track scan asynchronously (don't await — errors are non-critical)
     base44.asServiceRole.entities.Scan.create({
       qr_code_id: qrCode.id,
       device_type: req.headers.get('user-agent') || 'unknown',
       browser: 'unknown',
-    }).catch(() => {});
+    }).catch((e) => console.error('Scan create error:', e.message));
 
     base44.asServiceRole.entities.QRCode.update(qrCode.id, {
       scan_count: (qrCode.scan_count || 0) + 1,
-    }).catch(() => {});
+    }).catch((e) => console.error('Scan count update error:', e.message));
 
     let redirectUrl = qrCode.content;
     if (!/^https?:\/\//i.test(redirectUrl)) {
       redirectUrl = 'https://' + redirectUrl;
     }
 
-    return Response.json({ url: redirectUrl }, {
-      headers: { 'Access-Control-Allow-Origin': '*' },
-    });
+    return Response.json({ url: redirectUrl });
 
   } catch (error) {
-    console.error('Redirect error:', error.message, 'Error data:', JSON.stringify(error.response?.data || {}));
+    console.error('Redirect error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
