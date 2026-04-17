@@ -55,12 +55,28 @@ function isEyeInner(r, c, size) {
   return check(0, 0) || check(0, size - eyeSize) || check(size - eyeSize, 0);
 }
 
+// Cross-browser rounded rectangle path helper
+function roundRectPath(ctx, x, y, w, h, r) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.lineTo(x + w - rad, y);
+  ctx.arcTo(x + w, y, x + w, y + rad, rad);
+  ctx.lineTo(x + w, y + h - rad);
+  ctx.arcTo(x + w, y + h, x + w - rad, y + h, rad);
+  ctx.lineTo(x + rad, y + h);
+  ctx.arcTo(x, y + h, x, y + h - rad, rad);
+  ctx.lineTo(x, y + rad);
+  ctx.arcTo(x, y, x + rad, y, rad);
+  ctx.closePath();
+}
+
 // Draw one finder-pattern eye
 function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeColor, bgColor) {
   const outerPx = cellSize * 7;
   const innerPx = cellSize * 3;
   const innerOff = cellSize * 2;
-  const r = cellSize * 0.7;
+  const r = cellSize * 1.2; // corner radius for rounded style
 
   // Background fill for the full 7x7 area
   ctx.fillStyle = bgColor;
@@ -69,36 +85,38 @@ function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeCol
   ctx.fillStyle = eyeColor;
 
   // Outer ring
-  ctx.beginPath();
   if (outerShape === 'circle') {
+    ctx.beginPath();
     ctx.arc(originX + outerPx / 2, originY + outerPx / 2, outerPx / 2, 0, Math.PI * 2);
     ctx.fill();
-    // Punch out centre with bg colour
     ctx.fillStyle = bgColor;
     ctx.beginPath();
     ctx.arc(originX + outerPx / 2, originY + outerPx / 2, outerPx / 2 - cellSize, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = eyeColor;
-  } else {
-    const outerRad = outerShape === 'rounded' ? r * 1.5 : 0;
-    ctx.roundRect(originX, originY, outerPx, outerPx, outerRad);
+  } else if (outerShape === 'rounded') {
+    roundRectPath(ctx, originX, originY, outerPx, outerPx, r);
     ctx.fill();
     ctx.fillStyle = bgColor;
-    const innerR = outerShape === 'rounded' ? r * 0.8 : 0;
-    ctx.beginPath();
-    ctx.roundRect(originX + cellSize, originY + cellSize, outerPx - cellSize * 2, outerPx - cellSize * 2, innerR);
+    roundRectPath(ctx, originX + cellSize, originY + cellSize, outerPx - cellSize * 2, outerPx - cellSize * 2, r * 0.5);
     ctx.fill();
+    ctx.fillStyle = eyeColor;
+  } else {
+    // square
+    ctx.fillRect(originX, originY, outerPx, outerPx);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(originX + cellSize, originY + cellSize, outerPx - cellSize * 2, outerPx - cellSize * 2);
     ctx.fillStyle = eyeColor;
   }
 
   // Inner dot
-  ctx.beginPath();
   if (innerShape === 'circle') {
+    ctx.beginPath();
     ctx.arc(originX + innerOff + innerPx / 2, originY + innerOff + innerPx / 2, innerPx / 2, 0, Math.PI * 2);
+    ctx.fill();
   } else {
-    ctx.roundRect(originX + innerOff, originY + innerOff, innerPx, innerPx, 0);
+    ctx.fillRect(originX + innerOff, originY + innerOff, innerPx, innerPx);
   }
-  ctx.fill();
 }
 
 // ─── main renderer ────────────────────────────────────────────────────────────
