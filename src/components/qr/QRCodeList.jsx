@@ -54,7 +54,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
       const qr = qrCodes.find(q => q.id === id);
       if (!qr) continue;
       const content = qr.type === 'dynamic' && qr.short_code
-        ? `${window.location.origin}/_functions/redirect?code=${qr.short_code}` : qr.content;
+        ? `${window.location.origin}/r?code=${qr.short_code}` : qr.content;
       const dataUrl = await QRCode.toDataURL(content, {
         width: 1024, margin: 2,
         color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },
@@ -69,7 +69,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
   const handleDownload = async (qr) => {
     const QRCode = (await import('qrcode')).default;
     const content = qr.type === 'dynamic' && qr.short_code
-      ? `${window.location.origin}/_functions/redirect?code=${qr.short_code}` : qr.content;
+      ? `${window.location.origin}/r?code=${qr.short_code}` : qr.content;
     const dataUrl = await QRCode.toDataURL(content, {
       width: 1024, margin: 2,
       color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },

@@ -117,7 +117,7 @@ async function renderQR(canvas, qrData) {
   // 1. Prepare content string
   let content = qrData.content;
   if (qrData.type === 'dynamic' && qrData.short_code) {
-    content = `${window.location.origin}/_functions/redirect?code=${qrData.short_code}`;
+    content = `${window.location.origin}/r?code=${qrData.short_code}`;
   } else if (qrData.content_type === 'wifi') {
     const lines = qrData.content.split('\n');
     const ssid = lines.find(l => l.startsWith('SSID:'))?.split(':')[1]?.trim() || '';

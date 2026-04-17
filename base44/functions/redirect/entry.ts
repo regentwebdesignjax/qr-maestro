@@ -3,15 +3,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const url = new URL(req.url);
-    const short_code = url.searchParams.get('code');
 
-    if (!short_code) return Response.redirect(url.origin, 302);
+    // Read code from JSON body (called via SDK from the React Redirect page)
+    const body = await req.json();
+    const short_code = body.code || body.short_code;
+
+    if (!short_code) {
+      return Response.json({ error: 'No code provided' }, { status: 400 });
+    }
 
     const qrCodes = await base44.asServiceRole.entities.QRCode.filter({ short_code });
 
     if (qrCodes.length === 0 || !qrCodes[0].is_active) {
-      return Response.redirect(url.origin, 302);
+      return Response.json({ error: 'Not found' }, { status: 404 });
     }
 
     const qrCode = qrCodes[0];
@@ -32,9 +36,9 @@ Deno.serve(async (req) => {
       redirectUrl = 'https://' + redirectUrl;
     }
 
-    return Response.redirect(redirectUrl, 302);
+    return Response.json({ url: redirectUrl });
   } catch (error) {
     console.error('Redirect error:', error);
-    return Response.redirect(new URL(req.url).origin, 302);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
