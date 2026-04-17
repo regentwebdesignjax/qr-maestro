@@ -35,9 +35,9 @@ export default function TimeOfDayHeatmap({ scans }) {
   };
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle>Activity by Time of Day</CardTitle>
+    <Card className="border-0 shadow-sm h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">Scans by Time of Day</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

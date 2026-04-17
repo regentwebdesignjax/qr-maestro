@@ -1,19 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Lock, CalendarIcon } from 'lucide-react';
-import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Lock, CalendarIcon, ScanLine, Users, Smartphone, Tablet, Monitor, HelpCircle } from 'lucide-react';
+import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay, startOfToday, endOfToday, startOfYesterday, endOfYesterday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import ScansOverTimeChart from '../components/analytics/ScansOverTimeChart';
 import ScanMap from '../components/analytics/ScanMap';
 import TimeOfDayHeatmap from '../components/analytics/TimeOfDayHeatmap';
 
-const DEFAULT_RANGE = {
-  from: subDays(new Date(), 29),
-  to: new Date(),
+const PRESETS = [
+  { value: 'today', label: 'Today', pro: false },
+  { value: 'yesterday', label: 'Yesterday', pro: false },
+  { value: '7d', label: 'Last 7 Days', pro: false },
+  { value: '14d', label: 'Last 14 Days', pro: false },
+  { value: '30d', label: 'Last 30 Days', pro: false },
+  { value: '60d', label: 'Last 60 Days', pro: false },
+  { value: '90d', label: 'Last 90 Days', pro: false },
+  { value: '12mo', label: 'Last 12 Months', pro: true },
+  { value: '24mo', label: 'Last 24 Months', pro: true },
+  { value: 'lifetime', label: 'Lifetime', pro: true },
+  { value: 'custom', label: 'Custom Date Range', pro: true },
+];
+
+function getDateRange(preset) {
+  const now = new Date();
+  switch (preset) {
+    case 'today': return { from: startOfToday(), to: endOfToday() };
+    case 'yesterday': return { from: startOfYesterday(), to: endOfYesterday() };
+    case '7d': return { from: subDays(now, 6), to: now };
+    case '14d': return { from: subDays(now, 13), to: now };
+    case '30d': return { from: subDays(now, 29), to: now };
+    case '60d': return { from: subDays(now, 59), to: now };
+    case '90d': return { from: subDays(now, 89), to: now };
+    case '12mo': return { from: subMonths(now, 12), to: now };
+    case '24mo': return { from: subMonths(now, 24), to: now };
+    case 'lifetime': return { from: new Date('2000-01-01'), to: now };
+    default: return { from: subDays(now, 29), to: now };
+  }
+}
+
+const DEVICE_ICONS = {
+  mobile: Smartphone,
+  tablet: Tablet,
+  desktop: Monitor,
+  unknown: HelpCircle,
+};
+
+const DEVICE_COLORS = {
+  mobile: 'bg-blue-500',
+  tablet: 'bg-purple-500',
+  desktop: 'bg-green-500',
+  unknown: 'bg-gray-400',
 };
 
 export default function Analytics() {
@@ -21,7 +62,8 @@ export default function Analytics() {
   const [scans, setScans] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState(DEFAULT_RANGE);
+  const [preset, setPreset] = useState('30d');
+  const [customRange, setCustomRange] = useState(null);
   const [calOpen, setCalOpen] = useState(false);
 
   useEffect(() => {
@@ -53,6 +95,33 @@ export default function Analytics() {
     fetchData();
   }, []);
 
+  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
+
+  const dateRange = useMemo(() => {
+    if (preset === 'custom' && customRange?.from) return customRange;
+    return getDateRange(preset);
+  }, [preset, customRange]);
+
+  const filteredScans = useMemo(() => scans.filter(scan => {
+    const d = new Date(scan.created_date);
+    return isWithinInterval(d, {
+      start: startOfDay(dateRange.from),
+      end: endOfDay(dateRange.to || dateRange.from),
+    });
+  }), [scans, dateRange]);
+
+  const uniqueScanners = useMemo(() => {
+    // Approximate unique scanners by grouping by device_type + browser + country combo
+    const seen = new Set(filteredScans.map(s => `${s.browser}|${s.device_type}|${s.country}`));
+    return seen.size;
+  }, [filteredScans]);
+
+  const deviceStats = useMemo(() => filteredScans.reduce((acc, scan) => {
+    const device = scan.device_type || 'unknown';
+    acc[device] = (acc[device] || 0) + 1;
+    return acc;
+  }, {}), [filteredScans]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -60,8 +129,6 @@ export default function Analytics() {
       </div>
     );
   }
-
-  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
 
   if (!isPro) {
     return (
@@ -85,179 +152,165 @@ export default function Analytics() {
     );
   }
 
-  // Filter scans within selected date range
-  const filteredScans = scans.filter(scan => {
-    const d = new Date(scan.created_date);
-    return isWithinInterval(d, {
-      start: startOfDay(dateRange.from),
-      end: endOfDay(dateRange.to || dateRange.from),
-    });
-  });
+  const handlePresetChange = (value) => {
+    if (value === 'custom') {
+      setCalOpen(true);
+    }
+    setPreset(value);
+  };
 
-  const deviceStats = filteredScans.reduce((acc, scan) => {
-    const device = scan.device_type || 'unknown';
-    acc[device] = (acc[device] || 0) + 1;
-    return acc;
-  }, {});
-
-  const topCountries = Object.entries(
-    filteredScans.reduce((acc, scan) => {
-      if (scan.country) acc[scan.country] = (acc[scan.country] || 0) + 1;
-      return acc;
-    }, {})
-  ).sort(([, a], [, b]) => b - a).slice(0, 5);
-
-  const effectiveRange = { from: dateRange.from, to: dateRange.to || dateRange.from };
+  const dateRangeLabel = preset === 'custom' && customRange?.from
+    ? `${format(customRange.from, 'MMM d, yyyy')}${customRange.to ? ` – ${format(customRange.to, 'MMM d, yyyy')}` : ''}`
+    : PRESETS.find(p => p.value === preset)?.label;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="container mx-auto px-4 max-w-5xl pt-8">
         <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back to Dashboard</Button>
         </Link>
 
-        {/* Header + Date Range Picker */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Analytics</h1>
-            <p className="text-gray-500">{qrCode?.name}</p>
+            <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+            <p className="text-gray-500 text-sm mt-0.5">{qrCode?.name}</p>
           </div>
 
-          <Popover open={calOpen} onOpenChange={setCalOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 min-w-[240px] justify-start font-normal">
-                <CalendarIcon className="w-4 h-4 text-gray-400" />
-                {dateRange.from && dateRange.to
-                  ? `${format(dateRange.from, 'MMM d, yyyy')} – ${format(dateRange.to, 'MMM d, yyyy')}`
-                  : dateRange.from
-                  ? format(dateRange.from, 'MMM d, yyyy')
-                  : 'Pick a date range'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-auto p-0">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={(range) => {
-                  if (!range?.from) return;
-                  // Enforce 90-day cap for free users
-                  const minDate = isPro ? subMonths(new Date(), 24) : subDays(new Date(), 89);
-                  const clampedFrom = range.from < minDate ? minDate : range.from;
-                  setDateRange({ from: clampedFrom, to: range.to });
-                  if (range.from && range.to) setCalOpen(false);
-                }}
-                initialFocus
-                disabled={[
-                  { after: new Date() },
-                  { before: isPro ? subMonths(new Date(), 24) : subDays(new Date(), 89) },
-                ]}
-                numberOfMonths={2}
-              />
-              <div className="flex flex-wrap gap-2 p-3 border-t">
-                {[
-                  { label: '7d', days: 7 },
-                  { label: '14d', days: 14 },
-                  { label: '30d', days: 30 },
-                  { label: '90d', days: 90 },
-                  ...(isPro ? [
-                    { label: '6mo', months: 6 },
-                    { label: '12mo', months: 12 },
-                    { label: '24mo', months: 24 },
-                  ] : []),
-                ].map(({ label, days, months }) => (
-                  <Button key={label} size="sm" variant="outline"
-                    onClick={() => {
-                      const from = months ? subMonths(new Date(), months) : subDays(new Date(), days - 1);
-                      setDateRange({ from, to: new Date() });
-                      setCalOpen(false);
-                    }}>
-                    {label}
-                  </Button>
+          <div className="flex items-center gap-2">
+            <Select value={preset} onValueChange={handlePresetChange}>
+              <SelectTrigger className="w-[200px] bg-white">
+                <SelectValue placeholder="Select range" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESETS.map(p => (
+                  <SelectItem key={p.value} value={p.value} disabled={p.pro && !isPro}>
+                    <div className="flex items-center gap-2">
+                      <span>{p.label}</span>
+                      {p.pro && !isPro && <Lock className="w-3 h-3 text-gray-400" />}
+                    </div>
+                  </SelectItem>
                 ))}
-              </div>
-              {!isPro && (
-                <p className="text-xs text-gray-400 px-3 pb-3">
-                  Free plan: up to 90 days. <Link to="/Pricing" className="text-blue-500 hover:underline">Upgrade for 24 months</Link>.
-                </p>
-              )}
-            </PopoverContent>
-          </Popover>
+              </SelectContent>
+            </Select>
+
+            {/* Custom date range picker */}
+            {preset === 'custom' && (
+              <Popover open={calOpen} onOpenChange={setCalOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-white">
+                    <CalendarIcon className="w-4 h-4 text-gray-400" />
+                    {customRange?.from
+                      ? `${format(customRange.from, 'MMM d')}${customRange.to ? ` – ${format(customRange.to, 'MMM d')}` : ''}`
+                      : 'Pick dates'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-auto p-0">
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={(range) => {
+                      if (!range?.from) return;
+                      setCustomRange(range);
+                      if (range.from && range.to) setCalOpen(false);
+                    }}
+                    initialFocus
+                    disabled={[{ after: new Date() }]}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Scans (All Time)</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-3xl font-bold">{scans.length}</div></CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">In Range</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-3xl font-bold text-blue-600">{filteredScans.length}</div></CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Today</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {scans.filter(s => format(new Date(s.created_date), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length}
+        {/* Summary stat cards */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="pt-6 pb-5">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 bg-blue-50 rounded-xl">
+                  <ScanLine className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-0.5">Total Scans</p>
+                  <p className="text-3xl font-bold text-gray-900">{filteredScans.length}</p>
+                  <p className="text-xs text-gray-400 mt-1">{dateRangeLabel}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Countries</CardTitle>
-            </CardHeader>
-            <CardContent><div className="text-3xl font-bold">{topCountries.length}</div></CardContent>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="pt-6 pb-5">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 bg-purple-50 rounded-xl">
+                  <Users className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-0.5">Unique Scanners</p>
+                  <p className="text-3xl font-bold text-gray-900">{uniqueScanners}</p>
+                  <p className="text-xs text-gray-400 mt-1">Estimated unique devices</p>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
         {/* Scans Over Time */}
-        <ScansOverTimeChart scans={filteredScans} dateRange={effectiveRange} />
+        <div className="mb-6">
+          <ScansOverTimeChart scans={filteredScans} dateRange={{ from: dateRange.from, to: dateRange.to || dateRange.from }} />
+        </div>
+
+        {/* Scans by Devices Used + Scans by Time of Day — side by side on desktop */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Scans by Devices Used */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-blue-500" />
+                Scans by Devices Used
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(deviceStats).length > 0 ? (
+                <div className="space-y-4">
+                  {Object.entries(deviceStats)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([device, count]) => {
+                      const pct = Math.round((count / filteredScans.length) * 100);
+                      const Icon = DEVICE_ICONS[device] || HelpCircle;
+                      const barColor = DEVICE_COLORS[device] || 'bg-gray-400';
+                      return (
+                        <div key={device}>
+                          <div className="flex items-center justify-between text-sm mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4 text-gray-500" />
+                              <span className="capitalize text-gray-700 font-medium">{device}</span>
+                            </div>
+                            <span className="font-semibold text-gray-800">
+                              {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-2.5">
+                            <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm italic">No device data for this period.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Scans by Time of Day */}
+          <TimeOfDayHeatmap scans={filteredScans} />
+        </div>
 
         {/* World Map */}
         <ScanMap scans={filteredScans} />
-
-        {/* Time of Day Heatmap */}
-        <TimeOfDayHeatmap scans={filteredScans} />
-
-        {/* Device Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Device Types</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {Object.keys(deviceStats).length > 0 ? (
-              <div className="space-y-3">
-                {Object.entries(deviceStats)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([device, count]) => {
-                    const pct = Math.round((count / filteredScans.length) * 100);
-                    return (
-                      <div key={device}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="capitalize text-gray-700">{device}</span>
-                          <span className="font-semibold">{count} <span className="text-gray-400 font-normal">({pct}%)</span></span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            ) : (
-              <p className="text-gray-500">No device data available</p>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
