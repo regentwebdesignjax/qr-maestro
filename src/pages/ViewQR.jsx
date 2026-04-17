@@ -6,12 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Download } from 'lucide-react';
 import QRCode from 'qrcode';
-import ScanLocationChart from '../components/qr/ScanLocationChart';
 
 export default function ViewQR() {
   const [qrCode, setQrCode] = useState(null);
   const [qrImageUrl, setQrImageUrl] = useState('');
-  const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,12 +49,6 @@ export default function ViewQR() {
         });
 
         setQrImageUrl(canvas.toDataURL());
-
-        // Fetch scans for dynamic QR codes
-        if (qr.type === 'dynamic') {
-          const scanData = await base44.entities.Scan.filter({ qr_code_id: qr.id });
-          setScans(scanData);
-        }
       } catch (error) {
         console.error('Error fetching QR code:', error);
       } finally {
@@ -159,25 +151,14 @@ export default function ViewQR() {
                 <p className="font-medium text-2xl">{qrCode.scan_count || 0}</p>
               </div>
 
-              {qrCode.type === 'dynamic' && (
-                <Link to={'/EditQR?id=' + qrCode.id}>
-                  <Button className="w-full">Edit Dynamic QR</Button>
+              {qrCode.type === 'dynamic' &&
+              <Link to={'/EditQR?id=' + qrCode.id}>
+                  <Button className="bg-primary text-primary-foreground px-4 py-2 text-sm font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow hover:bg-primary/90 h-9 w-full">Edit Dynamic QR</Button>
                 </Link>
-              )}
-
-              {qrCode.type === 'dynamic' && (
-                <Link to={'/Analytics?id=' + qrCode.id}>
-                  <Button variant="outline" className="w-full">View Full Analytics</Button>
-                </Link>
-              )}
+              }
             </CardContent>
           </Card>
         </div>
-
-        {/* Scan Location Chart — dynamic QR codes only */}
-        {qrCode.type === 'dynamic' && (
-          <ScanLocationChart scans={scans} />
-        )}
       </div>
     </div>);
 
