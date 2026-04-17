@@ -4,13 +4,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download } from 'lucide-react';
-import QRCode from 'qrcode';
+import { ArrowLeft } from 'lucide-react';
 import ScanLocationChart from '../components/qr/ScanLocationChart';
+import QRCodePreview from '../components/qr/QRCodePreview';
 
 export default function ViewQR() {
   const [qrCode, setQrCode] = useState(null);
-  const [qrImageUrl, setQrImageUrl] = useState('');
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,25 +33,6 @@ export default function ViewQR() {
         const qr = qrCodes[0];
         setQrCode(qr);
 
-        // Generate QR code image
-        let content = qr.content;
-        if (qr.type === 'dynamic' && qr.short_code) {
-          content = `${window.location.origin}/r?code=${qr.short_code}`;
-        }
-
-        const canvas = document.createElement('canvas');
-        await QRCode.toCanvas(canvas, content, {
-          width: 400,
-          margin: 2,
-          color: {
-            dark: qr.design_config?.foreground_color || '#000000',
-            light: qr.design_config?.background_color || '#ffffff'
-          }
-        });
-
-        setQrImageUrl(canvas.toDataURL());
-
-        // Fetch scans for dynamic QR codes
         if (qr.type === 'dynamic') {
           const scanData = await base44.entities.Scan.filter({ qr_code_id: qr.id });
           setScans(scanData);
@@ -66,13 +46,6 @@ export default function ViewQR() {
 
     fetchQRCode();
   }, []);
-
-  const handleDownload = (format) => {
-    const link = document.createElement('a');
-    link.download = `${qrCode.name}.${format}`;
-    link.href = qrImageUrl;
-    link.click();
-  };
 
   if (loading) {
     return (
@@ -95,25 +68,13 @@ export default function ViewQR() {
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* QR Code Display */}
+          {/* QR Code Display — uses full rendering engine with design_config */}
           <Card>
             <CardHeader>
               <CardTitle>QR Code</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-white p-8 rounded-lg border-2 border-gray-200 flex items-center justify-center">
-                <img src={qrImageUrl} alt={qrCode.name} className="max-w-full" />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={() => handleDownload('png')} className="flex-1">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PNG
-                </Button>
-                <Button onClick={() => handleDownload('svg')} variant="outline" className="flex-1">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download SVG
-                </Button>
-              </div>
+            <CardContent>
+              <QRCodePreview qrData={qrCode} />
             </CardContent>
           </Card>
 
