@@ -53,24 +53,24 @@ export default function CreateQR() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-background py-8 md:py-12">
+      <div className="mx-auto px-6 md:px-8 max-w-6xl">
         <Link to="/Dashboard">
-          <Button variant="ghost" className="mb-6">
+          <Button variant="ghost" className="mb-8 md:mb-12 -ml-3">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
         </Link>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Create QR Code</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-12 md:mb-16">Create QR Code</h1>
 
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-start">
           {/* Form Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>QR Code Details</CardTitle>
+          <Card className="shadow-none border border-border lg:max-h-fit">
+            <CardHeader className="pb-6 border-b">
+              <CardTitle className="text-xl">QR Code Details</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <QRCodeForm 
                 user={user} 
                 onGenerate={handleGenerate}
@@ -81,12 +81,12 @@ export default function CreateQR() {
           </Card>
 
           {/* Sticky Preview Section */}
-          <div className="lg:sticky lg:top-24">
-            <Card>
-              <CardHeader>
-                <CardTitle>Live Preview</CardTitle>
+          <div className="lg:sticky lg:top-8">
+            <Card className="shadow-none border border-border">
+              <CardHeader className="pb-6 border-b">
+                <CardTitle className="text-xl">Live Preview</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <QRCodePreview qrData={qrData} />
               </CardContent>
             </Card>
