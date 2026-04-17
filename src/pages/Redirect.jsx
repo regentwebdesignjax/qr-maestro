@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 
 export default function Redirect() {
   useEffect(() => {
@@ -13,10 +12,16 @@ export default function Redirect() {
       }
 
       try {
-        const response = await base44.functions.invoke('redirect', { code });
-        const redirectUrl = response?.data?.url;
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
+        // Call the function directly via HTTP — no auth needed, uses asServiceRole inside
+        const res = await fetch(`${window.location.origin}/functions/redirect`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+
+        const data = await res.json();
+        if (data?.url) {
+          window.location.href = data.url;
         } else {
           window.location.href = '/';
         }
