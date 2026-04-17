@@ -1,10 +1,13 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+function generateShortCode() {
+  return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Require authentication
     const user = await base44.auth.me();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,12 +16,18 @@ Deno.serve(async (req) => {
     const qrCodeData = await req.json();
 
     // Determine if user is Pro
-    const isPro = user.role === 'admin' || 
+    const isPro = user.role === 'admin' ||
       (user.subscription_tier === 'pro' && user.subscription_status === 'active');
 
     // Enforce: non-Pro users cannot create dynamic QR codes
     if (!isPro && qrCodeData.type === 'dynamic') {
       qrCodeData.type = 'static';
+    }
+
+    // Always generate a fresh short_code server-side for dynamic codes
+    if (qrCodeData.type === 'dynamic') {
+      qrCodeData.short_code = generateShortCode();
+    } else {
       qrCodeData.short_code = null;
     }
 
