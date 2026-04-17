@@ -21,7 +21,14 @@
         "url",
         "text",
         "wifi",
-        "vcard"
+        "vcard",
+        "pdf",
+        "social",
+        "coupon",
+        "image",
+        "mp3",
+        "call",
+        "sms"
       ],
       "description": "Type of content encoded in the QR code"
     },

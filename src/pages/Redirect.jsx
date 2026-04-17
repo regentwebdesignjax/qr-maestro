@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone } from 'lucide-react';
+import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle } from 'lucide-react';
 
 function parseWifi(content) {
   const lines = content.split('\n');
@@ -248,6 +248,27 @@ function CallDisplay({ content }) {
   );
 }
 
+function SMSDisplay({ content }) {
+  return (
+    <Card className="max-w-sm w-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <MessageCircle className="w-6 h-6 text-blue-600" />
+          </div>
+          <CardTitle>Send SMS</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-gray-600 mb-3">Tap to send a text message</p>
+        <a href={`sms:${content}`} className="inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium hover:opacity-90">
+          {content}
+        </a>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Redirect() {
   const [state, setState] = useState({ status: 'loading', data: null });
 
@@ -306,6 +327,7 @@ export default function Redirect() {
       {data.content_type === 'image' && <ImageDisplay content={data.content} />}
       {data.content_type === 'mp3' && <MP3Display content={data.content} />}
       {data.content_type === 'call' && <CallDisplay content={data.content} />}
+      {data.content_type === 'sms' && <SMSDisplay content={data.content} />}
     </div>
   );
 }

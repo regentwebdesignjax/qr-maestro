@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone } from 'lucide-react';
+import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
@@ -21,6 +21,7 @@ const CONTENT_TYPES = [
   { value: 'image', label: 'Image', icon: Image, desc: 'Show an image (upload required)', dynamicOnly: true },
   { value: 'mp3', label: 'MP3', icon: Music, desc: 'Play an audio file (upload required)', dynamicOnly: true },
   { value: 'call', label: 'Call', icon: Phone, desc: 'Place a quick call', dynamicOnly: true },
+  { value: 'sms', label: 'SMS', icon: MessageCircle, desc: 'Send a text message', dynamicOnly: true },
 ];
 
 const stepVariants = {
@@ -373,7 +374,11 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                   <Input id="content" placeholder="+1 (555) 123-4567" value={formData.content}
                     onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
-              </div>
+                {formData.content_type === 'sms' && (
+                  <Input id="content" placeholder="+1 (555) 123-4567" value={formData.content}
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                )}
+                </div>
             </motion.div>
           )}
 
