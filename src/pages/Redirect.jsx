@@ -169,12 +169,28 @@ function SocialDisplay({ content }) {
     return result;
   };
 
-  const social = parseSocial(content);
-  const platformEmojis = {
-    facebook: '👍', instagram: '📷', x: '𝕏', linkedin: '💼',
-    youtube: '▶️', tiktok: '🎵', threads: '⚡', telegram: '✈️',
-    rss: '📡', podcast: '🎙️', website: '🌐', blog: '📝'
+  const getUrl = (platform, handle) => {
+    if (handle.startsWith('http://') || handle.startsWith('https://')) {
+      return handle;
+    }
+    const platformUrls = {
+      facebook: `https://facebook.com/${handle}`,
+      instagram: `https://instagram.com/${handle}`,
+      x: `https://x.com/${handle}`,
+      linkedin: `https://linkedin.com/in/${handle}`,
+      youtube: `https://youtube.com/@${handle}`,
+      tiktok: `https://tiktok.com/@${handle}`,
+      threads: `https://threads.net/@${handle}`,
+      telegram: `https://t.me/${handle}`,
+      rss: handle,
+      podcast: handle,
+      website: handle.startsWith('http') ? handle : `https://${handle}`,
+      blog: handle.startsWith('http') ? handle : `https://${handle}`,
+    };
+    return platformUrls[platform] || `https://${platform}.com/${handle}`;
   };
+
+  const social = parseSocial(content);
 
   return (
     <Card className="max-w-sm w-full">
@@ -187,21 +203,23 @@ function SocialDisplay({ content }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {Object.entries(social).map(([platform, handle]) => (
-          <a
-            key={platform}
-            href={handle.startsWith('http') ? handle : `https://${platform}.com/${handle}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-          >
-            <span className="text-lg">{platformEmojis[platform] || '🔗'}</span>
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 capitalize font-medium">{platform}</p>
-              <p className="text-sm text-gray-700 group-hover:text-primary font-medium truncate">{handle}</p>
-            </div>
-          </a>
-        ))}
+        {Object.entries(social).map(([platform, handle]) => {
+          const displayUrl = getUrl(platform, handle);
+          return (
+            <a
+              key={platform}
+              href={displayUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 capitalize font-medium">{platform}</p>
+                <p className="text-sm text-gray-700 hover:text-primary font-medium break-words">{handle}</p>
+              </div>
+            </a>
+          );
+        })}
       </CardContent>
     </Card>
   );
