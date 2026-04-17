@@ -173,21 +173,24 @@ function SocialDisplay({ content }) {
     if (handle.startsWith('http://') || handle.startsWith('https://')) {
       return handle;
     }
+    // Remove @ prefix if present for platforms that use it
+    const cleanHandle = handle.replace(/^@/, '');
+    
     const platformUrls = {
-      facebook: `https://facebook.com/${handle}`,
-      instagram: `https://instagram.com/${handle}`,
-      x: `https://x.com/${handle}`,
-      linkedin: `https://linkedin.com/in/${handle}`,
-      youtube: `https://youtube.com/@${handle}`,
-      tiktok: `https://tiktok.com/@${handle}`,
-      threads: `https://threads.net/@${handle}`,
-      telegram: `https://t.me/${handle}`,
+      facebook: `https://facebook.com/${cleanHandle}`,
+      instagram: `https://instagram.com/${cleanHandle}`,
+      x: `https://x.com/${cleanHandle}`,
+      linkedin: `https://linkedin.com/in/${cleanHandle}`,
+      youtube: `https://youtube.com/@${cleanHandle}`,
+      tiktok: `https://tiktok.com/@${cleanHandle}`,
+      threads: `https://threads.net/@${cleanHandle}`,
+      telegram: `https://t.me/${cleanHandle}`,
       rss: handle,
       podcast: handle,
-      website: handle.startsWith('http') ? handle : `https://${handle}`,
-      blog: handle.startsWith('http') ? handle : `https://${handle}`,
+      website: handle.includes('.') ? `https://${cleanHandle}` : `https://${cleanHandle}.com`,
+      blog: handle.includes('.') ? `https://${cleanHandle}` : `https://${cleanHandle}.com`,
     };
-    return platformUrls[platform] || `https://${platform}.com/${handle}`;
+    return platformUrls[platform] || `https://${platform}.com/${cleanHandle}`;
   };
 
   const social = parseSocial(content);
