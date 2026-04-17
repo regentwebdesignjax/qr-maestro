@@ -15,11 +15,11 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Professional QR Code Generator
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Create, customize, and track QR codes for your business. Static and dynamic codes with analytics.
-          </p>
+             Master the Art of the Scan.
+           </h1>
+           <p className="text-xl text-gray-600 mb-8">
+             Whether you seek the speed of a <span className="font-semibold">Static Strike</span> or the wisdom of <span className="font-semibold">Dynamic Mastery</span>, QR Sensei guides your digital journey.
+           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" onClick={handleGetStarted}>
               Get Started Free
@@ -37,40 +37,40 @@ export default function Home() {
           <Card>
             <CardHeader>
               <QrCode className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Multiple Types</CardTitle>
-              <CardDescription>
-                Generate QR codes for URLs, text, WiFi credentials, and vCards
-              </CardDescription>
+              <CardTitle>The Versatile Stance</CardTitle>
+               <CardDescription>
+                 Multiple QR code types for URLs, text, WiFi, and contact information
+               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader>
               <Palette className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Custom Design</CardTitle>
-              <CardDescription>
-                Customize colors and add logos to match your brand identity
-              </CardDescription>
+              <CardTitle>Bespoke Gi</CardTitle>
+               <CardDescription>
+                 Customize colors, patterns, and add logos for your unique brand
+               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader>
               <Zap className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Dynamic QR Codes</CardTitle>
-              <CardDescription>
-                Edit destination URLs without reprinting - perfect for marketing
-              </CardDescription>
+              <CardTitle>The Fluid Form</CardTitle>
+               <CardDescription>
+                 Edit and adapt your QR codes anytime without reprinting
+               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card>
             <CardHeader>
               <BarChart3 className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>
-                Track scans, locations, and devices with detailed analytics
-              </CardDescription>
+              <CardTitle>Inner Vision</CardTitle>
+               <CardDescription>
+                 See where and how your QR codes are being scanned with detailed insights
+               </CardDescription>
             </CardHeader>
           </Card>
 
@@ -98,14 +98,14 @@ export default function Home() {
         {/* CTA Section */}
         <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Start Creating QR Codes Today
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Free tier includes 3 static QR codes. Upgrade for unlimited codes and advanced features.
-          </p>
-          <Button size="lg" onClick={handleGetStarted}>
-            Create Your First QR Code
-          </Button>
+             Begin Your Training Today
+           </h2>
+           <p className="text-gray-600 mb-8">
+             Start with the White Belt Rank (free): 3 Static Strikes included. Ascend to Black Belt status for unlimited codes and mastery.
+           </p>
+           <Button size="lg" onClick={handleGetStarted}>
+             Strike Your First Code
+           </Button>
         </div>
       </div>
     </div>

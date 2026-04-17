@@ -12,11 +12,11 @@ export default function FAQ() {
   const faqs = [
     {
       question: 'What is a QR code?',
-      answer: 'A QR code (Quick Response code) is a two-dimensional barcode that can store information like URLs, text, WiFi credentials, and contact information. It can be scanned using a smartphone camera to quickly access the encoded data.'
+      answer: 'A QR code is a digital gateway - a two-dimensional symbol that holds information like URLs, text, WiFi credentials, and contact details. When scanned by a device, it opens pathways to your content.'
     },
     {
-      question: 'What\'s the difference between static and dynamic QR codes?',
-      answer: 'Static QR codes contain fixed information that cannot be changed after creation. Dynamic QR codes use a short URL that redirects to your content, allowing you to update the destination URL or content anytime without reprinting the QR code.'
+      question: 'What\'s the difference between The Swift Strike and The Fluid Form?',
+      answer: 'The Swift Strike (static) is fixed and unyielding - unchanging after creation. The Fluid Form (dynamic) is adaptable like water - redirecting through our gateway, allowing you to change your content anytime without reprinting.'
     },
     {
       question: 'Can I customize my QR codes?',
@@ -27,8 +27,8 @@ export default function FAQ() {
       answer: 'Pro subscribers get access to detailed analytics for their QR codes, including scan counts, locations, device types, and time-based data. This helps you understand how your QR codes are performing.'
     },
     {
-      question: 'What\'s included in the free plan?',
-      answer: 'The free plan includes up to 3 static QR codes with basic customization. You can create URL, text, WiFi, and vCard QR codes. To access dynamic QR codes and analytics, upgrade to Pro.'
+      question: 'What\'s included in the White Belt Rank?',
+      answer: 'The White Belt Rank grants you 3 Swift Strikes with foundational customization. Create codes for URLs, text, WiFi, and vCards. To unlock The Fluid Form and Inner Vision, ascend to Black Belt.'
     },
     {
       question: 'Can I download my QR codes?',
@@ -56,7 +56,7 @@ export default function FAQ() {
     },
     {
       question: 'Do QR codes expire?',
-      answer: 'No, QR codes do not expire. Static QR codes will work forever. Dynamic QR codes will work as long as your account is active and the QR code hasn\'t been deleted.'
+      answer: 'No, a Sensei\'s work is timeless. Your QR codes endure indefinitely. Static Strikes remain eternal. Dynamic codes persist as long as your account stands and the code remains undeleted.'
     }
   ];
 
@@ -66,11 +66,12 @@ export default function FAQ() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to know about our QR code platform. Can't find what you're looking for? Contact our support team.
-          </p>
+             The Scroll of Wisdom
+           </h1>
+           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+             In these sacred scrolls lie answers to the questions of seekers. Should mystery remain, 
+             reach out to our guides for illumination.
+           </p>
         </div>
 
         {/* FAQ Accordion */}
@@ -96,11 +97,12 @@ export default function FAQ() {
         {/* CTA Section */}
         <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Still Have Questions?
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Our support team is here to help. Get started today or reach out if you need assistance.
-          </p>
+             The Path Unclear?
+           </h2>
+           <p className="text-gray-600 mb-8">
+             Our guides stand ready to illuminate your way. Begin your journey today, or seek 
+             the counsel of our support sages.
+           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/Dashboard">
               <Button size="lg">

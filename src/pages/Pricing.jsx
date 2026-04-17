@@ -72,10 +72,10 @@ export default function Pricing() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Simple, Transparent Pricing
+            Choosing Your Rank
           </h1>
           <p className="text-xl text-gray-600">
-            Choose the plan that's right for you
+            Ascend from White Belt mastery to Black Belt excellence
           </p>
         </div>
 
@@ -83,8 +83,8 @@ export default function Pricing() {
           {/* Free Plan */}
           <Card className="border-2 flex flex-col">
             <CardHeader>
-              <CardTitle className="text-2xl">Free</CardTitle>
-              <CardDescription>Perfect for trying out</CardDescription>
+              <CardTitle className="text-2xl">White Belt</CardTitle>
+              <CardDescription>Begin your journey</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-600">/month</span>
@@ -94,7 +94,7 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Up to 3 Static QR codes</span>
+                  <span>Up to 3 Swift Strikes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -122,11 +122,11 @@ export default function Pricing() {
           {/* Monthly Plan */}
           <Card className="border-2 border-primary relative flex flex-col">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
-              Popular
+              Most Chosen
             </Badge>
             <CardHeader>
-              <CardTitle className="text-2xl">Pro Monthly</CardTitle>
-              <CardDescription>For businesses & marketers</CardDescription>
+              <CardTitle className="text-2xl">Black Belt Monthly</CardTitle>
+              <CardDescription>Master the way of the code</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$29</span>
                 <span className="text-gray-600">/month</span>
@@ -140,15 +140,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Dynamic QR codes</span>
+                  <span className="font-semibold">The Fluid Form</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Scan analytics</span>
+                  <span className="font-semibold">Inner Vision</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Custom colors & logos</span>
+                  <span>Bespoke Gi - custom designs</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -167,7 +167,7 @@ export default function Pricing() {
                 ) : (
                   <Button className="w-full" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
                     <Zap className="w-4 h-4 mr-2" />
-                    {user ? 'Upgrade Now' : 'Sign Up Now'}
+                    {user ? 'Attain Black Belt' : 'Begin Training'}
                   </Button>
                 )}
               </div>
@@ -177,11 +177,11 @@ export default function Pricing() {
           {/* Annual Plan */}
           <Card className="border-2 relative flex flex-col">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600">
-              Save $58
+              Grand Master Path
             </Badge>
             <CardHeader>
-              <CardTitle className="text-2xl">Pro Annual</CardTitle>
-              <CardDescription>Best value - 2 months free!</CardDescription>
+              <CardTitle className="text-2xl">Black Belt Annual</CardTitle>
+              <CardDescription>The path of mastery - save 17%</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$290</span>
                 <span className="text-gray-600">/year</span>
@@ -198,15 +198,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Dynamic QR codes</span>
+                  <span className="font-semibold">The Fluid Form</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Scan analytics</span>
+                  <span className="font-semibold">Inner Vision</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Custom colors & logos</span>
+                  <span>Bespoke Gi - custom designs</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -225,7 +225,7 @@ export default function Pricing() {
                 ) : (
                   <Button className="w-full" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
                     <Zap className="w-4 h-4 mr-2" />
-                    {user ? 'Upgrade Now' : 'Sign Up Now'}
+                    {user ? 'Achieve Grand Master' : 'Begin Grand Master Path'}
                   </Button>
                 )}
               </div>

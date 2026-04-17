@@ -80,10 +80,10 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-gray-600">
-              Welcome back, {user.full_name || user.email}
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">The Dojo</h1>
+             <p className="text-gray-600">
+               Welcome back to the Dojo, {user.full_name || user.email}
+             </p>
           </div>
           <div className="flex gap-3">
             {isPro ? (
@@ -99,9 +99,9 @@ export default function Dashboard() {
             )}
             <Link to="/CreateQR">
               <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create QR Code
-              </Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Strike a New Code
+                </Button>
             </Link>
           </div>
         </div>
@@ -111,12 +111,12 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Subscription
+                Rank
               </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </CardHeader>
+              <CardContent>
               <Badge variant={isPro ? 'default' : 'secondary'} className="text-lg">
-                {isPro ? 'Pro' : 'Free'}
+                {isPro ? 'Black Belt' : 'White Belt'}
               </Badge>
             </CardContent>
           </Card>
@@ -124,7 +124,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Total QR Codes
+                Active Disciplines
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -149,7 +149,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Total Tracked Scans
+                Total Impacts
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -208,7 +208,7 @@ export default function Dashboard() {
         {/* QR Codes List */}
         <Card>
           <CardHeader>
-            <CardTitle>Your QR Codes</CardTitle>
+            <CardTitle>Your Disciplines</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -218,12 +218,12 @@ export default function Dashboard() {
             ) : qrCodes.length === 0 ? (
               <div className="text-center py-12">
                 <QrCodeIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes yet</h3>
-                <p className="text-gray-600 mb-6">Create your first QR code to get started</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No disciplines yet</h3>
+                <p className="text-gray-600 mb-6">Strike your first code to begin your training</p>
                 <Link to="/CreateQR">
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
-                    Create QR Code
+                    Strike a New Code
                   </Button>
                 </Link>
               </div>

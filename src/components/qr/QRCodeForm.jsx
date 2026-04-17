@@ -195,7 +195,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
   };
 
-  const steps = ['QR Code Type', 'Name & Content', 'Design'];
+  const steps = ['Choose Your Path', 'Name & Content', 'Design'];
   const canProceedStep0 = !!formData.content_type;
   const canProceedStep1 = !!formData.name && !!formData.content;
   const dc = formData.design_config;
@@ -219,7 +219,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
         dc.qr_style === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
       }`}>
-      <span className={`text-sm font-medium ${dc.qr_style === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
+      <span className={`text-xs font-semibold ${dc.qr_style === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
     </button>
   );
 
@@ -259,8 +259,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <div className="grid grid-cols-2 gap-3">
                   <button type="button" onClick={() => handleChange('type', 'static')}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>Static</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Fixed content, free forever</p>
+                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>The Swift Strike</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Fixed and unyielding, free forever</p>
                   </button>
                   <button type="button" onClick={() => isPro && handleChange('type', 'dynamic')}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
@@ -268,15 +268,15 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                       formData.type === 'dynamic' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
                     }`}>
                     <div className="flex items-center gap-1">
-                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>Dynamic</p>
+                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>The Fluid Form</p>
                       {!isPro && <Lock className="w-3 h-3 text-gray-400" />}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">Editable & trackable, Pro only</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Adaptable and wise, Black Belt only</p>
                   </button>
                 </div>
                 {!isPro && (
                   <p className="text-xs text-gray-500 mt-2">
-                    <Link to="/Pricing" className="text-primary underline">Upgrade to Pro</Link> to unlock dynamic QR codes.
+                    <Link to="/Pricing" className="text-primary underline">Attain Black Belt Status</Link> to unlock The Fluid Form.
                   </p>
                 )}
               </div>
@@ -631,7 +631,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <div className="space-y-5">
                   {/* QR Style */}
                   <div>
-                    <Label className="mb-2 block">QR Code Style</Label>
+                    <Label className="mb-2 block">The Pattern of Attack</Label>
                     <div className="grid grid-cols-3 gap-2">
                       <QRStyleButton value="squares" label="Squares" />
                       <QRStyleButton value="dots" label="Dots" />
@@ -641,7 +641,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
 
                   {/* Eye Shape */}
                   <div className="space-y-3 border rounded-xl p-4">
-                    <Label className="font-semibold">Eye (Finder) Style</Label>
+                    <Label className="font-semibold">The Gaze of the Sensei</Label>
 
                     <div>
                       <Label className="text-xs text-gray-500 mb-2 block">Outer Eye Shape</Label>
@@ -731,8 +731,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <Alert>
                   <Lock className="h-4 w-4" />
                   <AlertDescription>
-                    Advanced styles, gradients, custom eyes, frames & logos are available on Pro.{' '}
-                    <Link to="/Pricing" className="font-semibold underline">Upgrade now</Link>
+                    Advanced styles, gradients, and custom designs await those who attain Black Belt status.{' '}
+                    <Link to="/Pricing" className="font-semibold underline">Begin your ascent</Link>
                   </AlertDescription>
                 </Alert>
               )}
@@ -759,7 +759,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
             disabled={saving || !formData.name || !formData.content}
             className="flex-1">
             <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Saving...' : 'Save QR Code'}
+            {saving ? 'Finalizing...' : 'Finalize the Strike'}
           </Button>
         )}
       </div>

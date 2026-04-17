@@ -8,33 +8,33 @@ export default function WhyUs() {
   const reasons = [
     {
       icon: Shield,
-      title: 'Secure & Reliable',
-      description: 'Enterprise-grade security with 99.9% uptime. Your QR codes are safe and always accessible.'
+      title: 'The Iron Guard',
+      description: 'Enterprise-grade security with 99.9% uptime. Your QR codes are protected with the strength of steel.'
     },
     {
       icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Generate QR codes in seconds. Our optimized infrastructure ensures quick loading and scanning.'
+      title: 'Speed of the Cobra',
+      description: 'Generate QR codes in seconds. Our optimized infrastructure strikes with lightning precision.'
     },
     {
       icon: BarChart3,
-      title: 'Powerful Analytics',
-      description: 'Track scans with detailed analytics including location, device type, and time-based insights.'
+      title: 'Inner Vision',
+      description: 'See with clarity through detailed analytics including location, device type, and temporal insights.'
     },
     {
       icon: Palette,
-      title: 'Full Customization',
-      description: 'Customize colors, add logos, and create QR codes that match your brand perfectly.'
+      title: 'Bespoke Gi',
+      description: 'Craft QR codes with custom colors, logos, and designs that mirror your unique spirit.'
     },
     {
       icon: Cloud,
-      title: 'Dynamic QR Codes',
-      description: 'Update your QR code content anytime without reprinting. Perfect for campaigns and marketing.'
+      title: 'The Way of Water',
+      description: 'Adapt and flow - update your QR code content anytime without reprinting or struggle.'
     },
     {
       icon: Headphones,
-      title: 'Premium Support',
-      description: 'Get help when you need it. Our support team is here to ensure your success.'
+      title: 'The Mentor\'s Hand',
+      description: 'When the path becomes unclear, our guides are ready to illuminate your way.'
     }
   ];
 
@@ -44,12 +44,12 @@ export default function WhyUs() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Why Choose Our Platform?
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We've built the most powerful, flexible, and user-friendly QR code platform on the market. 
-            Here's what sets us apart from the competition.
-          </p>
+             The Path to QR Mastery
+           </h1>
+           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+             QR Sensei guides you through the journey of digital mastery. Discover why warriors and sages alike 
+             choose our way for their QR code disciplines.
+           </p>
         </div>
 
         {/* Features Grid */}
@@ -90,15 +90,16 @@ export default function WhyUs() {
         {/* CTA Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of businesses and individuals who trust our platform for their QR code needs.
-          </p>
+             Ready to Begin Your Training?
+           </h2>
+           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+             Thousands of warriors and sages have already chosen the path of QR Sensei. 
+             Your journey to mastery awaits.
+           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/Dashboard">
               <Button size="lg">
-                Create Your First QR Code
+                Strike Your First Code
               </Button>
             </Link>
             <Link to="/Pricing">
