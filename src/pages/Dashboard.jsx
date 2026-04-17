@@ -86,16 +86,10 @@ export default function Dashboard() {
              </p>
           </div>
           <div className="flex gap-3">
-            {isPro ? (
+            {isPro && (
               <Button variant="outline" onClick={handleManageSubscription}>
                 Manage Subscription
               </Button>
-            ) : (
-              <Link to="/Pricing">
-                <Button variant="outline">
-                  Upgrade to Pro
-                </Button>
-              </Link>
             )}
             <Link to="/CreateQR">
               <Button>

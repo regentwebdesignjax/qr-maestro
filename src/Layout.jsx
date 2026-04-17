@@ -123,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
                   {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
                     <Link to="/Pricing">
                       <Button variant="outline" className="font-semibold">
-                        Upgrade to Pro
+                        Upgrade Rank
                       </Button>
                     </Link>
                   )}
