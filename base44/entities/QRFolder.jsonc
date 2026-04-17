@@ -1,0 +1,23 @@
+{
+  "name": "QRFolder",
+  "type": "object",
+  "properties": {
+    "qr_code_id": {
+      "type": "string",
+      "description": "Reference to the QR code"
+    },
+    "folder_id": {
+      "type": "string",
+      "description": "Reference to the folder"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user"
+    }
+  },
+  "required": [
+    "qr_code_id",
+    "folder_id",
+    "user_email"
+  ]
+}

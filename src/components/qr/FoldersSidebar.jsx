@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FolderOpen, Folder, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 
-export default function FoldersSidebar({ folders, activeFolder, onFolderChange, onFoldersChange }) {
+export default function FoldersSidebar({ folders, activeFolder, onFolderChange, onFoldersChange, onFolderDelete, onFolderRename }) {
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [addingNew, setAddingNew] = useState(false);
@@ -15,13 +15,12 @@ export default function FoldersSidebar({ folders, activeFolder, onFolderChange, 
 
   const commitEdit = (id) => {
     if (!editingName.trim()) return cancelEdit();
-    onFoldersChange(folders.map(f => f.id === id ? { ...f, name: editingName.trim() } : f));
+    onFolderRename(id, editingName.trim());
     setEditingId(null);
   };
 
   const deleteFolder = (id) => {
-    if (activeFolder === id) onFolderChange('all');
-    onFoldersChange(folders.filter(f => f.id !== id));
+    onFolderDelete(id);
   };
 
   const commitAdd = () => {

@@ -1,0 +1,18 @@
+{
+  "name": "Folder",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the folder"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who owns this folder"
+    }
+  },
+  "required": [
+    "name",
+    "user_email"
+  ]
+}

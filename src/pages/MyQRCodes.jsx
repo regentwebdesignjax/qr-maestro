@@ -8,18 +8,9 @@ import { Plus, QrCode as QrCodeIcon } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 
-const DEFAULT_FOLDERS = [
-  { id: 'all', name: 'All QR Codes', locked: true },
-  { id: 'marketing', name: 'Marketing Campaigns', locked: false },
-  { id: 'storefront', name: 'Store Front', locked: false },
-];
-
 export default function MyQRCodes() {
   const [user, setUser] = useState(null);
   const [activeFolder, setActiveFolder] = useState('all');
-  const [folders, setFolders] = useState(DEFAULT_FOLDERS);
-  // Map of qrCode.id -> folderId (in-memory; persisted to DB later)
-  const [qrFolderMap, setQrFolderMap] = useState({});
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -40,20 +31,76 @@ export default function MyQRCodes() {
     enabled: !!user,
   });
 
+  const { data: folders = [] } = useQuery({
+    queryKey: ['folders', user?.email],
+    queryFn: () => base44.entities.Folder.filter({ user_email: user?.email }),
+    enabled: !!user,
+  });
+
+  const { data: qrFolders = [] } = useQuery({
+    queryKey: ['qr-folders', user?.email],
+    queryFn: () => base44.entities.QRFolder.filter({ user_email: user?.email }),
+    enabled: !!user,
+  });
+
   const deleteQRMutation = useMutation({
     mutationFn: (id) => base44.entities.QRCode.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['qr-codes'] }),
   });
 
-  const handleMoveToFolder = (qrIds, folderId) => {
-    setQrFolderMap(prev => {
-      const next = { ...prev };
-      qrIds.forEach(id => {
-        if (folderId === 'all') delete next[id];
-        else next[id] = folderId;
-      });
-      return next;
+  const createFolderMutation = useMutation({
+    mutationFn: (name) => base44.entities.Folder.create({ name, user_email: user?.email }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders', user?.email] }),
+  });
+
+  const deleteFolderMutation = useMutation({
+    mutationFn: (folderId) => base44.entities.Folder.delete(folderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['folders', user?.email] });
+      queryClient.invalidateQueries({ queryKey: ['qr-folders', user?.email] });
+    },
+  });
+
+  const updateFolderMutation = useMutation({
+    mutationFn: ({ folderId, name }) => base44.entities.Folder.update(folderId, { name }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['folders', user?.email] }),
+  });
+
+  const moveToFolderMutation = useMutation({
+    mutationFn: async ({ qrIds, folderId }) => {
+      if (folderId === 'all') {
+        await Promise.all(qrFolders.filter(qf => qrIds.includes(qf.qr_code_id)).map(qf => base44.entities.QRFolder.delete(qf.id)));
+      } else {
+        const existingMap = qrFolders.reduce((acc, qf) => ({ ...acc, [qf.qr_code_id]: qf.id }), {});
+        await Promise.all(qrIds.map(qrId => {
+          if (existingMap[qrId]) {
+            return base44.entities.QRFolder.update(existingMap[qrId], { folder_id: folderId });
+          } else {
+            return base44.entities.QRFolder.create({ qr_code_id: qrId, folder_id: folderId, user_email: user?.email });
+          }
+        }));
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['qr-folders', user?.email] }),
+  });
+
+  const buildQrFolderMap = () => {
+    const map = {};
+    qrFolders.forEach(qf => {
+      map[qf.qr_code_id] = qf.folder_id;
     });
+    return map;
+  };
+
+  const allFolders = [
+    { id: 'all', name: 'All QR Codes', locked: true },
+    ...folders,
+  ];
+
+  const qrFolderMap = buildQrFolderMap();
+
+  const handleMoveToFolder = (qrIds, folderId) => {
+    moveToFolderMutation.mutate({ qrIds, folderId });
   };
 
   if (!user) {
@@ -71,6 +118,23 @@ export default function MyQRCodes() {
   const visibleQrCodes = activeFolder === 'all'
     ? qrCodes
     : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
+
+  const handleFoldersChange = async (newFolders) => {
+    const existingIds = new Set(folders.map(f => f.id));
+    const newFoldersList = newFolders.filter(f => !f.locked && !existingIds.has(f.id));
+    for (const folder of newFoldersList) {
+      await createFolderMutation.mutateAsync(folder.name);
+    }
+  };
+
+  const handleFolderDelete = (folderId) => {
+    if (activeFolder === folderId) setActiveFolder('all');
+    deleteFolderMutation.mutate(folderId);
+  };
+
+  const handleFolderRename = (folderId, newName) => {
+    updateFolderMutation.mutate({ folderId, name: newName });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,17 +188,19 @@ export default function MyQRCodes() {
         <div className="flex gap-6 items-start">
           <aside className="w-56 shrink-0">
             <FoldersSidebar
-              folders={folders}
+              folders={allFolders}
               activeFolder={activeFolder}
               onFolderChange={setActiveFolder}
-              onFoldersChange={setFolders}
+              onFoldersChange={handleFoldersChange}
+              onFolderDelete={handleFolderDelete}
+              onFolderRename={handleFolderRename}
             />
           </aside>
 
           <div className="flex-1 min-w-0">
             <Card>
               <CardHeader>
-                <CardTitle>{folders.find(f => f.id === activeFolder)?.name || 'All QR Codes'}</CardTitle>
+                <CardTitle>{allFolders.find(f => f.id === activeFolder)?.name || 'All QR Codes'}</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
