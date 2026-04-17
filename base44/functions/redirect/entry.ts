@@ -109,12 +109,18 @@ Deno.serve(async (req) => {
       scan_count: (qrCode.scan_count || 0) + 1,
     }).catch((e) => console.error('Scan count update error:', e.message));
 
-    let redirectUrl = qrCode.content;
-    if (!/^https?:\/\//i.test(redirectUrl)) {
-      redirectUrl = 'https://' + redirectUrl;
+    const contentType = qrCode.content_type || 'url';
+
+    if (contentType === 'url') {
+      let redirectUrl = qrCode.content;
+      if (!/^https?:\/\//i.test(redirectUrl)) {
+        redirectUrl = 'https://' + redirectUrl;
+      }
+      return Response.json({ content_type: 'url', url: redirectUrl });
     }
 
-    return Response.json({ url: redirectUrl });
+    // For text, wifi, vcard — return raw content for the client to display
+    return Response.json({ content_type: contentType, content: qrCode.content, name: qrCode.name });
 
   } catch (error) {
     console.error('Redirect error:', error.message);
