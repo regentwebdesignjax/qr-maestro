@@ -170,23 +170,14 @@ function SocialDisplay({ content }) {
   };
 
   const social = parseSocial(content);
-  const platformLogos = {
-    facebook: '▌▌ Facebook',
-    instagram: '📷 Instagram',
-    x: '𝕏 X',
-    linkedin: '🔗 LinkedIn',
-    youtube: '▶ YouTube',
-    tiktok: '♪ TikTok',
-    threads: '@ Threads',
-    telegram: '✈ Telegram',
-    rss: '≡ RSS Feed',
-    podcast: '🎙 Podcast',
-    website: '🌐 Website',
-    blog: '✎ Blog'
+  const platformEmojis = {
+    facebook: '👍', instagram: '📷', x: '𝕏', linkedin: '💼',
+    youtube: '▶️', tiktok: '🎵', threads: '⚡', telegram: '✈️',
+    rss: '📡', podcast: '🎙️', website: '🌐', blog: '📝'
   };
 
   return (
-    <Card className="max-w-md w-full">
+    <Card className="max-w-sm w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-blue-50 rounded-lg">
@@ -202,12 +193,12 @@ function SocialDisplay({ content }) {
             href={handle.startsWith('http') ? handle : `https://${platform}.com/${handle}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+            className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
           >
-            <span className="text-sm font-semibold text-gray-600 group-hover:text-primary min-w-max pt-0.5">{platformLogos[platform] || '🔗'}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-400 font-medium mb-1">{platform.toUpperCase()}</p>
-              <p className="text-xs text-gray-700 group-hover:text-primary font-medium break-all">{handle}</p>
+            <span className="text-lg">{platformEmojis[platform] || '🔗'}</span>
+            <div className="flex-1">
+              <p className="text-xs text-gray-500 capitalize font-medium">{platform}</p>
+              <p className="text-sm text-gray-700 group-hover:text-primary font-medium truncate">{handle}</p>
             </div>
           </a>
         ))}
