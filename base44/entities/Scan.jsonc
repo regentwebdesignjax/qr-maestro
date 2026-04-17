@@ -18,6 +18,14 @@
       "type": "string",
       "description": "State/region where the scan originated"
     },
+    "lat": {
+      "type": "number",
+      "description": "Latitude of the scan location"
+    },
+    "lng": {
+      "type": "number",
+      "description": "Longitude of the scan location"
+    },
     "device_type": {
       "type": "string",
       "enum": [

@@ -90,25 +90,24 @@ Deno.serve(async (req) => {
     const browser = parseBrowser(ua);
     const os = parseOS(ua);
 
-    // Geo-locate and track scan asynchronously
-    (async () => {
-      const geo = await geoLocate(ip);
-      await base44.asServiceRole.entities.Scan.create({
-        qr_code_id: qrCode.id,
-        device_type: deviceType,
-        browser,
-        os,
-        country: geo.country || null,
-        state: geo.state || null,
-        city: geo.city || null,
-        lat: geo.lat || null,
-        lng: geo.lng || null,
-      }).catch((e) => console.error('Scan create error:', e.message));
+    // Geo-locate synchronously before responding so data is always saved
+    const geo = await geoLocate(ip);
 
-      await base44.asServiceRole.entities.QRCode.update(qrCode.id, {
-        scan_count: (qrCode.scan_count || 0) + 1,
-      }).catch((e) => console.error('Scan count update error:', e.message));
-    })();
+    await base44.asServiceRole.entities.Scan.create({
+      qr_code_id: qrCode.id,
+      device_type: deviceType,
+      browser,
+      os,
+      country: geo.country || null,
+      state: geo.state || null,
+      city: geo.city || null,
+      lat: geo.lat || null,
+      lng: geo.lng || null,
+    }).catch((e) => console.error('Scan create error:', e.message));
+
+    await base44.asServiceRole.entities.QRCode.update(qrCode.id, {
+      scan_count: (qrCode.scan_count || 0) + 1,
+    }).catch((e) => console.error('Scan count update error:', e.message));
 
     let redirectUrl = qrCode.content;
     if (!/^https?:\/\//i.test(redirectUrl)) {
