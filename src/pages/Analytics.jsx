@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Lock, CalendarIcon, ScanLine, Users, Smartphone, Tablet, Monitor, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Lock, CalendarIcon, ScanLine, Users, Smartphone } from 'lucide-react';
 import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay, startOfToday, endOfToday, startOfYesterday, endOfYesterday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -43,18 +43,15 @@ function getDateRange(preset) {
   }
 }
 
-const DEVICE_ICONS = {
-  mobile: Smartphone,
-  tablet: Tablet,
-  desktop: Monitor,
-  unknown: HelpCircle,
-};
-
-const DEVICE_COLORS = {
-  mobile: 'bg-blue-500',
-  tablet: 'bg-purple-500',
-  desktop: 'bg-green-500',
-  unknown: 'bg-gray-400',
+const OS_COLORS = {
+  'iOS': 'bg-gray-800',
+  'Android': 'bg-green-500',
+  'Windows': 'bg-blue-500',
+  'macOS': 'bg-purple-500',
+  'Linux': 'bg-orange-500',
+  'Windows Phone': 'bg-blue-400',
+  'Other': 'bg-gray-400',
+  'Unknown': 'bg-gray-300',
 };
 
 export default function Analytics() {
@@ -116,9 +113,9 @@ export default function Analytics() {
     return seen.size;
   }, [filteredScans]);
 
-  const deviceStats = useMemo(() => filteredScans.reduce((acc, scan) => {
-    const device = scan.device_type || 'unknown';
-    acc[device] = (acc[device] || 0) + 1;
+  const osStats = useMemo(() => filteredScans.reduce((acc, scan) => {
+    const os = scan.os || 'Unknown';
+    acc[os] = (acc[os] || 0) + 1;
     return acc;
   }, {}), [filteredScans]);
 
@@ -273,21 +270,17 @@ export default function Analytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {Object.keys(deviceStats).length > 0 ? (
+              {Object.keys(osStats).length > 0 ? (
                 <div className="space-y-4">
-                  {Object.entries(deviceStats)
+                  {Object.entries(osStats)
                     .sort(([, a], [, b]) => b - a)
-                    .map(([device, count]) => {
+                    .map(([os, count]) => {
                       const pct = Math.round((count / filteredScans.length) * 100);
-                      const Icon = DEVICE_ICONS[device] || HelpCircle;
-                      const barColor = DEVICE_COLORS[device] || 'bg-gray-400';
+                      const barColor = OS_COLORS[os] || 'bg-gray-400';
                       return (
-                        <div key={device}>
+                        <div key={os}>
                           <div className="flex items-center justify-between text-sm mb-1.5">
-                            <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4 text-gray-500" />
-                              <span className="capitalize text-gray-700 font-medium">{device}</span>
-                            </div>
+                            <span className="text-gray-700 font-medium">{os}</span>
                             <span className="font-semibold text-gray-800">
                               {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
                             </span>
@@ -300,7 +293,7 @@ export default function Analytics() {
                     })}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm italic">No device data for this period.</p>
+                <p className="text-gray-400 text-sm italic">No OS data for this period.</p>
               )}
             </CardContent>
           </Card>

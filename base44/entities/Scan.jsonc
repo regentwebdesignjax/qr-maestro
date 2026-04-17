@@ -28,6 +28,10 @@
       ],
       "description": "Type of device used for scanning"
     },
+    "os": {
+      "type": "string",
+      "description": "Operating system of the scanner (e.g. iOS, Android, Windows, macOS)"
+    },
     "browser": {
       "type": "string",
       "description": "Browser used for scanning"

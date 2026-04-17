@@ -17,6 +17,17 @@ function parseBrowser(ua) {
   return 'Other';
 }
 
+function parseOS(ua) {
+  if (!ua) return 'Unknown';
+  if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+  if (/android/i.test(ua)) return 'Android';
+  if (/windows phone/i.test(ua)) return 'Windows Phone';
+  if (/windows/i.test(ua)) return 'Windows';
+  if (/mac os x/i.test(ua)) return 'macOS';
+  if (/linux/i.test(ua)) return 'Linux';
+  return 'Other';
+}
+
 async function geoLocate(ip) {
   try {
     // Skip for local/private IPs
@@ -77,6 +88,7 @@ Deno.serve(async (req) => {
     const ua = req.headers.get('user-agent') || '';
     const deviceType = parseDeviceType(ua);
     const browser = parseBrowser(ua);
+    const os = parseOS(ua);
 
     // Geo-locate and track scan asynchronously
     (async () => {
@@ -85,6 +97,7 @@ Deno.serve(async (req) => {
         qr_code_id: qrCode.id,
         device_type: deviceType,
         browser,
+        os,
         country: geo.country || null,
         state: geo.state || null,
         city: geo.city || null,
