@@ -59,7 +59,6 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
-      <Route path="/r" element={<Redirect />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -73,7 +72,12 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <NavigationTracker />
-          <AuthenticatedApp />
+          <Routes>
+            {/* Public redirect route — no auth, no layout */}
+            <Route path="/r" element={<Redirect />} />
+            {/* All other routes go through auth */}
+            <Route path="/*" element={<AuthenticatedApp />} />
+          </Routes>
         </Router>
         <Toaster />
       </QueryClientProvider>
