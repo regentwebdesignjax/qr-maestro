@@ -209,12 +209,23 @@ async function renderQR(canvas, qrData) {
       const logo = new Image();
       logo.crossOrigin = 'anonymous';
       logo.onload = () => {
-        const logoSize = canvasPx * 0.2;
-        const lx = (canvasPx - logoSize) / 2;
-        const ly = (canvasPx - logoSize) / 2;
+        // Preserve aspect ratio — fit within a max box of 20% of canvas
+        const maxSize = canvasPx * 0.2;
+        const aspect = logo.naturalWidth / logo.naturalHeight;
+        let drawW, drawH;
+        if (aspect >= 1) {
+          drawW = maxSize;
+          drawH = maxSize / aspect;
+        } else {
+          drawH = maxSize;
+          drawW = maxSize * aspect;
+        }
+        const lx = (canvasPx - drawW) / 2;
+        const ly = (canvasPx - drawH) / 2;
+        const pad = 6;
         ctx.fillStyle = bgColor;
-        ctx.fillRect(lx - 5, ly - 5, logoSize + 10, logoSize + 10);
-        ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+        ctx.fillRect(lx - pad, ly - pad, drawW + pad * 2, drawH + pad * 2);
+        ctx.drawImage(logo, lx, ly, drawW, drawH);
         resolve();
       };
       logo.onerror = resolve;
