@@ -180,6 +180,14 @@ export default function Layout({ children, currentPageName }) {
             />
           </div>
           <p>&copy; 2026 QR Sensei. All rights reserved.</p>
+          <div className="flex justify-center gap-6 mt-4 text-xs font-poppins">
+            <Link to="/PrivacyPolicy" className="text-muted-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/TermsOfService" className="text-muted-foreground hover:text-primary transition-colors">
+              Terms of Service
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
