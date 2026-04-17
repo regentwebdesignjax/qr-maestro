@@ -102,7 +102,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>PNG & SVG download</span>
+                  <span>PNG download</span>
                 </li>
               </ul>
               <div className="pt-2">
@@ -245,7 +245,7 @@ export default function Pricing() {
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>PNG and SVG export formats</span>
+              <span>High-resolution PNG export</span>
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />

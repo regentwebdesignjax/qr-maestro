@@ -79,7 +79,7 @@ export default function Home() {
               <CheckCircle className="w-12 h-12 text-primary mb-4" />
               <CardTitle>High Quality</CardTitle>
               <CardDescription>
-                Download in PNG or SVG format for print and digital use
+                Download in high-resolution PNG format for print and digital use
               </CardDescription>
             </CardHeader>
           </Card>
