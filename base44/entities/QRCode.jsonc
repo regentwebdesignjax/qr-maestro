@@ -1,0 +1,108 @@
+{
+  "name": "QRCode",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Friendly name for the QR code"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "static",
+        "dynamic"
+      ],
+      "default": "static",
+      "description": "Whether the QR code is static or dynamic (editable)"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "url",
+        "text",
+        "wifi",
+        "vcard"
+      ],
+      "description": "Type of content encoded in the QR code"
+    },
+    "content": {
+      "type": "string",
+      "description": "The actual content/URL encoded in the QR code"
+    },
+    "short_code": {
+      "type": "string",
+      "description": "Unique short code for dynamic QR redirects"
+    },
+    "design_config": {
+      "type": "object",
+      "description": "Design configuration (colors, logo, styles)",
+      "properties": {
+        "foreground_color": {
+          "type": "string"
+        },
+        "background_color": {
+          "type": "string"
+        },
+        "gradient_type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "linear",
+            "radial"
+          ],
+          "default": "none"
+        },
+        "gradient_color2": {
+          "type": "string"
+        },
+        "logo_url": {
+          "type": "string"
+        },
+        "qr_style": {
+          "type": "string",
+          "enum": [
+            "squares",
+            "dots",
+            "rounded"
+          ],
+          "default": "squares"
+        },
+        "eye_outer_shape": {
+          "type": "string",
+          "enum": [
+            "square",
+            "circle",
+            "rounded"
+          ],
+          "default": "square"
+        },
+        "eye_inner_shape": {
+          "type": "string",
+          "enum": [
+            "square",
+            "circle"
+          ],
+          "default": "square"
+        },
+        "eye_color": {
+          "type": "string"
+        }
+      }
+    },
+    "scan_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of scans"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the QR code is active"
+    }
+  },
+  "required": [
+    "name",
+    "content_type",
+    "content"
+  ]
+}
