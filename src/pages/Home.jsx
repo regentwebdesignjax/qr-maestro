@@ -1,111 +1,212 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { QrCode, Zap, BarChart3, Palette, CheckCircle } from 'lucide-react';
+import { Zap, BarChart3, Palette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import QRCodePreview from '@/components/qr/QRCodePreview';
+import TimeOfDayHeatmap from '@/components/analytics/TimeOfDayHeatmap';
 
 export default function Home() {
   const handleGetStarted = () => {
     base44.auth.redirectToLogin('/Dashboard');
   };
+
+  const mockQRData = {
+    name: 'Black Belt Showcase',
+    type: 'dynamic',
+    content_type: 'url',
+    content: 'https://qrsensei.com',
+    design_config: {
+      foreground_color: '#BB3F27',
+      background_color: '#F9F9F8',
+      gradient_type: 'none',
+      qr_style: 'rounded',
+      eye_outer_shape: 'rounded',
+      eye_inner_shape: 'circle',
+      eye_color: '#BB3F27',
+    },
+  };
+
+  const mockScans = [
+    { time: '00:00', count: 12 },
+    { time: '04:00', count: 8 },
+    { time: '08:00', count: 24 },
+    { time: '12:00', count: 45 },
+    { time: '16:00', count: 38 },
+    { time: '20:00', count: 52 },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center max-w-4xl mx-auto mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-             Master the Art of the Scan: Professional QR Code Solutions.
-           </h1>
-           <p className="text-xl text-gray-600 mb-8">
-             QR Sensei provides advanced <span className="font-semibold">Static and Dynamic QR Code generation</span> with a master's touch. Create, customize, and track your codes with precision.
-           </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={handleGetStarted}>
-              Get Started Free
-            </Button>
-            <Link to="/Pricing">
-              <Button size="lg" variant="outline">
-                View Pricing
+    <div className="w-full bg-background">
+      {/* Full-Width Split Hero */}
+      <div className="flex w-screen h-screen overflow-hidden">
+        {/* Left Panel: Dark with CTA */}
+        <div
+          className="flex-1 flex flex-col justify-center px-[5vw] py-16"
+          style={{ backgroundColor: '#142024' }}
+        >
+          <div className="max-w-xl">
+            <h1 className="text-6xl font-bold text-white mb-6 font-poppins leading-tight">
+              Master the Art of the Scan
+            </h1>
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">
+              QR Sensei provides professional QR code generation with custom styling, real-time analytics, and dynamic management. Elevate your brand.
+            </p>
+            <div className="flex gap-4">
+              <Button
+                size="lg"
+                onClick={handleGetStarted}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              >
+                Get Started Free
               </Button>
-            </Link>
+              <Link to="/Pricing">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-gray-500 text-white hover:bg-gray-900"
+                >
+                  View Pricing
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          <Card>
-            <CardHeader>
-              <QrCode className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>The Versatile Stance</CardTitle>
-               <CardDescription>
-                 Multiple QR code types: URLs, Plain Text, WiFi Credentials, and vCard Contacts
-               </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Palette className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Bespoke Gi</CardTitle>
-               <CardDescription>
-                 Custom Colors, Logo Uploads, Gradient Effects, and Pattern Styles
-               </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Zap className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>The Fluid Form</CardTitle>
-               <CardDescription>
-                 Dynamic QR Codes: Edit your destination URL anytime without reprinting
-               </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <BarChart3 className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Inner Vision</CardTitle>
-               <CardDescription>
-                 Real-time Scan Analytics: Location, Device Type, Browser, and Temporal Data
-               </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CheckCircle className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>High Quality</CardTitle>
-              <CardDescription>
-                Download in high-resolution PNG format for print and digital use
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Zap className="w-12 h-12 text-primary mb-4" />
-              <CardTitle>Unlimited Scans</CardTitle>
-              <CardDescription>
-                No limits on scans - your QR codes work forever
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        {/* Right Panel: Light with QR Preview */}
+        <div
+          className="flex-1 flex items-center justify-center px-[5vw] py-16"
+          style={{ backgroundColor: '#F9F9F8' }}
+        >
+          <div className="w-full max-w-sm">
+            <QRCodePreview qrData={mockQRData} />
+          </div>
         </div>
+      </div>
 
-        {/* CTA Section */}
-        <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-             Begin Your Professional Journey
-           </h2>
-           <p className="text-gray-600 mb-8">
-             Start free with 3 Static QR Codes. Upgrade to Black Belt for unlimited codes, dynamic management, and detailed analytics.
-           </p>
-           <Button size="lg" onClick={handleGetStarted}>
-             Create Your First QR Code
-           </Button>
+      {/* Feature Ribbon 1: The Fluid Form */}
+      <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Zap className="w-6 h-6 text-primary" />
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">The Fluid Form</h3>
+              </div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4 max-w-2xl font-poppins">
+                Dynamic QR Codes You Can Edit Anytime
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
+                Unlike static codes, Dynamic QR codes allow you to update the destination URL in real-time without reprinting. Perfect for campaigns, promotions, and evolving strategies.
+              </p>
+              <Link to="/Pricing">
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  Unlock Dynamic Codes
+                </Button>
+              </Link>
+            </div>
+            <div
+              className="rounded-xl p-8 shadow-card-hover"
+              style={{ backgroundColor: '#ffffff' }}
+            >
+              <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
+                <Zap className="w-16 h-16 text-primary opacity-20" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Ribbon 2: Inner Vision Analytics */}
+      <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#142024' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div
+              className="rounded-xl p-8 shadow-card-hover bg-white order-2"
+            >
+              <TimeOfDayHeatmap scans={mockScans} />
+            </div>
+            <div className="order-1">
+              <div className="flex items-center gap-3 mb-4">
+                <BarChart3 className="w-6 h-6 text-primary" />
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Inner Vision</h3>
+              </div>
+              <h2 className="text-4xl font-bold text-white mb-4 max-w-2xl font-poppins">
+                See Every Scan in Real-Time
+              </h2>
+              <p className="text-lg text-gray-300 mb-6 max-w-3xl leading-relaxed">
+                Track where your codes are scanned, what devices people use, and when engagement peaks. Make data-driven decisions with comprehensive analytics.
+              </p>
+              <Link to="/Pricing">
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  Explore Analytics
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Ribbon 3: Bespoke Gi */}
+      <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Palette className="w-6 h-6 text-primary" />
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Bespoke Gi</h3>
+              </div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4 max-w-2xl font-poppins">
+                Custom Design Your QR Codes
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
+                Choose custom colors, upload your logo, apply gradients, and select unique eye shapes. Make your QR codes unmistakably yours.
+              </p>
+              <Link to="/CreateQR">
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  Start Designing
+                </Button>
+              </Link>
+            </div>
+            <div
+              className="rounded-xl p-8 shadow-card-hover"
+              style={{ backgroundColor: '#ffffff' }}
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="aspect-square bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
+                  Aa
+                </div>
+                <div className="aspect-square bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
+                  Bb
+                </div>
+                <div className="aspect-square bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
+                  Cc
+                </div>
+                <div className="aspect-square bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
+                  Dd
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Final CTA */}
+      <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#ffffff' }}>
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6 font-poppins">
+            Begin Your Mastery
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Start free with 3 Static QR Codes. Upgrade to Black Belt for unlimited codes, dynamic management, and detailed analytics.
+          </p>
+          <Button
+            size="lg"
+            onClick={handleGetStarted}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+          >
+            Create Your First QR Code
+          </Button>
         </div>
       </div>
     </div>
