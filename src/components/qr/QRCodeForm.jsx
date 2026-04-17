@@ -207,28 +207,47 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               transition={{ duration: 0.25, ease: 'easeInOut' }} className="space-y-4">
               <p className="text-gray-600 text-sm">What type of content will this QR code contain?</p>
               <div className="grid grid-cols-2 gap-3">
-                {CONTENT_TYPES.map(({ value, label, icon: Icon, desc }) => (
-                  <button key={value} type="button"
-                    onClick={() => { handleChange('content_type', value); triggerPreview({ content_type: value }); }}
-                    className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all ${
-                      formData.content_type === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-                    }`}>
-                    <Icon className={`w-5 h-5 ${formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
-                    <div>
-                      <p className={`font-medium text-sm ${formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-                    </div>
-                  </button>
-                ))}
+                {CONTENT_TYPES.map(({ value, label, icon: Icon, desc }) => {
+                  const isUrlOnly = value !== 'url';
+                  const isDisabled = formData.type === 'static' && isUrlOnly;
+                  
+                  return (
+                    <button key={value} type="button"
+                      onClick={() => { if (!isDisabled) { handleChange('content_type', value); triggerPreview({ content_type: value }); } }}
+                      disabled={isDisabled}
+                      className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all ${
+                        isDisabled
+                          ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                          : formData.content_type === value
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <Icon className={`w-5 h-5 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
+                      <div>
+                        <p className={`font-medium text-sm ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
+                        <p className={`text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                          {isDisabled ? 'Dynamic only' : desc}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
               <div className="pt-2">
                 <Label>QR Code Behaviour</Label>
                 <div className="grid grid-cols-2 gap-3 mt-2">
-                  <button type="button" onClick={() => handleChange('type', 'static')}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>Static</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Fixed content, free forever</p>
-                  </button>
+                  {formData.content_type !== 'url' ? (
+                    <button type="button" disabled className={`p-3 rounded-xl border-2 text-left opacity-50 cursor-not-allowed border-gray-200 bg-gray-50`}>
+                      <p className="font-medium text-sm text-gray-500">Static</p>
+                      <p className="text-xs text-gray-400 mt-0.5">URL only</p>
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => handleChange('type', 'static')}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>Static</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Fixed content, free forever</p>
+                    </button>
+                  )}
                   <button type="button" onClick={() => isPro && handleChange('type', 'dynamic')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       !isPro ? 'opacity-50 cursor-not-allowed border-gray-200' :
