@@ -1,5 +1,44 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+function parseDeviceType(ua) {
+  if (!ua) return 'unknown';
+  if (/tablet|ipad/i.test(ua)) return 'tablet';
+  if (/mobile|android|iphone|ipod|blackberry|windows phone/i.test(ua)) return 'mobile';
+  return 'desktop';
+}
+
+function parseBrowser(ua) {
+  if (!ua) return 'unknown';
+  if (/edg\//i.test(ua)) return 'Edge';
+  if (/chrome/i.test(ua)) return 'Chrome';
+  if (/firefox/i.test(ua)) return 'Firefox';
+  if (/safari/i.test(ua)) return 'Safari';
+  if (/opera|opr\//i.test(ua)) return 'Opera';
+  return 'Other';
+}
+
+async function geoLocate(ip) {
+  try {
+    // Skip for local/private IPs
+    if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+      return {};
+    }
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,lat,lon,status`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      return {
+        country: data.country || null,
+        city: data.city || null,
+        lat: data.lat || null,
+        lng: data.lon || null,
+      };
+    }
+  } catch (_) {}
+  return {};
+}
+
 Deno.serve(async (req) => {
   try {
     let short_code;
@@ -29,16 +68,32 @@ Deno.serve(async (req) => {
 
     const qrCode = qrCodes[0];
 
-    // Track scan asynchronously (don't await — errors are non-critical)
-    base44.asServiceRole.entities.Scan.create({
-      qr_code_id: qrCode.id,
-      device_type: req.headers.get('user-agent') || 'unknown',
-      browser: 'unknown',
-    }).catch((e) => console.error('Scan create error:', e.message));
+    // Get scanner IP from headers (works behind proxies/CDNs)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('x-real-ip')
+      || null;
 
-    base44.asServiceRole.entities.QRCode.update(qrCode.id, {
-      scan_count: (qrCode.scan_count || 0) + 1,
-    }).catch((e) => console.error('Scan count update error:', e.message));
+    const ua = req.headers.get('user-agent') || '';
+    const deviceType = parseDeviceType(ua);
+    const browser = parseBrowser(ua);
+
+    // Geo-locate and track scan asynchronously
+    (async () => {
+      const geo = await geoLocate(ip);
+      await base44.asServiceRole.entities.Scan.create({
+        qr_code_id: qrCode.id,
+        device_type: deviceType,
+        browser,
+        country: geo.country || null,
+        city: geo.city || null,
+        lat: geo.lat || null,
+        lng: geo.lng || null,
+      }).catch((e) => console.error('Scan create error:', e.message));
+
+      await base44.asServiceRole.entities.QRCode.update(qrCode.id, {
+        scan_count: (qrCode.scan_count || 0) + 1,
+      }).catch((e) => console.error('Scan count update error:', e.message));
+    })();
 
     let redirectUrl = qrCode.content;
     if (!/^https?:\/\//i.test(redirectUrl)) {
