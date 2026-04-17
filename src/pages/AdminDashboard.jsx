@@ -181,7 +181,7 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-600">{adminUsers.length}</div>
+              <div className="text-3xl font-bold text-primary">{adminUsers.length}</div>
             </CardContent>
           </Card>
         </div>
