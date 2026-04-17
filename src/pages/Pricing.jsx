@@ -94,15 +94,15 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Up to 3 Swift Strikes</span>
+                  <span>Up to 3 Static QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Basic customization</span>
+                  <span>Basic Customization (Colors)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>PNG download</span>
+                  <span>PNG Download</span>
                 </li>
               </ul>
               <div className="pt-2">
@@ -136,27 +136,27 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited QR codes</span>
+                  <span className="font-semibold">Unlimited QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">The Fluid Form</span>
+                  <span className="font-semibold">Dynamic QR Codes (The Fluid Form)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Inner Vision</span>
+                  <span className="font-semibold">Real-time Scan Analytics (Inner Vision)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Bespoke Gi - custom designs</span>
+                  <span>Custom Colors, Logos & Gradients (Bespoke Gi)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Unlimited scans</span>
+                  <span>Unlimited Scans</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Priority support</span>
+                  <span>Priority Support</span>
                 </li>
               </ul>
               <div className="pt-2">
@@ -167,7 +167,7 @@ export default function Pricing() {
                 ) : (
                   <Button className="w-full" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
                     <Zap className="w-4 h-4 mr-2" />
-                    {user ? 'Attain Black Belt' : 'Begin Training'}
+                    {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
                 )}
               </div>
@@ -194,27 +194,27 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited QR codes</span>
+                  <span className="font-semibold">Unlimited QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">The Fluid Form</span>
+                  <span className="font-semibold">Dynamic QR Codes (The Fluid Form)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Inner Vision</span>
+                  <span className="font-semibold">Real-time Scan Analytics (Inner Vision)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Bespoke Gi - custom designs</span>
+                  <span>Custom Colors, Logos & Gradients (Bespoke Gi)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Unlimited scans</span>
+                  <span>Unlimited Scans</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Priority support</span>
+                  <span>Priority Support</span>
                 </li>
               </ul>
               <div className="pt-2">
@@ -225,7 +225,7 @@ export default function Pricing() {
                 ) : (
                   <Button className="w-full" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
                     <Zap className="w-4 h-4 mr-2" />
-                    {user ? 'Achieve Grand Master' : 'Begin Grand Master Path'}
+                    {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
                 )}
               </div>

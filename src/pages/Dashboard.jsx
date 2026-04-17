@@ -82,7 +82,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">The Dojo</h1>
              <p className="text-gray-600">
-               Welcome back to the Dojo, {user.full_name || user.email}
+               Welcome back to the Dojo. Manage your QR Code disciplines.
              </p>
           </div>
           <div className="flex gap-3">
@@ -126,10 +126,11 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-600">
                 Active Disciplines
               </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <p className="text-xs text-gray-500 mt-1">Total QR Codes</p>
+              </CardHeader>
+              <CardContent>
               <div className="text-3xl font-bold">{qrCodes.length}</div>
-            </CardContent>
+              </CardContent>
           </Card>
 
           <Card>
@@ -151,8 +152,9 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium text-gray-600">
                 Total Impacts
               </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <p className="text-xs text-gray-500 mt-1">Total Scans</p>
+              </CardHeader>
+              <CardContent>
               {isPro ? (
                 <div className="text-3xl font-bold">
                   {qrCodes.reduce((sum, qr) => sum + (qr.scan_count || 0), 0)}
@@ -166,7 +168,7 @@ export default function Dashboard() {
                   </Link>
                 </div>
               )}
-            </CardContent>
+              </CardContent>
           </Card>
         </div>
 

@@ -259,8 +259,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <div className="grid grid-cols-2 gap-3">
                   <button type="button" onClick={() => handleChange('type', 'static')}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>The Swift Strike</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Fixed and unyielding, free forever</p>
+                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>The Swift Strike <span className="text-xs text-gray-500 font-normal">(Static QR)</span></p>
+                    <p className="text-xs text-gray-500 mt-0.5">Best for permanent URLs. These cannot be changed after printing.</p>
                   </button>
                   <button type="button" onClick={() => isPro && handleChange('type', 'dynamic')}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
@@ -268,15 +268,15 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                       formData.type === 'dynamic' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
                     }`}>
                     <div className="flex items-center gap-1">
-                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>The Fluid Form</p>
+                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>The Fluid Form <span className="text-xs text-gray-500 font-normal">(Dynamic QR)</span></p>
                       {!isPro && <Lock className="w-3 h-3 text-gray-400" />}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">Adaptable and wise, Black Belt only</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Professional level. Edit your destination URL at any time without reprinting the code.</p>
                   </button>
                 </div>
                 {!isPro && (
                   <p className="text-xs text-gray-500 mt-2">
-                    <Link to="/Pricing" className="text-primary underline">Attain Black Belt Status</Link> to unlock The Fluid Form.
+                    <Link to="/Pricing" className="text-primary underline">Upgrade to Pro</Link> to unlock Dynamic QR Codes (The Fluid Form).
                   </p>
                 )}
               </div>

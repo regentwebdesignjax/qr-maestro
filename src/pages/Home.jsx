@@ -15,10 +15,10 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-             Master the Art of the Scan.
+             Master the Art of the Scan: Professional QR Code Solutions.
            </h1>
            <p className="text-xl text-gray-600 mb-8">
-             Whether you seek the speed of a <span className="font-semibold">Static Strike</span> or the wisdom of <span className="font-semibold">Dynamic Mastery</span>, QR Sensei guides your digital journey.
+             QR Sensei provides advanced <span className="font-semibold">Static and Dynamic QR Code generation</span> with a master's touch. Create, customize, and track your codes with precision.
            </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" onClick={handleGetStarted}>
@@ -39,7 +39,7 @@ export default function Home() {
               <QrCode className="w-12 h-12 text-primary mb-4" />
               <CardTitle>The Versatile Stance</CardTitle>
                <CardDescription>
-                 Multiple QR code types for URLs, text, WiFi, and contact information
+                 Multiple QR code types: URLs, Plain Text, WiFi Credentials, and vCard Contacts
                </CardDescription>
             </CardHeader>
           </Card>
@@ -49,7 +49,7 @@ export default function Home() {
               <Palette className="w-12 h-12 text-primary mb-4" />
               <CardTitle>Bespoke Gi</CardTitle>
                <CardDescription>
-                 Customize colors, patterns, and add logos for your unique brand
+                 Custom Colors, Logo Uploads, Gradient Effects, and Pattern Styles
                </CardDescription>
             </CardHeader>
           </Card>
@@ -59,7 +59,7 @@ export default function Home() {
               <Zap className="w-12 h-12 text-primary mb-4" />
               <CardTitle>The Fluid Form</CardTitle>
                <CardDescription>
-                 Edit and adapt your QR codes anytime without reprinting
+                 Dynamic QR Codes: Edit your destination URL anytime without reprinting
                </CardDescription>
             </CardHeader>
           </Card>
@@ -69,7 +69,7 @@ export default function Home() {
               <BarChart3 className="w-12 h-12 text-primary mb-4" />
               <CardTitle>Inner Vision</CardTitle>
                <CardDescription>
-                 See where and how your QR codes are being scanned with detailed insights
+                 Real-time Scan Analytics: Location, Device Type, Browser, and Temporal Data
                </CardDescription>
             </CardHeader>
           </Card>
@@ -98,13 +98,13 @@ export default function Home() {
         {/* CTA Section */}
         <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-             Begin Your Training Today
+             Begin Your Professional Journey
            </h2>
            <p className="text-gray-600 mb-8">
-             Start with the White Belt Rank (free): 3 Static Strikes included. Ascend to Black Belt status for unlimited codes and mastery.
+             Start free with 3 Static QR Codes. Upgrade to Black Belt for unlimited codes, dynamic management, and detailed analytics.
            </p>
            <Button size="lg" onClick={handleGetStarted}>
-             Strike Your First Code
+             Create Your First QR Code
            </Button>
         </div>
       </div>
