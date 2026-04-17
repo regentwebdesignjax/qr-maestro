@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, BarChart3 } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -61,33 +61,36 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header Navigation */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 font-bold text-xl text-blue-600 hover:text-blue-700">
-              <QrCode className="w-6 h-6" />
-              QR Generator
+            <Link to="/" className="flex items-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
+                alt="QR Sensei"
+                className="h-9 w-auto"
+              />
             </Link>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-6">
               {user ? (
                 <>
-                  <Link to="/Dashboard" className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1">
+                  <Link to="/Dashboard" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
                     <LayoutDashboard className="w-4 h-4" />
                     Dashboard
                   </Link>
-                  <Link to="/MyQRCodes" className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1">
+                  <Link to="/MyQRCodes" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
                     <QrCode className="w-4 h-4" />
                     My QR Codes
                   </Link>
-                  <Link to="/CreateQR" className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1">
+                  <Link to="/CreateQR" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
                     <QrCode className="w-4 h-4" />
                     Create QR
                   </Link>
                   {user?.role === 'admin' && (
-                    <Link to="/AdminDashboard" className="text-purple-600 hover:text-purple-700 transition flex items-center gap-1">
+                    <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm">
                       <Shield className="w-4 h-4" />
                       Admin
                     </Link>
@@ -95,16 +98,16 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Link to="/" className="text-gray-700 hover:text-blue-600 transition">
+                  <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Home
                   </Link>
-                  <Link to="/WhyUs" className="text-gray-700 hover:text-blue-600 transition">
+                  <Link to="/WhyUs" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Why Us?
                   </Link>
-                  <Link to="/FAQ" className="text-gray-700 hover:text-blue-600 transition">
+                  <Link to="/FAQ" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     FAQ
                   </Link>
-                  <Link to="/Pricing" className="text-gray-700 hover:text-blue-600 transition">
+                  <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Pricing
                   </Link>
                 </>
@@ -139,10 +142,10 @@ export default function Layout({ children, currentPageName }) {
                 </DropdownMenu>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin}>
+                  <Button variant="ghost" onClick={handleLogin} className="font-semibold">
                     Login
                   </Button>
-                  <Button onClick={handleLogin} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg">
                     Get Started
                   </Button>
                 </>
@@ -158,9 +161,16 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-8 mt-auto">
-        <div className="container mx-auto px-4 text-center text-gray-600">
-          <p>&copy; 2026 QR Generator. All rights reserved.</p>
+      <footer className="bg-white border-t border-border py-8 mt-auto">
+        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
+          <div className="flex items-center justify-center mb-2">
+            <img
+              src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
+              alt="QR Sensei"
+              className="h-7 w-auto opacity-70"
+            />
+          </div>
+          <p>&copy; 2026 QR Sensei. All rights reserved.</p>
         </div>
       </footer>
     </div>
