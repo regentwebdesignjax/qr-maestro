@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon, Lock } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon, Lock, Zap } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 
 export default function Dashboard() {
@@ -169,6 +169,26 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Upgrade Banner for Free Users */}
+        {!isPro && (
+          <Card className="mb-6 border-primary/30 bg-primary/5">
+            <CardContent className="pt-5 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-foreground">Unlock the full power of QR Sensei</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Dynamic QR codes, scan analytics, custom designs & more — from $29/month.</p>
+                </div>
+                <Link to="/Pricing">
+                  <Button className="shrink-0">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Upgrade to Pro
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Free Tier Warning */}
         {!isPro && !canCreateStatic && (

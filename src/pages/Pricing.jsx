@@ -79,9 +79,9 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
           {/* Free Plan */}
-          <Card className="border-2">
+          <Card className="border-2 flex flex-col">
             <CardHeader>
               <CardTitle className="text-2xl">Free</CardTitle>
               <CardDescription>Perfect for trying out</CardDescription>
@@ -90,8 +90,8 @@ export default function Pricing() {
                 <span className="text-gray-600">/month</span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
+            <CardContent className="flex flex-col flex-1 space-y-4">
+              <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span>Up to 3 Static QR codes</span>
@@ -105,14 +105,22 @@ export default function Pricing() {
                   <span>PNG & SVG download</span>
                 </li>
               </ul>
-              <Button variant="outline" className="w-full" disabled={isPro}>
-                {isPro ? 'Current Plan' : 'Get Started'}
-              </Button>
+              <div className="pt-2">
+                {user ? (
+                  <Button variant="outline" className="w-full" disabled>
+                    {isPro ? 'Downgrade' : 'Current Plan'}
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="w-full" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
+                    Get Started
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Monthly Plan */}
-          <Card className="border-2 border-primary relative">
+          <Card className="border-2 border-primary relative flex flex-col">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
               Popular
             </Badge>
@@ -124,8 +132,8 @@ export default function Pricing() {
                 <span className="text-gray-600">/month</span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
+            <CardContent className="flex flex-col flex-1 space-y-4">
+              <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Unlimited QR codes</span>
@@ -151,30 +159,23 @@ export default function Pricing() {
                   <span>Priority support</span>
                 </li>
               </ul>
-              {isPro && user?.subscription_period === 'monthly' ? (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleManageSubscription}
-                  disabled={loading}
-                >
-                  Manage Subscription
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full"
-                  onClick={() => handleUpgrade('monthly')}
-                  disabled={loading || isPro}
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Upgrade Now
-                </Button>
-              )}
+              <div className="pt-2">
+                {isPro && user?.subscription_period === 'monthly' ? (
+                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                    Manage Subscription
+                  </Button>
+                ) : (
+                  <Button className="w-full" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
+                    <Zap className="w-4 h-4 mr-2" />
+                    {user ? 'Upgrade Now' : 'Sign Up Now'}
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Annual Plan */}
-          <Card className="border-2 relative">
+          <Card className="border-2 relative flex flex-col">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600">
               Save $58
             </Badge>
@@ -189,8 +190,8 @@ export default function Pricing() {
                 Just $24.17/month
               </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3">
+            <CardContent className="flex flex-col flex-1 space-y-4">
+              <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Unlimited QR codes</span>
@@ -216,25 +217,18 @@ export default function Pricing() {
                   <span>Priority support</span>
                 </li>
               </ul>
-              {isPro && user?.subscription_period === 'annual' ? (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleManageSubscription}
-                  disabled={loading}
-                >
-                  Manage Subscription
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full"
-                  onClick={() => handleUpgrade('annual')}
-                  disabled={loading || isPro}
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Upgrade Now
-                </Button>
-              )}
+              <div className="pt-2">
+                {isPro && user?.subscription_period === 'annual' ? (
+                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                    Manage Subscription
+                  </Button>
+                ) : (
+                  <Button className="w-full" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
+                    <Zap className="w-4 h-4 mr-2" />
+                    {user ? 'Upgrade Now' : 'Sign Up Now'}
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
