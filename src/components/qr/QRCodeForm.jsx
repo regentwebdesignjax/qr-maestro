@@ -271,7 +271,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                       <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>Dynamic</p>
                       {!isPro && <Lock className="w-3 h-3 text-gray-400" />}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">Editable & trackable, Pro only</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Editable & trackable, Black Belts only</p>
                   </button>
                 </div>
                 {!isPro &&
