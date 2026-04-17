@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,11 +23,37 @@ const stepVariants = {
   exit: (dir) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
 };
 
-function ColorInput({ value, onChange, label }) {
+// Only fires preview when hex text is a valid full color
+function isValidHex(v) {
+  return /^#[0-9a-fA-F]{6}$/.test(v);
+}
+
+function ColorInput({ value, onChange, onPreview }) {
+  const [textVal, setTextVal] = useState(value);
+
+  // Keep local text in sync when parent value changes (e.g. color picker)
+  React.useEffect(() => { setTextVal(value); }, [value]);
+
+  const handleTextChange = (e) => {
+    const v = e.target.value;
+    setTextVal(v);
+    if (isValidHex(v)) {
+      onChange(v);
+      onPreview && onPreview(v);
+    }
+  };
+
+  const handleColorPickerChange = (e) => {
+    const v = e.target.value;
+    setTextVal(v);
+    onChange(v);
+    onPreview && onPreview(v);
+  };
+
   return (
     <div className="flex gap-2 mt-1">
-      <Input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-14 h-10 p-1 cursor-pointer" />
-      <Input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder="#000000" />
+      <Input type="color" value={value} onChange={handleColorPickerChange} className="w-14 h-10 p-1 cursor-pointer" />
+      <Input type="text" value={textVal} onChange={handleTextChange} placeholder="#000000" maxLength={7} />
     </div>
   );
 }
@@ -45,16 +71,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
-      gradient_type: 'none',       // 'none' | 'linear' | 'radial'
-      gradient_color2: '#6366f1',  // second gradient stop
-      eye_outer_shape: 'square',   // 'square' | 'circle' | 'rounded'
-      eye_inner_shape: 'square',   // 'square' | 'circle'
-      eye_color: '',               // empty = use foreground color
+      gradient_type: 'none',
+      gradient_color2: '#6366f1',
+      eye_outer_shape: 'square',
+      eye_inner_shape: 'square',
+      eye_color: '',
       logo_url: '',
       qr_style: 'squares',
-      frame_style: 'none',
-      frame_text: 'Scan Me',
-      frame_color: '#000000',
     },
   });
 
@@ -66,23 +89,49 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     setFormData(prev => ({ ...prev, design_config: { ...prev.design_config, [field]: value } }));
   };
 
+  // Generate preview with an optional override to avoid stale state
+  const triggerPreview = useCallback((overrides = {}) => {
+    setFormData(prev => {
+      const merged = {
+        ...prev,
+        ...overrides,
+        design_config: { ...prev.design_config, ...(overrides.design_config || {}) },
+      };
+      const shortCode = merged.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
+      onGenerate({ ...merged, short_code: shortCode });
+      return prev; // don't actually change state here
+    });
+  }, [onGenerate]);
+
+  // For design fields: update state AND fire preview with the new value immediately
+  const handleDesignChangeAndPreview = (field, value) => {
+    setFormData(prev => {
+      const next = { ...prev, design_config: { ...prev.design_config, [field]: value } };
+      const shortCode = next.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
+      onGenerate({ ...next, short_code: shortCode });
+      return next;
+    });
+  };
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingLogo(true);
     try {
-      const { data } = await base44.integrations.Core.UploadFile({ file });
-      handleDesignChange('logo_url', data.file_url);
-    } catch {
-      alert('Failed to upload logo');
+      const result = await base44.integrations.Core.UploadFile({ file });
+      // result is the response directly: { file_url: "..." }
+      const logoUrl = result?.file_url || result?.data?.file_url;
+      if (logoUrl) {
+        handleDesignChangeAndPreview('logo_url', logoUrl);
+      } else {
+        alert('Upload succeeded but no URL was returned. Please try again.');
+      }
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      alert('Failed to upload logo. Please ensure the file is under 2MB and is a valid image.');
     } finally {
       setUploadingLogo(false);
     }
-  };
-
-  const triggerPreview = () => {
-    const shortCode = formData.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
-    onGenerate({ ...formData, short_code: shortCode });
   };
 
   const goTo = (step) => {
@@ -104,7 +153,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
 
   const EyeShapeButton = ({ field, value, label, children }) => (
     <button type="button"
-      onClick={() => { handleDesignChange(field, value); triggerPreview(); }}
+      onClick={() => handleDesignChangeAndPreview(field, value)}
       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
         dc[field] === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
       }`}>
@@ -112,6 +161,16 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
         {children}
       </div>
       <span className={`text-xs font-medium ${dc[field] === value ? 'text-blue-700' : 'text-gray-600'}`}>{label}</span>
+    </button>
+  );
+
+  const QRStyleButton = ({ value, label }) => (
+    <button type="button"
+      onClick={() => handleDesignChangeAndPreview('qr_style', value)}
+      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+        dc.qr_style === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+      }`}>
+      <span className={`text-sm font-medium ${dc.qr_style === value ? 'text-blue-700' : 'text-gray-600'}`}>{label}</span>
     </button>
   );
 
@@ -150,7 +209,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               <div className="grid grid-cols-2 gap-3">
                 {CONTENT_TYPES.map(({ value, label, icon: Icon, desc }) => (
                   <button key={value} type="button"
-                    onClick={() => { handleChange('content_type', value); triggerPreview(); }}
+                    onClick={() => { handleChange('content_type', value); triggerPreview({ content_type: value }); }}
                     className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all ${
                       formData.content_type === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                     }`}>
@@ -198,7 +257,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               <div>
                 <Label htmlFor="name">QR Code Name *</Label>
                 <Input id="name" placeholder="e.g., Product Landing Page" value={formData.name}
-                  onChange={(e) => { handleChange('name', e.target.value); triggerPreview(); }} />
+                  onChange={(e) => { handleChange('name', e.target.value); triggerPreview({ name: e.target.value }); }} />
               </div>
               <div>
                 <Label htmlFor="content">
@@ -209,19 +268,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 </Label>
                 {formData.content_type === 'url' && (
                   <Input id="content" type="url" placeholder="https://example.com" value={formData.content}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview(); }} />
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
                 {formData.content_type === 'text' && (
                   <Textarea id="content" placeholder="Enter your text here..." value={formData.content} rows={4}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview(); }} />
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
                 {formData.content_type === 'wifi' && (
                   <Textarea id="content" placeholder={"SSID:YourNetwork\nPassword:YourPassword\nEncryption:WPA"} value={formData.content} rows={3}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview(); }} />
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
                 {formData.content_type === 'vcard' && (
                   <Textarea id="content" placeholder={"Name:John Doe\nPhone:+1234567890\nEmail:john@example.com\nCompany:ACME Inc"} value={formData.content} rows={5}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview(); }} />
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
               </div>
             </motion.div>
@@ -235,8 +294,11 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               {/* Background */}
               <div>
                 <Label>Background Color</Label>
-                <ColorInput value={dc.background_color}
-                  onChange={(v) => { handleDesignChange('background_color', v); triggerPreview(); }} />
+                <ColorInput
+                  value={dc.background_color}
+                  onChange={(v) => handleDesignChange('background_color', v)}
+                  onPreview={(v) => handleDesignChangeAndPreview('background_color', v)}
+                />
               </div>
 
               {/* Foreground / Gradient */}
@@ -244,7 +306,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <Label className="font-semibold">Foreground / Pattern Color</Label>
                 <div>
                   <Label className="text-xs text-gray-500">Color Mode</Label>
-                  <Select value={dc.gradient_type} onValueChange={(v) => { handleDesignChange('gradient_type', v); triggerPreview(); }}>
+                  <Select value={dc.gradient_type} onValueChange={(v) => handleDesignChangeAndPreview('gradient_type', v)}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Solid Color</SelectItem>
@@ -256,14 +318,20 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <div className={`grid gap-4 ${dc.gradient_type !== 'none' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div>
                     <Label className="text-xs text-gray-500">{dc.gradient_type !== 'none' ? 'Color 1 (Start)' : 'Color'}</Label>
-                    <ColorInput value={dc.foreground_color}
-                      onChange={(v) => { handleDesignChange('foreground_color', v); triggerPreview(); }} />
+                    <ColorInput
+                      value={dc.foreground_color}
+                      onChange={(v) => handleDesignChange('foreground_color', v)}
+                      onPreview={(v) => handleDesignChangeAndPreview('foreground_color', v)}
+                    />
                   </div>
                   {dc.gradient_type !== 'none' && (
                     <div>
                       <Label className="text-xs text-gray-500">Color 2 (End)</Label>
-                      <ColorInput value={dc.gradient_color2}
-                        onChange={(v) => { handleDesignChange('gradient_color2', v); triggerPreview(); }} />
+                      <ColorInput
+                        value={dc.gradient_color2}
+                        onChange={(v) => handleDesignChange('gradient_color2', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('gradient_color2', v)}
+                      />
                     </div>
                   )}
                 </div>
@@ -273,15 +341,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <div className="space-y-5">
                   {/* QR Style */}
                   <div>
-                    <Label>QR Code Style</Label>
-                    <Select value={dc.qr_style} onValueChange={(v) => { handleDesignChange('qr_style', v); triggerPreview(); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="squares">Squares (Classic)</SelectItem>
-                        <SelectItem value="dots">Dots (Modern)</SelectItem>
-                        <SelectItem value="rounded">Rounded</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label className="mb-2 block">QR Code Style</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <QRStyleButton value="squares" label="Squares" />
+                      <QRStyleButton value="dots" label="Dots" />
+                      <QRStyleButton value="rounded" label="Rounded" />
+                    </div>
                   </div>
 
                   {/* Eye Shape */}
@@ -332,14 +397,17 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                       <Label className="text-xs text-gray-500">Eye Color <span className="text-gray-400">(leave blank to use foreground color)</span></Label>
                       <div className="flex gap-2 mt-1 items-center">
                         <Input type="color" value={dc.eye_color || dc.foreground_color}
-                          onChange={(e) => { handleDesignChange('eye_color', e.target.value); triggerPreview(); }}
+                          onChange={(e) => handleDesignChangeAndPreview('eye_color', e.target.value)}
                           className="w-14 h-10 p-1 cursor-pointer" />
                         <Input type="text" value={dc.eye_color}
-                          onChange={(e) => { handleDesignChange('eye_color', e.target.value); triggerPreview(); }}
-                          placeholder="Same as foreground" />
+                          onChange={(e) => {
+                            handleDesignChange('eye_color', e.target.value);
+                            if (isValidHex(e.target.value)) handleDesignChangeAndPreview('eye_color', e.target.value);
+                          }}
+                          placeholder="Same as foreground" maxLength={7} />
                         {dc.eye_color && (
                           <Button type="button" variant="ghost" size="icon" className="shrink-0"
-                            onClick={() => { handleDesignChange('eye_color', ''); triggerPreview(); }}>
+                            onClick={() => handleDesignChangeAndPreview('eye_color', '')}>
                             <X className="w-4 h-4 text-gray-400" />
                           </Button>
                         )}
@@ -347,41 +415,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                     </div>
                   </div>
 
-                  {/* Frame */}
-                  <div>
-                    <Label>Frame Style</Label>
-                    <Select value={dc.frame_style} onValueChange={(v) => { handleDesignChange('frame_style', v); triggerPreview(); }}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Frame</SelectItem>
-                        <SelectItem value="basic">Basic Frame</SelectItem>
-                        <SelectItem value="modern">Modern Frame</SelectItem>
-                        <SelectItem value="badge">Badge Frame</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {dc.frame_style !== 'none' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Frame Text</Label>
-                        <Input className="mt-1" placeholder="Scan Me" value={dc.frame_text}
-                          onChange={(e) => { handleDesignChange('frame_text', e.target.value); triggerPreview(); }} />
-                      </div>
-                      <div>
-                        <Label>Frame Color</Label>
-                        <ColorInput value={dc.frame_color}
-                          onChange={(v) => { handleDesignChange('frame_color', v); triggerPreview(); }} />
-                      </div>
-                    </div>
-                  )}
-
                   {/* Logo */}
                   <div>
                     <Label>Company Logo</Label>
                     {dc.logo_url ? (
                       <div className="flex items-center gap-2 mt-1">
                         <img src={dc.logo_url} alt="Logo" className="w-14 h-14 object-contain border rounded" />
-                        <Button type="button" variant="outline" size="sm" onClick={() => { handleDesignChange('logo_url', ''); triggerPreview(); }}>
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleDesignChangeAndPreview('logo_url', '')}>
                           <X className="w-4 h-4 mr-1" /> Remove
                         </Button>
                       </div>
