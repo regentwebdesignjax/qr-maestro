@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Lock, CalendarIcon } from 'lucide-react';
-import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import ScansOverTimeChart from '../components/analytics/ScansOverTimeChart';
@@ -139,21 +139,47 @@ export default function Analytics() {
                 mode="range"
                 selected={dateRange}
                 onSelect={(range) => {
-                  if (range?.from) setDateRange(range);
-                  if (range?.from && range?.to) setCalOpen(false);
+                  if (!range?.from) return;
+                  // Enforce 90-day cap for free users
+                  const minDate = isPro ? subMonths(new Date(), 24) : subDays(new Date(), 89);
+                  const clampedFrom = range.from < minDate ? minDate : range.from;
+                  setDateRange({ from: clampedFrom, to: range.to });
+                  if (range.from && range.to) setCalOpen(false);
                 }}
                 initialFocus
-                disabled={{ after: new Date() }}
+                disabled={[
+                  { after: new Date() },
+                  { before: isPro ? subMonths(new Date(), 24) : subDays(new Date(), 89) },
+                ]}
                 numberOfMonths={2}
               />
-              <div className="flex gap-2 p-3 border-t">
-                {[7, 14, 30, 90].map(days => (
-                  <Button key={days} size="sm" variant="outline"
-                    onClick={() => { setDateRange({ from: subDays(new Date(), days - 1), to: new Date() }); setCalOpen(false); }}>
-                    {days}d
+              <div className="flex flex-wrap gap-2 p-3 border-t">
+                {[
+                  { label: '7d', days: 7 },
+                  { label: '14d', days: 14 },
+                  { label: '30d', days: 30 },
+                  { label: '90d', days: 90 },
+                  ...(isPro ? [
+                    { label: '6mo', months: 6 },
+                    { label: '12mo', months: 12 },
+                    { label: '24mo', months: 24 },
+                  ] : []),
+                ].map(({ label, days, months }) => (
+                  <Button key={label} size="sm" variant="outline"
+                    onClick={() => {
+                      const from = months ? subMonths(new Date(), months) : subDays(new Date(), days - 1);
+                      setDateRange({ from, to: new Date() });
+                      setCalOpen(false);
+                    }}>
+                    {label}
                   </Button>
                 ))}
               </div>
+              {!isPro && (
+                <p className="text-xs text-gray-400 px-3 pb-3">
+                  Free plan: up to 90 days. <Link to="/Pricing" className="text-blue-500 hover:underline">Upgrade for 24 months</Link>.
+                </p>
+              )}
             </PopoverContent>
           </Popover>
         </div>
