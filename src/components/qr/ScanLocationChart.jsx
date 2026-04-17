@@ -6,7 +6,7 @@ import { MapPin } from 'lucide-react';
 export default function ScanLocationChart({ scans }) {
   // Aggregate by country
   const countryCounts = scans.reduce((acc, scan) => {
-    const key = scan.city ? `${scan.city}, ${scan.country}` : scan.country;
+    const key = [scan.city, scan.state, scan.country].filter(Boolean).join(', ') || null;
     if (!key) return acc;
     acc[key] = (acc[key] || 0) + 1;
     return acc;

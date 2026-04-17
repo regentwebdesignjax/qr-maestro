@@ -14,6 +14,7 @@ export default function ScanMap({ scans }) {
         lat: scan.lat,
         lng: scan.lng,
         city: scan.city || null,
+        state: scan.state || null,
         country: scan.country || null,
         count: 0,
       };
@@ -45,7 +46,7 @@ export default function ScanMap({ scans }) {
               attribution="© OpenStreetMap contributors"
             />
 
-            {markers.map(({ lat, lng, city, country, count }) => (
+            {markers.map(({ lat, lng, city, state, country, count }) => (
               <CircleMarker
                 key={`${lat},${lng}`}
                 center={[lat, lng]}
@@ -59,7 +60,7 @@ export default function ScanMap({ scans }) {
               >
                 <Tooltip>
                   <span className="font-medium">
-                    {[city, country].filter(Boolean).join(', ') || 'Unknown'}
+                    {[city, state, country].filter(Boolean).join(', ') || 'Unknown'}
                   </span>
                   : {count} scan{count !== 1 ? 's' : ''}
                 </Tooltip>

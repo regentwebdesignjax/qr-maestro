@@ -23,13 +23,14 @@ async function geoLocate(ip) {
     if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
       return {};
     }
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,lat,lon,status`, {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,regionName,city,lat,lon,status`, {
       signal: AbortSignal.timeout(3000),
     });
     const data = await res.json();
     if (data.status === 'success') {
       return {
         country: data.country || null,
+        state: data.regionName || null,
         city: data.city || null,
         lat: data.lat || null,
         lng: data.lon || null,
@@ -85,6 +86,7 @@ Deno.serve(async (req) => {
         device_type: deviceType,
         browser,
         country: geo.country || null,
+        state: geo.state || null,
         city: geo.city || null,
         lat: geo.lat || null,
         lng: geo.lng || null,

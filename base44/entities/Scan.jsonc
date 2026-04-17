@@ -1,0 +1,43 @@
+{
+  "name": "Scan",
+  "type": "object",
+  "properties": {
+    "qr_code_id": {
+      "type": "string",
+      "description": "Reference to the QR code that was scanned"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country where the scan originated"
+    },
+    "city": {
+      "type": "string",
+      "description": "City where the scan originated"
+    },
+    "state": {
+      "type": "string",
+      "description": "State/region where the scan originated"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop",
+        "unknown"
+      ],
+      "description": "Type of device used for scanning"
+    },
+    "browser": {
+      "type": "string",
+      "description": "Browser used for scanning"
+    },
+    "referrer": {
+      "type": "string",
+      "description": "Referrer URL if available"
+    }
+  },
+  "required": [
+    "qr_code_id"
+  ]
+}
