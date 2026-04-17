@@ -12,51 +12,51 @@ export default function FAQ() {
   const faqs = [
     {
       question: 'What is a QR code?',
-      answer: 'A QR code is a digital gateway - a two-dimensional symbol that holds information like URLs, text, WiFi credentials, and contact details. When scanned by a device, it opens pathways to your content.'
+      answer: 'A QR code (Quick Response code) is a two-dimensional barcode that stores digital information like URLs, text, WiFi credentials, and contact information. It is designed to be scanned instantly using a smartphone camera.'
     },
     {
-      question: 'What\'s the difference between The Swift Strike and The Fluid Form?',
-      answer: 'The Swift Strike (static) is fixed and unyielding - unchanging after creation. The Fluid Form (dynamic) is adaptable like water - redirecting through our gateway, allowing you to change your content anytime without reprinting.'
+      question: 'What is the difference between static and dynamic QR codes?',
+      answer: 'Static QR codes contain fixed information that cannot be changed after creation. Dynamic QR codes allow you to update the destination URL or content at any time without having to reprint the physical QR code.'
     },
     {
       question: 'Can I customize my QR codes?',
-      answer: 'Yes! You can customize your QR codes with different foreground and background colors, and even add your logo to make them match your brand identity.'
+      answer: 'Yes. You can fully customize your codes by changing the foreground and background colors, choosing different pattern styles and eye shapes, and uploading your company logo to the center of the code.'
     },
     {
       question: 'How do I track QR code scans?',
-      answer: 'Pro subscribers get access to detailed analytics for their QR codes, including scan counts, locations, device types, and time-based data. This helps you understand how your QR codes are performing.'
+      answer: 'Users on the Black Belt (Pro) plan have access to detailed scan analytics through their dashboard, including total scan counts, geographical locations, and the types of devices used by scanners.'
     },
     {
-      question: 'What\'s included in the White Belt Rank?',
-      answer: 'The White Belt Rank grants you 3 Swift Strikes with foundational customization. Create codes for URLs, text, WiFi, and vCards. To unlock The Fluid Form and Inner Vision, ascend to Black Belt.'
+      question: 'What is included in the White Belt Rank?',
+      answer: 'The White Belt (Free) rank allows you to create up to 3 static QR codes with basic customization and high-resolution PNG downloads. It is perfect for testing the fundamentals of our service.'
     },
     {
       question: 'Can I download my QR codes?',
-      answer: 'Absolutely! You can download your QR codes in both PNG and SVG formats for print and digital use.'
+      answer: 'Yes. All QR codes can be downloaded as high-resolution PNG files, which are suitable for both high-quality digital displays and professional physical printing.'
     },
     {
       question: 'How do dynamic QR codes work?',
-      answer: 'Dynamic QR codes redirect through a short URL that we manage. When someone scans the code, they\'re redirected to your target URL. You can change this target URL anytime from your dashboard without reprinting the QR code.'
+      answer: 'Dynamic codes use a redirection link. When someone scans the code, they are briefly sent to our secure server which then instantly forwards them to your chosen destination. This is what allows you to change the destination URL without changing the QR image.'
     },
     {
       question: 'Is there a limit to how many times my QR code can be scanned?',
-      answer: 'No! All QR codes can be scanned unlimited times. We don\'t impose any scan limits on any plan.'
+      answer: 'No. QR Sensei provides unlimited scans on all plans. Your codes will remain accessible to your customers regardless of how many times they are scanned.'
     },
     {
       question: 'Can I edit my QR codes after creating them?',
-      answer: 'Yes, but only dynamic QR codes can be edited. Static QR codes contain fixed information and cannot be changed. This is why dynamic QR codes are so valuable for campaigns and marketing materials.'
+      answer: 'Only Dynamic QR codes can be edited. Because Static QR codes have the information hard-coded into the pattern itself, they cannot be changed once generated.'
     },
     {
       question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards (Visa, Mastercard, American Express, Discover) through our secure Stripe payment processor.'
+      answer: 'We accept all major credit cards including Visa, Mastercard, and American Express through our secure Stripe payment processor.'
     },
     {
       question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes! You can cancel your Pro subscription at any time from your account settings. Your QR codes will continue to work, but you\'ll lose access to Pro features like analytics and dynamic QR codes.'
+      answer: 'Yes. You can manage or cancel your subscription at any time through your account settings. If you cancel, your Pro features will remain active until the end of your current billing period.'
     },
     {
       question: 'Do QR codes expire?',
-      answer: 'No, a Sensei\'s work is timeless. Your QR codes endure indefinitely. Static Strikes remain eternal. Dynamic codes persist as long as your account stands and the code remains undeleted.'
+      answer: 'No. Static QR codes work indefinitely. Dynamic QR codes remain active as long as your account is in good standing and the code has not been deleted from your dashboard.'
     }
   ];
 
