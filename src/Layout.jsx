@@ -119,27 +119,36 @@ export default function Layout({ children, currentPageName }) {
               {loading ? (
                 <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
               ) : user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      {user.full_name || user.email}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleBilling}>
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Billing & Subscription
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Log Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <>
+                  {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
+                    <Link to="/Pricing">
+                      <Button variant="outline" className="font-semibold">
+                        Upgrade to Pro
+                      </Button>
+                    </Link>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        {user.full_name || user.email}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleBilling}>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Billing & Subscription
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Log Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               ) : (
                 <>
                   <Button variant="ghost" onClick={handleLogin} className="font-semibold">
