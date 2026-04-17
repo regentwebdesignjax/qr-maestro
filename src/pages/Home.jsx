@@ -27,14 +27,10 @@ export default function Home() {
     },
   };
 
-  const mockScans = [
-    { time: '00:00', count: 12 },
-    { time: '04:00', count: 8 },
-    { time: '08:00', count: 24 },
-    { time: '12:00', count: 45 },
-    { time: '16:00', count: 38 },
-    { time: '20:00', count: 52 },
-  ];
+  const now = new Date();
+  const mockScans = Array.from({ length: 150 }, (_, i) => ({
+    created_date: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+  }));
 
   return (
     <div className="w-full bg-background">
