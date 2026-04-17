@@ -6,15 +6,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save } from 'lucide-react';
+import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const CONTENT_TYPES = [
-  { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage' },
-  { value: 'text', label: 'Plain Text', icon: Type, desc: 'Simple text message or information' },
-  { value: 'wifi', label: 'WiFi Credentials', icon: Wifi, desc: 'Let people connect to your network' },
-  { value: 'vcard', label: 'vCard Contact', icon: User, desc: 'Share your contact information' },
+  { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
+  { value: 'text', label: 'Plain Text', icon: Type, desc: 'Simple text message or information', dynamicOnly: true },
+  { value: 'wifi', label: 'WiFi Credentials', icon: Wifi, desc: 'Let people connect to your network', dynamicOnly: true },
+  { value: 'vcard', label: 'vCard Contact', icon: User, desc: 'Share your contact information', dynamicOnly: true },
+  { value: 'pdf', label: 'PDF', icon: FileText, desc: 'Show a PDF (upload required)', dynamicOnly: true },
+  { value: 'social', label: 'Social Media', icon: Share2, desc: 'Share your social links', dynamicOnly: true },
+  { value: 'coupon', label: 'Coupon Code', icon: Tag, desc: 'Share a coupon or promo code', dynamicOnly: true },
+  { value: 'image', label: 'Image', icon: Image, desc: 'Show an image (upload required)', dynamicOnly: true },
+  { value: 'mp3', label: 'MP3', icon: Music, desc: 'Play an audio file (upload required)', dynamicOnly: true },
+  { value: 'call', label: 'Call', icon: Phone, desc: 'Place a quick call', dynamicOnly: true },
 ];
 
 const stepVariants = {
@@ -113,13 +119,14 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     });
   };
 
+  const [uploadingFile, setUploadingFile] = useState(false);
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingLogo(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
-      // result is the response directly: { file_url: "..." }
       const logoUrl = result?.file_url || result?.data?.file_url;
       if (logoUrl) {
         handleDesignChangeAndPreview('logo_url', logoUrl);
@@ -131,6 +138,27 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
       alert('Failed to upload logo. Please ensure the file is under 2MB and is a valid image.');
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleContentFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFile(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = result?.file_url || result?.data?.file_url;
+      if (fileUrl) {
+        handleChange('content', fileUrl);
+        triggerPreview({ content: fileUrl });
+      } else {
+        alert('Upload succeeded but no URL was returned. Please try again.');
+      }
+    } catch (err) {
+      console.error('File upload error:', err);
+      alert('Failed to upload file. Please try again.');
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -280,6 +308,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                   {formData.content_type === 'text' && 'Text Content *'}
                   {formData.content_type === 'wifi' && 'WiFi Details *'}
                   {formData.content_type === 'vcard' && 'Contact Details *'}
+                  {formData.content_type === 'pdf' && 'PDF File *'}
+                  {formData.content_type === 'social' && 'Social Media Links *'}
+                  {formData.content_type === 'coupon' && 'Coupon Code *'}
+                  {formData.content_type === 'image' && 'Image *'}
+                  {formData.content_type === 'mp3' && 'Audio File *'}
+                  {formData.content_type === 'call' && 'Phone Number *'}
                 </Label>
                 {formData.content_type === 'url' && (
                   <Input id="content" type="url" placeholder="https://example.com" value={formData.content}
@@ -295,6 +329,48 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 )}
                 {formData.content_type === 'vcard' && (
                   <Textarea id="content" placeholder={"Name:John Doe\nPhone:+1234567890\nEmail:john@example.com\nCompany:ACME Inc"} value={formData.content} rows={5}
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                )}
+                {formData.content_type === 'pdf' && (
+                  <div className="flex items-center gap-2">
+                    <Input id="pdf-file" type="file" accept="application/pdf" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
+                    <Button type="button" variant="outline" onClick={() => document.getElementById('pdf-file').click()} disabled={uploadingFile}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingFile ? 'Uploading...' : 'Upload PDF'}
+                    </Button>
+                    {formData.content && <span className="text-sm text-gray-600">PDF uploaded</span>}
+                  </div>
+                )}
+                {formData.content_type === 'social' && (
+                  <Textarea id="content" placeholder={"Twitter: @yourhandle\nLinkedIn: linkedin.com/in/yourprofile\nInstagram: @yourhandle"} value={formData.content} rows={4}
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                )}
+                {formData.content_type === 'coupon' && (
+                  <Input id="content" placeholder="e.g., SAVE20OFF" value={formData.content}
+                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                )}
+                {formData.content_type === 'image' && (
+                  <div className="flex items-center gap-2">
+                    <Input id="image-file" type="file" accept="image/*" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
+                    <Button type="button" variant="outline" onClick={() => document.getElementById('image-file').click()} disabled={uploadingFile}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingFile ? 'Uploading...' : 'Upload Image'}
+                    </Button>
+                    {formData.content && <span className="text-sm text-gray-600">Image uploaded</span>}
+                  </div>
+                )}
+                {formData.content_type === 'mp3' && (
+                  <div className="flex items-center gap-2">
+                    <Input id="audio-file" type="file" accept="audio/mpeg" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
+                    <Button type="button" variant="outline" onClick={() => document.getElementById('audio-file').click()} disabled={uploadingFile}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingFile ? 'Uploading...' : 'Upload MP3'}
+                    </Button>
+                    {formData.content && <span className="text-sm text-gray-600">Audio uploaded</span>}
+                  </div>
+                )}
+                {formData.content_type === 'call' && (
+                  <Input id="content" placeholder="+1 (555) 123-4567" value={formData.content}
                     onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
               </div>
