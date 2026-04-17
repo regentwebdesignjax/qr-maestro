@@ -158,6 +158,24 @@ function PDFDisplay({ content, name }) {
 }
 
 function SocialDisplay({ content }) {
+  const parseSocial = (text) => {
+    const result = {};
+    text.split('\n').forEach(line => {
+      if (line.trim()) {
+        const [platform, value] = line.split(':').map(s => s.trim());
+        if (platform && value) result[platform] = value;
+      }
+    });
+    return result;
+  };
+
+  const social = parseSocial(content);
+  const platformEmojis = {
+    facebook: '👍', instagram: '📷', x: '𝕏', linkedin: '💼',
+    youtube: '▶️', tiktok: '🎵', threads: '⚡', telegram: '✈️',
+    rss: '📡', podcast: '🎙️', website: '🌐', blog: '📝'
+  };
+
   return (
     <Card className="max-w-sm w-full">
       <CardHeader className="pb-2">
@@ -165,20 +183,25 @@ function SocialDisplay({ content }) {
           <div className="p-2 bg-blue-50 rounded-lg">
             <Share2 className="w-6 h-6 text-blue-600" />
           </div>
-          <CardTitle>Social Media</CardTitle>
+          <CardTitle>Social Links</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {content.split('\n').map((line, idx) => {
-          if (!line.trim()) return null;
-          const [platform, handle] = line.split(':').map(s => s.trim());
-          return (
-            <div key={idx} className="text-sm">
-              <p className="text-gray-500 font-medium">{platform}</p>
-              <p className="text-gray-700">{handle}</p>
+        {Object.entries(social).map(([platform, handle]) => (
+          <a
+            key={platform}
+            href={handle.startsWith('http') ? handle : `https://${platform}.com/${handle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+          >
+            <span className="text-lg">{platformEmojis[platform] || '🔗'}</span>
+            <div className="flex-1">
+              <p className="text-xs text-gray-500 capitalize font-medium">{platform}</p>
+              <p className="text-sm text-gray-700 group-hover:text-primary font-medium truncate">{handle}</p>
             </div>
-          );
-        })}
+          </a>
+        ))}
       </CardContent>
     </Card>
   );

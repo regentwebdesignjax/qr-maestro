@@ -42,6 +42,12 @@ function generateVCardContent(vcard_data) {
   return lines.join('\n');
 }
 
+function generateSocialContent(social_data) {
+  const platforms = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
+  const content = platforms.filter(p => social_data[p]).map(p => `${p}:${social_data[p]}`).join('\n');
+  return content;
+}
+
 // Only fires preview when hex text is a valid full color
 function isValidHex(v) {
   return /^#[0-9a-fA-F]{6}$/.test(v);
@@ -88,6 +94,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     content_type: 'url',
     content: '',
     vcard_data: {},
+    social_data: {},
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
@@ -396,8 +403,106 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                   </div>
                 )}
                 {formData.content_type === 'social' && (
-                  <Textarea id="content" placeholder={"Twitter: @yourhandle\nLinkedIn: linkedin.com/in/yourprofile\nInstagram: @yourhandle"} value={formData.content} rows={4}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input id="social-facebook" placeholder="Facebook" value={formData.social_data?.facebook || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, facebook: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-instagram" placeholder="Instagram" value={formData.social_data?.instagram || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, instagram: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-x" placeholder="X (Twitter)" value={formData.social_data?.x || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, x: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-linkedin" placeholder="LinkedIn" value={formData.social_data?.linkedin || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, linkedin: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-youtube" placeholder="YouTube" value={formData.social_data?.youtube || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, youtube: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-tiktok" placeholder="TikTok" value={formData.social_data?.tiktok || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, tiktok: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-threads" placeholder="Threads" value={formData.social_data?.threads || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, threads: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-telegram" placeholder="Telegram" value={formData.social_data?.telegram || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, telegram: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-rss" placeholder="RSS Feed" value={formData.social_data?.rss || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, rss: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-podcast" placeholder="Podcast" value={formData.social_data?.podcast || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, podcast: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-website" placeholder="Website" value={formData.social_data?.website || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, website: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                      <Input id="social-blog" placeholder="Blog" value={formData.social_data?.blog || ''}
+                        onChange={(e) => {
+                          const newData = { ...formData.social_data, blog: e.target.value };
+                          setFormData(prev => ({ ...prev, social_data: newData }));
+                          const content = generateSocialContent(newData);
+                          handleChange('content', content);
+                          triggerPreview({ content });
+                        }} />
+                    </div>
+                  </div>
                 )}
                 {formData.content_type === 'coupon' && (
                   <Input id="content" placeholder="e.g., SAVE20OFF" value={formData.content}
