@@ -125,7 +125,7 @@ export default function Pricing() {
               Most Chosen
             </Badge>
             <CardHeader>
-              <CardTitle className="text-2xl">Black Belt Monthly</CardTitle>
+              <CardTitle className="text-2xl">Black Belt (Monthly)</CardTitle>
               <CardDescription>Master the way of the code</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$29</span>
@@ -180,7 +180,7 @@ export default function Pricing() {
               Grand Master Path
             </Badge>
             <CardHeader>
-              <CardTitle className="text-2xl">Black Belt Annual</CardTitle>
+              <CardTitle className="text-2xl">Black Belt (Annual)</CardTitle>
               <CardDescription>The path of mastery - save 17%</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$290</span>
