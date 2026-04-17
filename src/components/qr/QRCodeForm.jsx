@@ -155,12 +155,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     <button type="button"
       onClick={() => handleDesignChangeAndPreview(field, value)}
       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
-        dc[field] === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+        dc[field] === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
       }`}>
-      <div className={`w-8 h-8 flex items-center justify-center ${dc[field] === value ? 'text-blue-600' : 'text-gray-500'}`}>
+      <div className={`w-8 h-8 flex items-center justify-center ${dc[field] === value ? 'text-primary' : 'text-gray-500'}`}>
         {children}
       </div>
-      <span className={`text-xs font-medium ${dc[field] === value ? 'text-blue-700' : 'text-gray-600'}`}>{label}</span>
+      <span className={`text-xs font-medium ${dc[field] === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
     </button>
   );
 
@@ -168,9 +168,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     <button type="button"
       onClick={() => handleDesignChangeAndPreview('qr_style', value)}
       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
-        dc.qr_style === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+        dc.qr_style === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
       }`}>
-      <span className={`text-sm font-medium ${dc.qr_style === value ? 'text-blue-700' : 'text-gray-600'}`}>{label}</span>
+      <span className={`text-sm font-medium ${dc.qr_style === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
     </button>
   );
 
@@ -182,16 +182,16 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
           <React.Fragment key={i}>
             <div className="flex flex-col items-center gap-1">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
-                i < currentStep ? 'bg-blue-600 border-blue-600 text-white' :
-                i === currentStep ? 'border-blue-600 text-blue-600 bg-white' :
+                i < currentStep ? 'bg-primary border-primary text-white' :
+                i === currentStep ? 'border-primary text-primary bg-white' :
                 'border-gray-300 text-gray-400 bg-white'
               }`}>
                 {i < currentStep ? '✓' : i + 1}
               </div>
-              <span className={`text-xs font-medium ${i === currentStep ? 'text-blue-600' : 'text-gray-400'}`}>{label}</span>
+              <span className={`text-xs font-medium ${i === currentStep ? 'text-primary' : 'text-gray-400'}`}>{label}</span>
             </div>
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-2 mb-4 ${i < currentStep ? 'bg-blue-600' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 mx-2 mb-4 ${i < currentStep ? 'bg-primary' : 'bg-gray-200'}`} />
             )}
           </React.Fragment>
         ))}
@@ -211,11 +211,11 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                   <button key={value} type="button"
                     onClick={() => { handleChange('content_type', value); triggerPreview({ content_type: value }); }}
                     className={`flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all ${
-                      formData.content_type === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      formData.content_type === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
                     }`}>
-                    <Icon className={`w-5 h-5 ${formData.content_type === value ? 'text-blue-600' : 'text-gray-500'}`} />
+                    <Icon className={`w-5 h-5 ${formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
                     <div>
-                      <p className={`font-medium text-sm ${formData.content_type === value ? 'text-blue-700' : 'text-gray-800'}`}>{label}</p>
+                      <p className={`font-medium text-sm ${formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
                     </div>
                   </button>
@@ -225,17 +225,17 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <Label>QR Code Behaviour</Label>
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <button type="button" onClick={() => handleChange('type', 'static')}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-blue-700' : 'text-gray-800'}`}>Static</p>
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>Static</p>
                     <p className="text-xs text-gray-500 mt-0.5">Fixed content, free forever</p>
                   </button>
                   <button type="button" onClick={() => isPro && handleChange('type', 'dynamic')}
                     className={`p-3 rounded-xl border-2 text-left transition-all ${
                       !isPro ? 'opacity-50 cursor-not-allowed border-gray-200' :
-                      formData.type === 'dynamic' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      formData.type === 'dynamic' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
                     }`}>
                     <div className="flex items-center gap-1">
-                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-blue-700' : 'text-gray-800'}`}>Dynamic</p>
+                      <p className={`font-medium text-sm ${formData.type === 'dynamic' ? 'text-primary' : 'text-gray-800'}`}>Dynamic</p>
                       {!isPro && <Lock className="w-3 h-3 text-gray-400" />}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">Editable & trackable, Pro only</p>
@@ -243,7 +243,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 </div>
                 {!isPro && (
                   <p className="text-xs text-gray-500 mt-2">
-                    <Link to="/Pricing" className="text-blue-600 underline">Upgrade to Pro</Link> to unlock dynamic QR codes.
+                    <Link to="/Pricing" className="text-primary underline">Upgrade to Pro</Link> to unlock dynamic QR codes.
                   </p>
                 )}
               </div>
@@ -461,13 +461,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
         {currentStep < 2 ? (
           <Button type="button" onClick={() => goTo(currentStep + 1)}
             disabled={currentStep === 0 ? !canProceedStep0 : !canProceedStep1}
-            className="flex-1 bg-blue-600 hover:bg-blue-700">
+            className="flex-1">
             Next <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         ) : (
           <Button type="button" onClick={handleSaveQR}
             disabled={saving || !formData.name || !formData.content}
-            className="flex-1 bg-blue-600 hover:bg-blue-700">
+            className="flex-1">
             <Save className="w-4 h-4 mr-2" />
             {saving ? 'Saving...' : 'Save QR Code'}
           </Button>

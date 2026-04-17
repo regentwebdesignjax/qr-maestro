@@ -123,26 +123,26 @@ export default function EditQR() {
 
   const EyeBtn = ({ field, value, label, children }) => (
     <button type="button" onClick={() => updateDesign(field, value)}
-      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all ${designConfig[field] === value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-      <div className={`w-7 h-7 flex items-center justify-center ${designConfig[field] === value ? 'text-blue-600' : 'text-gray-500'}`}>{children}</div>
-      <span className={`text-xs font-medium ${designConfig[field] === value ? 'text-blue-700' : 'text-gray-600'}`}>{label}</span>
+      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all ${designConfig[field] === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
+      <div className={`w-7 h-7 flex items-center justify-center ${designConfig[field] === value ? 'text-primary' : 'text-gray-500'}`}>{children}</div>
+      <span className={`text-xs font-medium ${designConfig[field] === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
     </button>
   );
 
   const StyleBtn = ({ value, label }) => (
     <button type="button" onClick={() => updateDesign('qr_style', value)}
-      className={`py-2 px-3 rounded-xl border-2 text-sm font-medium transition-all ${designConfig.qr_style === value ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}>
+      className={`py-2 px-3 rounded-xl border-2 text-sm font-medium transition-all ${designConfig.qr_style === value ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}>
       {label}
     </button>
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+    return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
   if (!qrCode) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-5xl">
         <Link to={'/ViewQR?id=' + qrCode.id}>
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
@@ -297,7 +297,7 @@ export default function EditQR() {
               <Link to={'/ViewQR?id=' + qrCode.id} className="flex-1">
                 <Button variant="outline" className="w-full">Cancel</Button>
               </Link>
-              <Button onClick={handleSave} disabled={saving || !formData.name || !formData.content} className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} disabled={saving || !formData.name || !formData.content} className="flex-1">
                 <Save className="w-4 h-4 mr-2" />{saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

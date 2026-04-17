@@ -120,7 +120,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
               const currentFolder = folders.find(f => f.id === currentFolderId);
 
               return (
-                <TableRow key={qr.id} className={selected.has(qr.id) ? 'bg-blue-50' : ''}>
+                <TableRow key={qr.id} className={selected.has(qr.id) ? 'bg-primary/5' : ''}>
                   <TableCell>
                     <Checkbox checked={selected.has(qr.id)} onCheckedChange={() => toggleOne(qr.id)} />
                   </TableCell>
@@ -159,7 +159,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
                     {assignableFolders.length > 0 ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                          <button className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors">
                             <Folder className="w-3.5 h-3.5" />
                             <span>{currentFolder ? currentFolder.name : <span className="italic text-gray-400">None</span>}</span>
                           </button>
@@ -174,7 +174,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
                           )}
                           {assignableFolders.map(folder => (
                             <DropdownMenuItem key={folder.id} onClick={() => handleSingleMove(qr.id, folder.id)}
-                              className={currentFolderId === folder.id ? 'font-semibold text-blue-600' : ''}>
+                              className={currentFolderId === folder.id ? 'font-semibold text-primary' : ''}>
                               <Folder className="w-4 h-4 mr-2" /> {folder.name}
                             </DropdownMenuItem>
                           ))}
@@ -224,7 +224,7 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
                         <Button variant="ghost" size="sm"><ExternalLink className="w-4 h-4" /></Button>
                       </Link>
                       <Button variant="ghost" size="sm" onClick={() => handleDownload(qr)} title="Download">
-                        <Download className="w-4 h-4 text-blue-600" />
+                        <Download className="w-4 h-4 text-primary" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => { if (confirm('Delete this QR code?')) onDelete(qr.id); }}>
                         <Trash2 className="w-4 h-4 text-red-600" />

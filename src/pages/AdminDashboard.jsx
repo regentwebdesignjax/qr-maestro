@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -128,11 +128,11 @@ export default function AdminDashboard() {
   const adminUsers = allUsers.filter(u => u.role === 'admin');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <Shield className="w-8 h-8 text-blue-600" />
+          <Shield className="w-8 h-8 text-primary" />
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         </div>
 
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">{proUsers.length}</div>
+              <div className="text-3xl font-bold text-primary">{proUsers.length}</div>
             </CardContent>
           </Card>
 
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               </div>
             ) : (
               <Table>
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
                       <TableCell>
                         <Badge
                           variant={u.subscription_tier === 'pro' ? 'default' : 'outline'}
-                          className={u.subscription_tier === 'pro' ? 'bg-blue-600' : ''}
+                          className={u.subscription_tier === 'pro' ? 'bg-primary text-primary-foreground' : ''}
                         >
                           {u.subscription_tier === 'pro' ? 'Pro' : 'Free'}
                         </Badge>
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
                                     ) : (
                                       <Button
                                         onClick={() => handleGrantPro(u.id)}
-                                        className="w-full bg-blue-600 hover:bg-blue-700"
+                                        className="w-full"
                                       >
                                         Grant 30-Day Pro Trial
                                       </Button>

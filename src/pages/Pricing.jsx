@@ -68,7 +68,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16">
+    <div className="min-h-screen bg-background py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -112,8 +112,8 @@ export default function Pricing() {
           </Card>
 
           {/* Monthly Plan */}
-          <Card className="border-2 border-blue-600 relative">
-            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
+          <Card className="border-2 border-primary relative">
+            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
               Popular
             </Badge>
             <CardHeader>
@@ -162,7 +162,7 @@ export default function Pricing() {
                 </Button>
               ) : (
                 <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full"
                   onClick={() => handleUpgrade('monthly')}
                   disabled={loading || isPro}
                 >
@@ -227,7 +227,7 @@ export default function Pricing() {
                 </Button>
               ) : (
                 <Button 
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full"
                   onClick={() => handleUpgrade('annual')}
                   disabled={loading || isPro}
                 >

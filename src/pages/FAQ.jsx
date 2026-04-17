@@ -61,7 +61,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
@@ -82,7 +82,7 @@ export default function FAQ() {
                 value={`item-${index}`}
                 className="bg-white border rounded-lg px-6"
               >
-                <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-blue-600">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-gray-600 pt-2">
@@ -103,7 +103,7 @@ export default function FAQ() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/Dashboard">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg">
                 Get Started Free
               </Button>
             </Link>

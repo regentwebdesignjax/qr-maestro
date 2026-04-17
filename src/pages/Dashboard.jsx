@@ -65,7 +65,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function Dashboard() {
   const canCreateStatic = isPro || staticCount < 3;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
@@ -98,7 +98,7 @@ export default function Dashboard() {
               </Link>
             )}
             <Link to="/CreateQR">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Create QR Code
               </Button>
@@ -161,7 +161,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <div className="text-3xl font-bold">0</div>
                   <Lock className="w-5 h-5 text-gray-400" />
-                  <Link to="/Pricing" className="text-sm text-blue-600 hover:underline">
+                  <Link to="/Pricing" className="text-sm text-primary hover:underline">
                     Upgrade to unlock analytics
                   </Link>
                 </div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               </div>
             ) : qrCodes.length === 0 ? (
               <div className="text-center py-12">
@@ -201,7 +201,7 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes yet</h3>
                 <p className="text-gray-600 mb-6">Create your first QR code to get started</p>
                 <Link to="/CreateQR">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button>
                     <Plus className="w-4 h-4 mr-2" />
                     Create QR Code
                   </Button>

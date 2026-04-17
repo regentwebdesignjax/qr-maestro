@@ -122,14 +122,14 @@ export default function Analytics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!isPro) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <Link to="/Dashboard">
             <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back to Dashboard</Button>
@@ -161,7 +161,7 @@ export default function Analytics() {
     : PRESETS.find(p => p.value === preset)?.label;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       <div className="container mx-auto px-4 max-w-5xl pt-8">
         <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back to Dashboard</Button>
