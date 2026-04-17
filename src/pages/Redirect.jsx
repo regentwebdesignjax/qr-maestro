@@ -62,6 +62,14 @@ function WifiDisplay({ content }) {
 
 function VCardDisplay({ content }) {
   const vc = parseVCard(content);
+  
+  const handleSaveContact = () => {
+    const link = document.createElement('a');
+    link.href = 'data:text/vcard;base64,' + btoa(content);
+    link.download = `${vc.fn || 'contact'}.vcf`;
+    link.click();
+  };
+
   return (
     <Card className="max-w-sm w-full">
       <CardHeader className="pb-2">
@@ -73,16 +81,16 @@ function VCardDisplay({ content }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {vc.name && (
+        {vc.fn && (
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Name</p>
-            <p className="text-lg font-semibold">{vc.name}</p>
+            <p className="text-lg font-semibold">{vc.fn}</p>
           </div>
         )}
-        {vc.phone && (
+        {vc.tel && (
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Phone</p>
-            <a href={`tel:${vc.phone}`} className="text-blue-600 font-medium">{vc.phone}</a>
+            <a href={`tel:${vc.tel}`} className="text-blue-600 font-medium">{vc.tel}</a>
           </div>
         )}
         {vc.email && (
@@ -91,12 +99,21 @@ function VCardDisplay({ content }) {
             <a href={`mailto:${vc.email}`} className="text-blue-600 font-medium">{vc.email}</a>
           </div>
         )}
-        {vc.company && (
+        {vc.org && (
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Company</p>
-            <p className="font-medium">{vc.company}</p>
+            <p className="font-medium">{vc.org}</p>
           </div>
         )}
+        {vc.url && (
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Website</p>
+            <a href={vc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-medium hover:underline">{vc.url}</a>
+          </div>
+        )}
+        <button onClick={handleSaveContact} className="w-full bg-primary text-white px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity mt-4">
+          Save Contact
+        </button>
       </CardContent>
     </Card>
   );

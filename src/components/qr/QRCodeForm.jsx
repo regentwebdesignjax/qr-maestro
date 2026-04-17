@@ -30,6 +30,18 @@ const stepVariants = {
   exit: (dir) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
 };
 
+function generateVCardContent(vcard_data) {
+  if (!vcard_data?.name) return '';
+  const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
+  lines.push(`FN:${vcard_data.name}`);
+  if (vcard_data.phone) lines.push(`TEL:${vcard_data.phone}`);
+  if (vcard_data.email) lines.push(`EMAIL:${vcard_data.email}`);
+  if (vcard_data.company) lines.push(`ORG:${vcard_data.company}`);
+  if (vcard_data.url) lines.push(`URL:${vcard_data.url}`);
+  lines.push('END:VCARD');
+  return lines.join('\n');
+}
+
 // Only fires preview when hex text is a valid full color
 function isValidHex(v) {
   return /^#[0-9a-fA-F]{6}$/.test(v);
@@ -75,6 +87,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     type: 'static',
     content_type: 'url',
     content: '',
+    vcard_data: {},
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
@@ -329,8 +342,48 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                     onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
                 )}
                 {formData.content_type === 'vcard' && (
-                  <Textarea id="content" placeholder={"Name:John Doe\nPhone:+1234567890\nEmail:john@example.com\nCompany:ACME Inc"} value={formData.content} rows={5}
-                    onChange={(e) => { handleChange('content', e.target.value); triggerPreview({ content: e.target.value }); }} />
+                  <div className="space-y-3">
+                    <Input id="vcard-name" placeholder="Full Name *" value={formData.vcard_data?.name || ''}
+                      onChange={(e) => {
+                        const newData = { ...formData.vcard_data, name: e.target.value };
+                        setFormData(prev => ({ ...prev, vcard_data: newData }));
+                        const vcardContent = generateVCardContent(newData);
+                        handleChange('content', vcardContent);
+                        triggerPreview({ content: vcardContent });
+                      }} />
+                    <Input id="vcard-phone" placeholder="Phone (e.g., +1 555-123-4567)" value={formData.vcard_data?.phone || ''}
+                      onChange={(e) => {
+                        const newData = { ...formData.vcard_data, phone: e.target.value };
+                        setFormData(prev => ({ ...prev, vcard_data: newData }));
+                        const vcardContent = generateVCardContent(newData);
+                        handleChange('content', vcardContent);
+                        triggerPreview({ content: vcardContent });
+                      }} />
+                    <Input id="vcard-email" placeholder="Email" value={formData.vcard_data?.email || ''}
+                      onChange={(e) => {
+                        const newData = { ...formData.vcard_data, email: e.target.value };
+                        setFormData(prev => ({ ...prev, vcard_data: newData }));
+                        const vcardContent = generateVCardContent(newData);
+                        handleChange('content', vcardContent);
+                        triggerPreview({ content: vcardContent });
+                      }} />
+                    <Input id="vcard-company" placeholder="Company / Organization" value={formData.vcard_data?.company || ''}
+                      onChange={(e) => {
+                        const newData = { ...formData.vcard_data, company: e.target.value };
+                        setFormData(prev => ({ ...prev, vcard_data: newData }));
+                        const vcardContent = generateVCardContent(newData);
+                        handleChange('content', vcardContent);
+                        triggerPreview({ content: vcardContent });
+                      }} />
+                    <Input id="vcard-url" placeholder="Website URL" value={formData.vcard_data?.url || ''}
+                      onChange={(e) => {
+                        const newData = { ...formData.vcard_data, url: e.target.value };
+                        setFormData(prev => ({ ...prev, vcard_data: newData }));
+                        const vcardContent = generateVCardContent(newData);
+                        handleChange('content', vcardContent);
+                        triggerPreview({ content: vcardContent });
+                      }} />
+                  </div>
                 )}
                 {formData.content_type === 'pdf' && (
                   <div className="flex items-center gap-2">
