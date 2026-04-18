@@ -3,28 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, BarChart3, Palette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import QRCodePreview from '@/components/qr/QRCodePreview';
 import TimeOfDayHeatmap from '@/components/analytics/TimeOfDayHeatmap';
 
 export default function Home() {
   const handleGetStarted = () => {
     base44.auth.redirectToLogin('/Dashboard');
-  };
-
-  const mockQRData = {
-    name: 'Black Belt Showcase',
-    type: 'dynamic',
-    content_type: 'url',
-    content: 'https://qrsensei.com',
-    design_config: {
-      foreground_color: '#BB3F27',
-      background_color: '#F9F9F8',
-      gradient_type: 'none',
-      qr_style: 'rounded',
-      eye_outer_shape: 'rounded',
-      eye_inner_shape: 'circle',
-      eye_color: '#BB3F27',
-    },
   };
 
   const now = new Date();
@@ -69,14 +52,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Panel: Light with QR Preview */}
+        {/* Right Panel: Light with Sensei Graphic */}
         <div
           className="flex-1 flex items-center justify-center px-[5vw] py-16"
           style={{ backgroundColor: '#F9F9F8' }}
         >
-          <div className="w-full max-w-sm">
-            <QRCodePreview qrData={mockQRData} />
-          </div>
+          <img
+            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/1842bba19_sensei-pose.png"
+            alt="QR Sensei"
+            className="w-full max-w-lg drop-shadow-xl"
+          />
         </div>
       </div>
 
@@ -84,6 +69,13 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex items-center justify-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/720f33124_sensei-fluid-form.png"
+                alt="The Fluid Form"
+                className="w-full max-w-sm drop-shadow-xl"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Zap className="w-6 h-6 text-primary" />
@@ -100,14 +92,6 @@ export default function Home() {
                   Unlock Dynamic Codes
                 </Button>
               </Link>
-            </div>
-            <div
-              className="rounded-xl p-8 shadow-card-hover"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
-                <Zap className="w-16 h-16 text-primary opacity-20" />
-              </div>
             </div>
           </div>
         </div>
@@ -147,6 +131,13 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex items-center justify-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/f467416b9_sensei-pose.png"
+                alt="Bespoke Gi"
+                className="w-full max-w-sm drop-shadow-xl"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Palette className="w-6 h-6 text-primary" />
@@ -163,25 +154,6 @@ export default function Home() {
                   Start Designing
                 </Button>
               </Link>
-            </div>
-            <div
-              className="rounded-xl p-8 shadow-card-hover"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="aspect-square bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Aa
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Bb
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Cc
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Dd
-                </div>
-              </div>
             </div>
           </div>
         </div>
