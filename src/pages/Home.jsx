@@ -77,7 +77,7 @@ export default function Home() {
 
       {/* Feature Ribbon 1: The Fluid Form */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex items-center justify-center">
               <img
@@ -109,7 +109,7 @@ export default function Home() {
 
       {/* Feature Ribbon 2: Inner Vision Analytics */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#142024' }}>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 rounded-xl p-6 bg-white/10 backdrop-blur-md border border-white/20 shadow-card-hover">
               <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-4">Live Scan Activity — Last 7 Days</p>
@@ -146,7 +146,7 @@ export default function Home() {
 
       {/* Feature Ribbon 3: Bespoke Gi */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex items-center justify-center">
               <img
