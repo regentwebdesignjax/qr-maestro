@@ -134,7 +134,7 @@ export default function Home() {
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/eb0a8a8a8_sensei-design.png"
                 alt="Bespoke Gi"
-                className="w-full max-w-sm drop-shadow-xl"
+                className="w-full max-w-xl drop-shadow-xl"
               />
             </div>
             <div>
