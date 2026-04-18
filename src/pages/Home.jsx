@@ -3,28 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, BarChart3, Palette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import QRCodePreview from '@/components/qr/QRCodePreview';
 import TimeOfDayHeatmap from '@/components/analytics/TimeOfDayHeatmap';
 
 export default function Home() {
   const handleGetStarted = () => {
     base44.auth.redirectToLogin('/Dashboard');
-  };
-
-  const mockQRData = {
-    name: 'Black Belt Showcase',
-    type: 'dynamic',
-    content_type: 'url',
-    content: 'https://qrsensei.com',
-    design_config: {
-      foreground_color: '#BB3F27',
-      background_color: '#F9F9F8',
-      gradient_type: 'none',
-      qr_style: 'rounded',
-      eye_outer_shape: 'rounded',
-      eye_inner_shape: 'circle',
-      eye_color: '#BB3F27',
-    },
   };
 
   const now = new Date();
@@ -69,14 +52,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Panel: Light with QR Preview */}
+        {/* Right Panel: Light with Sensei Graphic */}
         <div
           className="flex-1 flex items-center justify-center px-[5vw] py-16"
           style={{ backgroundColor: '#F9F9F8' }}
         >
-          <div className="w-full max-w-sm">
-            <QRCodePreview qrData={mockQRData} />
-          </div>
+          <img
+            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/1842bba19_sensei-pose.png"
+            alt="QR Sensei"
+            className="w-full max-w-sm drop-shadow-xl"
+          />
         </div>
       </div>
 
