@@ -69,6 +69,13 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex items-center justify-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/720f33124_sensei-fluid-form.png"
+                alt="The Fluid Form"
+                className="w-full max-w-sm drop-shadow-xl"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Zap className="w-6 h-6 text-primary" />
@@ -85,14 +92,6 @@ export default function Home() {
                   Unlock Dynamic Codes
                 </Button>
               </Link>
-            </div>
-            <div
-              className="rounded-xl p-8 shadow-card-hover"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
-                <Zap className="w-16 h-16 text-primary opacity-20" />
-              </div>
             </div>
           </div>
         </div>
