@@ -26,11 +26,16 @@ export default function Pricing() {
 
   const handleUpgrade = async (period) => {
     if (!user) {
+      base44.analytics.track({ eventName: 'upgrade_cta_clicked', properties: { period, logged_in: false } });
       base44.auth.redirectToLogin('/Pricing');
       return;
     }
 
     setLoading(true);
+    base44.analytics.track({
+      eventName: 'upgrade_checkout_initiated',
+      properties: { plan: 'black_belt', period, user_email: user.email },
+    });
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
         period,

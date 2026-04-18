@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
         const session = event.data.object;
         const userId = session.metadata.user_id;
         const period = session.metadata.period;
+        const amountTotal = session.amount_total ? session.amount_total / 100 : null;
 
         // Update user subscription
         const users = await base44.asServiceRole.entities.User.filter({ id: userId });
@@ -38,6 +39,17 @@ Deno.serve(async (req) => {
             subscription_period: period,
           });
         }
+
+        // Log conversion event
+        await base44.asServiceRole.entities.ConversionEvent.create({
+          event_type: 'upgrade_conversion',
+          plan: 'black_belt',
+          period: period ?? 'unknown',
+          revenue: amountTotal,
+          user_id: userId,
+          customer_email: session.customer_email ?? null,
+          stripe_session_id: session.id,
+        });
         break;
       }
 

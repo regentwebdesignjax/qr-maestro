@@ -1,0 +1,43 @@
+{
+  "name": "ConversionEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "description": "Type of conversion event (e.g. upgrade_conversion)"
+    },
+    "plan": {
+      "type": "string",
+      "description": "Plan name the user converted to"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual",
+        "unknown"
+      ],
+      "description": "Billing period"
+    },
+    "revenue": {
+      "type": "number",
+      "description": "Revenue amount in USD"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user who converted"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Email of the customer from Stripe"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe checkout session ID"
+    }
+  },
+  "required": [
+    "event_type",
+    "plan"
+  ]
+}
