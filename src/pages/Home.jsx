@@ -131,6 +131,13 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex items-center justify-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/f467416b9_sensei-pose.png"
+                alt="Bespoke Gi"
+                className="w-full max-w-sm drop-shadow-xl"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Palette className="w-6 h-6 text-primary" />
@@ -147,13 +154,6 @@ export default function Home() {
                   Start Designing
                 </Button>
               </Link>
-            </div>
-            <div className="flex items-center justify-center">
-              <img
-                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/f467416b9_sensei-pose.png"
-                alt="Bespoke Gi"
-                className="w-full max-w-sm drop-shadow-xl"
-              />
             </div>
           </div>
         </div>
