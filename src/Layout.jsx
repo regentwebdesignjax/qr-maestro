@@ -15,6 +15,13 @@ import {
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -61,7 +68,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header Navigation */}
-      <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+      <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled || currentPageName !== 'Home' ? 'bg-white border-b border-border shadow-sm' : 'bg-transparent border-b border-transparent'}`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -98,16 +105,16 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
                     Home
                   </Link>
-                  <Link to="/WhyUs" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/WhyUs" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
                     Why Us?
                   </Link>
-                  <Link to="/FAQ" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/FAQ" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
                     FAQ
                   </Link>
-                  <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/Pricing" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
                     Pricing
                   </Link>
                 </>
@@ -151,7 +158,7 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin} className="font-semibold text-foreground hover:text-primary transition-colors duration-200">
+                  <Button variant="ghost" onClick={handleLogin} className={`font-semibold transition-colors duration-200 ${!scrolled && currentPageName === 'Home' ? 'text-white hover:text-white/80' : 'text-foreground hover:text-primary'}`}>
                     Login
                   </Button>
                   <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors duration-200">

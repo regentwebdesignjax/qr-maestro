@@ -3,17 +3,25 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Zap, BarChart3, Palette } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import TimeOfDayHeatmap from '@/components/analytics/TimeOfDayHeatmap';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import PathToMastery from '@/components/home/PathToMastery';
+import Testimonials from '@/components/home/Testimonials';
+import BentoFeatures from '@/components/home/BentoFeatures';
 
 export default function Home() {
   const handleGetStarted = () => {
     base44.auth.redirectToLogin('/Dashboard');
   };
 
-  const now = new Date();
-  const mockScans = Array.from({ length: 150 }, (_, i) => ({
-    created_date: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-  }));
+  const mockChartData = [
+    { date: 'Apr 12', scans: 14 },
+    { date: 'Apr 13', scans: 28 },
+    { date: 'Apr 14', scans: 19 },
+    { date: 'Apr 15', scans: 45 },
+    { date: 'Apr 16', scans: 37 },
+    { date: 'Apr 17', scans: 62 },
+    { date: 'Apr 18', scans: 54 },
+  ];
 
   return (
     <div className="w-full bg-background">
@@ -25,7 +33,7 @@ export default function Home() {
           style={{ backgroundColor: '#142024' }}
         >
           <div className="max-w-xl">
-            <h1 className="text-6xl font-bold text-white mb-6 font-poppins leading-tight">
+            <h1 className="text-6xl font-black text-white mb-6 font-poppins leading-tight">
               Master the Art of the Scan
             </h1>
             <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">
@@ -64,6 +72,9 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Path to Mastery Stepper */}
+      <PathToMastery />
+
       {/* Feature Ribbon 1: The Fluid Form */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-5xl mx-auto">
@@ -80,7 +91,7 @@ export default function Home() {
                 <Zap className="w-6 h-6 text-primary" />
                 <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">The Fluid Form</h3>
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4 max-w-2xl font-poppins">
+              <h2 className="text-4xl font-black text-gray-900 mb-4 max-w-2xl font-poppins">
                 Dynamic QR Codes You Can Edit Anytime
               </h2>
               <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
@@ -100,17 +111,24 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#142024' }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div
-              className="rounded-xl p-8 shadow-card-hover bg-white order-2"
-            >
-              <TimeOfDayHeatmap scans={mockScans} />
+            <div className="order-2 rounded-xl p-6 bg-white/10 backdrop-blur-md border border-white/20 shadow-card-hover">
+              <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-4">Live Scan Activity — Last 7 Days</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={mockChartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: '#142024', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: 8 }} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                  <Bar dataKey="scans" fill="#BB3F27" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
             <div className="order-1">
               <div className="flex items-center gap-3 mb-4">
                 <BarChart3 className="w-6 h-6 text-primary" />
                 <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Inner Vision</h3>
               </div>
-              <h2 className="text-4xl font-bold text-white mb-4 max-w-2xl font-poppins">
+              <h2 className="text-4xl font-black text-white mb-4 max-w-2xl font-poppins">
                 See Every Scan in Real-Time
               </h2>
               <p className="text-lg text-gray-300 mb-6 max-w-3xl leading-relaxed">
@@ -142,7 +160,7 @@ export default function Home() {
                 <Palette className="w-6 h-6 text-primary" />
                 <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Bespoke Gi</h3>
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4 max-w-2xl font-poppins">
+              <h2 className="text-4xl font-black text-gray-900 mb-4 max-w-2xl font-poppins">
                 Custom Design Your QR Codes
               </h2>
               <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
@@ -158,10 +176,16 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Testimonials */}
+      <Testimonials />
+
+      {/* Bento Features */}
+      <BentoFeatures />
+
       {/* Final CTA */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6 font-poppins">
+          <h2 className="text-4xl font-black text-gray-900 mb-6 font-poppins">
             Begin Your Mastery
           </h2>
           <p className="text-xl text-gray-600 mb-8">
