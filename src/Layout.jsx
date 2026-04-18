@@ -105,16 +105,16 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Link to="/" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
+                  <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Home
                   </Link>
-                  <Link to="/WhyUs" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
+                  <Link to="/WhyUs" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Why Us?
                   </Link>
-                  <Link to="/FAQ" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
+                  <Link to="/FAQ" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     FAQ
                   </Link>
-                  <Link to="/Pricing" className={`hover:text-primary transition-colors font-medium text-sm ${!scrolled && currentPageName === 'Home' ? 'text-white/80' : 'text-foreground/70'}`}>
+                  <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
                     Pricing
                   </Link>
                 </>
@@ -158,7 +158,7 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin} className={`font-semibold transition-colors duration-200 ${!scrolled && currentPageName === 'Home' ? 'text-white hover:text-white/80' : 'text-foreground hover:text-primary'}`}>
+                  <Button variant="ghost" onClick={handleLogin} className="font-semibold transition-colors duration-200 text-foreground hover:text-primary">
                     Login
                   </Button>
                   <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors duration-200">
