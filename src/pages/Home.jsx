@@ -60,7 +60,7 @@ export default function Home() {
           <img
             src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/1842bba19_sensei-pose.png"
             alt="QR Sensei"
-            className="w-full max-w-sm drop-shadow-xl"
+            className="w-full max-w-lg drop-shadow-xl"
           />
         </div>
       </div>
