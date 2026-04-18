@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
     }
 
     // For text, wifi, vcard — return raw content for the client to display
-    return Response.json({ content_type: contentType, content: qrCode.content, name: qrCode.name });
+    return Response.json({ content_type: contentType, content: qrCode.content, name: qrCode.name, design_config: qrCode.design_config || {} });
 
   } catch (error) {
     console.error('Redirect error:', error.message);
