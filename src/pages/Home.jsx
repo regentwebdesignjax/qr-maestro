@@ -148,24 +148,12 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-            <div
-              className="rounded-xl p-8 shadow-card-hover"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="aspect-square bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Aa
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Bb
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Cc
-                </div>
-                <div className="aspect-square bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                  Dd
-                </div>
-              </div>
+            <div className="flex items-center justify-center">
+              <img
+                src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/d207e59df_sensei-master.png"
+                alt="Bespoke Gi"
+                className="w-full max-w-sm drop-shadow-xl"
+              />
             </div>
           </div>
         </div>
