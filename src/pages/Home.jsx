@@ -42,8 +42,7 @@ export default function Home() {
               <Link to="/Pricing">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-sensei-black font-semibold transition-colors duration-200"
+                  className="bg-transparent border border-white text-white hover:bg-white hover:text-[#142024] font-semibold transition-colors duration-200"
                 >
                   View Pricing
                 </Button>
