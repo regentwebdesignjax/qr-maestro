@@ -186,13 +186,13 @@ export default function Pricing() {
             </Badge>
             <CardHeader>
               <CardTitle className="text-2xl">Black Belt (Annual)</CardTitle>
-              <CardDescription>The path of mastery - save 17%</CardDescription>
+              <CardDescription>The path of mastery - save 28%</CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$290</span>
+                <span className="text-4xl font-bold">$249</span>
                 <span className="text-gray-600">/year</span>
               </div>
               <p className="text-sm text-green-600 font-medium">
-                Just $24.17/month
+                Just $20.75/month
               </p>
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
