@@ -42,7 +42,7 @@
     },
     "design_config": {
       "type": "object",
-      "description": "Design configuration (colors, logo, styles)",
+      "description": "Design configuration (colors, logo, styles, landing page branding)",
       "properties": {
         "foreground_color": {
           "type": "string"
@@ -93,6 +93,27 @@
         },
         "eye_color": {
           "type": "string"
+        },
+        "landing_header_image": {
+          "type": "string",
+          "description": "URL for a top banner image on the landing page"
+        },
+        "landing_brand_logo": {
+          "type": "string",
+          "description": "URL for a brand logo displayed on the landing page"
+        },
+        "landing_theme_color": {
+          "type": "string",
+          "description": "Hex color for primary buttons and accents on the landing page"
+        },
+        "landing_font": {
+          "type": "string",
+          "enum": [
+            "poppins",
+            "serif",
+            "mono"
+          ],
+          "description": "Font family for the landing page"
         }
       }
     },

@@ -87,6 +87,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
+  const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -159,6 +161,23 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
       alert('Failed to upload logo. Please ensure the file is under 2MB and is a valid image.');
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleLandingImageUpload = async (e, field) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (field === 'landing_header_image') setUploadingHeaderImage(true);
+    else setUploadingBrandLogo(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const url = result?.file_url || result?.data?.file_url;
+      if (url) handleDesignChange(field, url);
+    } catch (err) {
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      if (field === 'landing_header_image') setUploadingHeaderImage(false);
+      else setUploadingBrandLogo(false);
     }
   };
 
@@ -693,15 +712,96 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 </div> :
 
             <Alert>
-                  <Lock className="h-4 w-4" />
-                  <AlertDescription>
-                    Advanced styles, gradients, custom eyes, frames & logos are available on Pro.{' '}
-                    <Link to="/Pricing" className="font-semibold underline">Upgrade now</Link>
-                  </AlertDescription>
-                </Alert>
+                <Lock className="h-4 w-4" />
+                <AlertDescription>
+                  Advanced styles, gradients, custom eyes, frames & logos are available on Pro.{' '}
+                  <Link to="/Pricing" className="font-semibold underline">Upgrade now</Link>
+                </AlertDescription>
+              </Alert>
             }
+
+            {/* Landing Page Branding — only for non-URL content types */}
+            {formData.content_type !== 'url' && (
+              <div className="border rounded-xl p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="font-semibold text-sm">Landing Page Branding</Label>
+                  {!isPro && <Lock className="w-4 h-4 text-gray-400" />}
+                </div>
+                {!isPro ? (
+                  <p className="text-xs text-gray-500">
+                    Customize the scan landing page with your brand colors, logo & banner.{' '}
+                    <Link to="/Pricing" className="text-primary underline font-semibold">Upgrade to unlock</Link>
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Header Image */}
+                    <div>
+                      <Label className="text-xs text-gray-500">Header Banner</Label>
+                      {dc.landing_header_image ? (
+                        <div className="mt-1 space-y-1">
+                          <img src={dc.landing_header_image} alt="Header" className="w-full h-16 object-cover rounded border" />
+                          <Button type="button" variant="outline" size="sm" onClick={() => handleDesignChange('landing_header_image', '')}>
+                            <X className="w-3 h-3 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="mt-1">
+                          <Input id="lp-header" type="file" accept="image/*" onChange={(e) => handleLandingImageUpload(e, 'landing_header_image')} disabled={uploadingHeaderImage} className="hidden" />
+                          <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-header').click()} disabled={uploadingHeaderImage}>
+                            <Upload className="w-3 h-3 mr-1" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Brand Logo */}
+                    <div>
+                      <Label className="text-xs text-gray-500">Brand Logo</Label>
+                      {dc.landing_brand_logo ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <img src={dc.landing_brand_logo} alt="Brand" className="w-10 h-10 object-contain border rounded-full bg-gray-50" />
+                          <Button type="button" variant="outline" size="sm" onClick={() => handleDesignChange('landing_brand_logo', '')}>
+                            <X className="w-3 h-3 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="mt-1">
+                          <Input id="lp-brand-logo" type="file" accept="image/*" onChange={(e) => handleLandingImageUpload(e, 'landing_brand_logo')} disabled={uploadingBrandLogo} className="hidden" />
+                          <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-brand-logo').click()} disabled={uploadingBrandLogo}>
+                            <Upload className="w-3 h-3 mr-1" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Theme Color */}
+                    <div>
+                      <Label className="text-xs text-gray-500">Theme Color</Label>
+                      <ColorInput
+                        value={dc.landing_theme_color || '#BB3F27'}
+                        onChange={(v) => handleDesignChange('landing_theme_color', v)}
+                        onPreview={(v) => handleDesignChange('landing_theme_color', v)}
+                      />
+                    </div>
+
+                    {/* Font */}
+                    <div>
+                      <Label className="text-xs text-gray-500">Font Style</Label>
+                      <Select value={dc.landing_font || 'poppins'} onValueChange={(v) => handleDesignChange('landing_font', v)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="poppins">Modern (Poppins)</SelectItem>
+                          <SelectItem value="serif">Classic (Serif)</SelectItem>
+                          <SelectItem value="mono">Technical (Mono)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             </motion.div>
-          }
+            }
         </AnimatePresence>
       </div>
 

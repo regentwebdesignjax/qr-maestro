@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Save, Info, Upload, X } from 'lucide-react';
+import { ArrowLeft, Save, Info, Upload, X, Lock } from 'lucide-react';
 import QRCodePreview from '../components/qr/QRCodePreview';
 
 function isValidHex(v) { return /^#[0-9a-fA-F]{6}$/.test(v); }
@@ -34,6 +34,8 @@ export default function EditQR() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
+  const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -102,6 +104,36 @@ export default function EditQR() {
       alert('Failed to upload logo. Please try again.');
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleHeaderImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingHeaderImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const url = result?.file_url || result?.data?.file_url;
+      if (url) updateDesign('landing_header_image', url);
+    } catch (err) {
+      alert('Failed to upload header image. Please try again.');
+    } finally {
+      setUploadingHeaderImage(false);
+    }
+  };
+
+  const handleBrandLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBrandLogo(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const url = result?.file_url || result?.data?.file_url;
+      if (url) updateDesign('landing_brand_logo', url);
+    } catch (err) {
+      alert('Failed to upload brand logo. Please try again.');
+    } finally {
+      setUploadingBrandLogo(false);
     }
   };
 
@@ -292,6 +324,93 @@ export default function EditQR() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Landing Page Branding — only relevant for non-URL content */}
+            {qrCode.content_type !== 'url' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    Landing Page Branding
+                    {!isPro && <Lock className="w-4 h-4 text-gray-400" />}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {!isPro ? (
+                    <Alert>
+                      <Lock className="h-4 w-4" />
+                      <AlertDescription>
+                        Landing page branding is a <strong>Black Belt</strong> feature.{' '}
+                        <Link to="/Pricing" className="font-semibold underline text-primary">Upgrade now</Link>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <>
+                      {/* Header Image */}
+                      <div>
+                        <Label>Header Banner Image</Label>
+                        {designConfig.landing_header_image ? (
+                          <div className="mt-1 space-y-2">
+                            <img src={designConfig.landing_header_image} alt="Header" className="w-full h-24 object-cover rounded-lg border" />
+                            <Button type="button" variant="outline" size="sm" onClick={() => updateDesign('landing_header_image', '')}>
+                              <X className="w-4 h-4 mr-1" /> Remove
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="mt-1">
+                            <Input id="header-img" type="file" accept="image/*" onChange={handleHeaderImageUpload} disabled={uploadingHeaderImage} className="hidden" />
+                            <Button type="button" variant="outline" onClick={() => document.getElementById('header-img').click()} disabled={uploadingHeaderImage}>
+                              <Upload className="w-4 h-4 mr-2" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Brand Logo */}
+                      <div>
+                        <Label>Brand Logo</Label>
+                        {designConfig.landing_brand_logo ? (
+                          <div className="flex items-center gap-2 mt-1">
+                            <img src={designConfig.landing_brand_logo} alt="Brand logo" className="w-14 h-14 object-contain border rounded-full bg-gray-50" />
+                            <Button type="button" variant="outline" size="sm" onClick={() => updateDesign('landing_brand_logo', '')}>
+                              <X className="w-4 h-4 mr-1" /> Remove
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="mt-1">
+                            <Input id="brand-logo" type="file" accept="image/*" onChange={handleBrandLogoUpload} disabled={uploadingBrandLogo} className="hidden" />
+                            <Button type="button" variant="outline" onClick={() => document.getElementById('brand-logo').click()} disabled={uploadingBrandLogo}>
+                              <Upload className="w-4 h-4 mr-2" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Theme Color */}
+                      <div>
+                        <Label>Theme Color</Label>
+                        <ColorInput
+                          value={designConfig.landing_theme_color || '#BB3F27'}
+                          onChange={(v) => updateDesign('landing_theme_color', v)}
+                        />
+                      </div>
+
+                      {/* Font */}
+                      <div>
+                        <Label>Font Style</Label>
+                        <Select value={designConfig.landing_font || 'poppins'} onValueChange={(v) => updateDesign('landing_font', v)}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="poppins">Modern (Poppins)</SelectItem>
+                            <SelectItem value="serif">Classic (Serif)</SelectItem>
+                            <SelectItem value="mono">Technical (Mono)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex gap-3">
               <Link to={'/ViewQR?id=' + qrCode.id} className="flex-1">
