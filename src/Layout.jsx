@@ -122,7 +122,7 @@ export default function Layout({ children, currentPageName }) {
                 <>
                   {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
                     <Link to="/Pricing">
-                      <Button variant="outline" className="font-semibold">
+                      <Button variant="outline" className="font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                         Upgrade Rank
                       </Button>
                     </Link>
@@ -151,10 +151,10 @@ export default function Layout({ children, currentPageName }) {
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin} className="font-semibold">
+                  <Button variant="ghost" onClick={handleLogin} className="font-semibold text-foreground hover:text-primary transition-colors duration-200">
                     Login
                   </Button>
-                  <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg">
+                  <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors duration-200">
                     Get Started
                   </Button>
                 </>

@@ -105,12 +105,12 @@ export default function FAQ() {
            </p>
           <div className="flex gap-4 justify-center">
             <Link to="/Dashboard">
-              <Button size="lg">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
                 Get Started Free
               </Button>
             </Link>
             <Link to="/Pricing">
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200">
                 View Pricing
               </Button>
             </Link>

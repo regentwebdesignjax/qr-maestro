@@ -111,7 +111,7 @@ export default function Pricing() {
                     {isPro ? 'Downgrade' : 'Current Plan'}
                   </Button>
                 ) : (
-                  <Button variant="outline" className="w-full" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
+                  <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
                     Get Started
                   </Button>
                 )}
@@ -165,7 +165,7 @@ export default function Pricing() {
                     Manage Subscription
                   </Button>
                 ) : (
-                  <Button className="w-full" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
@@ -223,7 +223,7 @@ export default function Pricing() {
                     Manage Subscription
                   </Button>
                 ) : (
-                  <Button className="w-full" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>

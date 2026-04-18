@@ -43,7 +43,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-gray-500 text-white hover:bg-gray-900"
+                  className="border-white text-white hover:bg-white hover:text-sensei-black font-semibold transition-colors duration-200"
                 >
                   View Pricing
                 </Button>

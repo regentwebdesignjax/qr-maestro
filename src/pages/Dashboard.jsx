@@ -92,10 +92,10 @@ export default function Dashboard() {
               </Button>
             )}
             <Link to="/CreateQR">
-              <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Strike a New Code
-                </Button>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
+                <Plus className="w-4 h-4 mr-2" />
+                Strike a New Code
+              </Button>
             </Link>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground mt-0.5">Dynamic QR codes, scan analytics, custom designs & more — from $29/month.</p>
                 </div>
                 <Link to="/Pricing">
-                  <Button className="shrink-0">
+                  <Button className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
                     <Zap className="w-4 h-4 mr-2" />
                     Upgrade to Pro
                   </Button>
@@ -217,7 +217,7 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No disciplines yet</h3>
                 <p className="text-gray-600 mb-6">Strike your first code to begin your training</p>
                 <Link to="/CreateQR">
-                  <Button>
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
                     <Plus className="w-4 h-4 mr-2" />
                     Strike a New Code
                   </Button>
