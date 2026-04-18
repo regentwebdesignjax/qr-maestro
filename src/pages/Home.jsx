@@ -35,7 +35,7 @@ export default function Home() {
               <Button
                 size="lg"
                 onClick={handleGetStarted}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                className="bg-primary hover:bg-primary/85 text-primary-foreground font-semibold hover:scale-[1.02] hover:shadow-md"
               >
                 Get Started Free
               </Button>
@@ -43,7 +43,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-gray-500 text-white hover:bg-gray-900"
+                  className="border-white/40 text-white bg-transparent hover:bg-white/10 hover:border-white/60"
                 >
                   View Pricing
                 </Button>
@@ -171,8 +171,8 @@ export default function Home() {
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-          >
+            className="bg-primary hover:bg-primary/85 text-primary-foreground font-semibold hover:scale-[1.02] hover:shadow-md"
+            >
             Create Your First QR Code
           </Button>
         </div>

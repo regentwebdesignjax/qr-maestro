@@ -98,12 +98,12 @@ export default function WhyUs() {
            </p>
           <div className="flex gap-4 justify-center">
             <Link to="/Dashboard">
-              <Button size="lg">
+              <Button size="lg" className="bg-primary hover:bg-primary/85 text-primary-foreground font-semibold hover:scale-[1.02] hover:shadow-md">
                 Strike Your First Code
               </Button>
             </Link>
             <Link to="/Pricing">
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="font-semibold hover:scale-[1.02]">
                 View Pricing
               </Button>
             </Link>
