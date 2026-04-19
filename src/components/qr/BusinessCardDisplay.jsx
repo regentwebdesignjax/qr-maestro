@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video } from 'lucide-react';
+import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 
@@ -170,6 +170,7 @@ export default function BusinessCardDisplay({ data }) {
           <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-6 shadow-sm">
             {exchangeSent ? (
               <div className="text-center py-4">
+                <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
                 <p className="font-semibold text-gray-800">Thank you!</p>
                 <p className="text-sm text-gray-500 mt-1">Your info has been shared.</p>
               </div>
