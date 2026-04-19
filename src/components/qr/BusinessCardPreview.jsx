@@ -23,6 +23,14 @@ function getPlatformIcon(platform) {
 }
 
 export default function BusinessCardPreview({ data = {} }) {
+  const [headshotError, setHeadshotError] = React.useState(false);
+  const [bannerError, setBannerError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHeadshotError(false);
+    setBannerError(false);
+  }, [data.headshot_url, data.banner_url]);
+
   const themeColor = '#BB3F27';
   const ctaColor = data.design_config?.cta_button_color || themeColor;
   const isLight = (hex) => {
@@ -49,8 +57,13 @@ export default function BusinessCardPreview({ data = {} }) {
         <div className="overflow-y-auto max-h-[520px] bg-gray-50">
           {/* Banner */}
           <div className="relative w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-visible">
-            {data.banner_url ? (
-              <img src={data.banner_url} alt="Banner" className="w-full h-full object-cover" />
+            {data.banner_url && !bannerError ? (
+              <img
+                src={data.banner_url}
+                alt="Banner"
+                className="w-full h-full object-cover"
+                onError={() => setBannerError(true)}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <span className="text-white/30 text-xs">Banner Image</span>
@@ -59,8 +72,13 @@ export default function BusinessCardPreview({ data = {} }) {
             {/* Headshot overlapping banner */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
               <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
-                {data.headshot_url ? (
-                  <img src={data.headshot_url} alt="Headshot" className="w-full h-full object-cover" />
+                {data.headshot_url && !headshotError ? (
+                  <img
+                    src={data.headshot_url}
+                    alt="Headshot"
+                    className="w-full h-full object-cover"
+                    onError={() => setHeadshotError(true)}
+                  />
                 ) : (
                   <User className="w-8 h-8 text-gray-400" />
                 )}
