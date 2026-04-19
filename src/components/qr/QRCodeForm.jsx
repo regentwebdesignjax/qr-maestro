@@ -750,11 +750,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                           <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-header').click()} disabled={uploadingHeaderImage}>
                             <Upload className="w-3 h-3 mr-1" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
                           </Button>
-                        </div>
-                      )}
-                    </div>
+                          <p className="text-xs text-gray-400 mt-1">Recommended: 1200×400px (3:1 ratio)</p>
+                          </div>
+                          )}
+                          </div>
 
-                    {/* Brand Logo */}
+                          {/* Brand Logo */}
                     <div>
                       <Label className="text-xs text-gray-500">Brand Logo</Label>
                       {dc.landing_brand_logo ? (
@@ -770,11 +771,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                           <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-brand-logo').click()} disabled={uploadingBrandLogo}>
                             <Upload className="w-3 h-3 mr-1" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
                           </Button>
-                        </div>
-                      )}
-                    </div>
+                          <p className="text-xs text-gray-400 mt-1">Recommended: 400×400px (square)</p>
+                          </div>
+                          )}
+                          </div>
 
-                    {/* Theme Color */}
+                          {/* Theme Color */}
                     <div>
                       <Label className="text-xs text-gray-500">Theme Color</Label>
                       <ColorInput

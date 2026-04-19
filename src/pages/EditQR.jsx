@@ -361,6 +361,7 @@ export default function EditQR() {
                             <Button type="button" variant="outline" onClick={() => document.getElementById('header-img').click()} disabled={uploadingHeaderImage}>
                               <Upload className="w-4 h-4 mr-2" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
                             </Button>
+                            <p className="text-xs text-gray-400 mt-1">Recommended: 1200×400px (3:1 ratio)</p>
                           </div>
                         )}
                       </div>
@@ -381,6 +382,7 @@ export default function EditQR() {
                             <Button type="button" variant="outline" onClick={() => document.getElementById('brand-logo').click()} disabled={uploadingBrandLogo}>
                               <Upload className="w-4 h-4 mr-2" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
                             </Button>
+                            <p className="text-xs text-gray-400 mt-1">Recommended: 400×400px (square)</p>
                           </div>
                         )}
                       </div>
