@@ -3,8 +3,18 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Users, Mail, Calendar } from 'lucide-react';
+import { Download, Users, Mail, Calendar, FilterX } from 'lucide-react';
 import { format } from 'date-fns';
+
+function deduplicateLeads(leads) {
+  const seen = new Set();
+  return leads.filter(l => {
+    const key = l.lead_email?.toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 function exportToCSV(leads) {
   const header = ['Name', 'Email', 'Source Card', 'Lead Tag', 'Date'];
@@ -27,6 +37,7 @@ function exportToCSV(leads) {
 
 export default function Leads() {
   const [user, setUser] = useState(null);
+  const [dedupeOnly, setDedupeOnly] = useState(false);
 
   useEffect(() => {
     base44.auth.me()
@@ -41,6 +52,8 @@ export default function Leads() {
   });
 
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
+  const displayLeads = dedupeOnly ? deduplicateLeads(leads) : leads;
+  const dupeCount = leads.length - deduplicateLeads(leads).length;
 
   if (!user) {
     return (
@@ -76,10 +89,22 @@ export default function Leads() {
             <p className="text-gray-500 mt-1">Contacts collected via your Digital Business Cards</p>
           </div>
           {leads.length > 0 && (
-            <Button variant="outline" onClick={() => exportToCSV(leads)}>
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              {dupeCount > 0 && (
+                <Button
+                  variant={dedupeOnly ? 'default' : 'outline'}
+                  onClick={() => setDedupeOnly(v => !v)}
+                  className={dedupeOnly ? 'bg-primary text-primary-foreground' : ''}
+                >
+                  <FilterX className="w-4 h-4 mr-2" />
+                  {dedupeOnly ? `Deduped (${dupeCount} removed)` : `Deduplicate (${dupeCount} dupes)`}
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => exportToCSV(displayLeads)}>
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
           )}
         </div>
 
@@ -87,7 +112,8 @@ export default function Leads() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
-              {leads.length} Lead{leads.length !== 1 ? 's' : ''}
+              {displayLeads.length} Lead{displayLeads.length !== 1 ? 's' : ''}
+              {dedupeOnly && <span className="text-xs font-normal text-muted-foreground ml-1">(deduplicated)</span>}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -114,7 +140,7 @@ export default function Leads() {
                     </tr>
                   </thead>
                   <tbody>
-                    {leads.map(lead => (
+                    {displayLeads.map(lead => (
                       <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
                         <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
                         <td className="py-3 pr-4">
