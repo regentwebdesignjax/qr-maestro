@@ -856,18 +856,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               </Alert>
             }
 
-            {/* CTA Button Color — only for business cards */}
-            {formData.content_type === 'business_card' && isPro && (
-              <div>
-                <Label>CTA Button Color</Label>
-                <ColorInput
-                  value={dc.cta_button_color || '#BB3F27'}
-                  onChange={(v) => handleDesignChange('cta_button_color', v)}
-                  onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
-                />
-              </div>
-            )}
-
             {/* Landing Page Branding — only for non-URL content types */}
             {formData.content_type !== 'url' && (
               <div className="border rounded-xl p-4 space-y-4">
@@ -933,6 +921,18 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                         onPreview={(v) => handleDesignChange('landing_theme_color', v)}
                       />
                     </div>
+
+                    {/* CTA Button Color — business card only */}
+                    {formData.content_type === 'business_card' && (
+                      <div>
+                        <Label className="text-xs text-gray-500">CTA Button Color</Label>
+                        <ColorInput
+                          value={dc.cta_button_color || '#BB3F27'}
+                          onChange={(v) => handleDesignChange('cta_button_color', v)}
+                          onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                        />
+                      </div>
+                    )}
 
                     {/* Font */}
                     <div>
