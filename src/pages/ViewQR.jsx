@@ -226,7 +226,7 @@ export default function ViewQR() {
 
               {/* Actions */}
               {qrCode.type === 'dynamic' && (
-                <div className="pt-4 space-y-3">
+                <div className="pt-4 space-y-4">
                   <Link to={'/EditQR?id=' + qrCode.id}>
                     <Button className="w-full">Edit Dynamic QR</Button>
                   </Link>
