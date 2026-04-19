@@ -398,7 +398,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <p className="text-xs text-muted-foreground">Used to track and route leads in your CSV exports.</p>
                   </div>
                 </>
-              )
               )}
 
               {formData.content_type !== 'business_card' && (
