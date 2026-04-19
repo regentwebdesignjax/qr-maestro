@@ -16,6 +16,7 @@ function SECTION({ icon: Icon, title, children }) {
     {children}
   </div>
   );
+}
 
 function ImageUploader({ label, hint, value, onChange, id }) {
   const [uploading, setUploading] = useState(false);
