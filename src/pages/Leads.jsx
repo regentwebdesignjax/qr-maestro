@@ -192,13 +192,14 @@ export default function Leads() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowClearModal(true)}
-                disabled={!hasExported}
-                title={!hasExported ? 'Export the list first before clearing' : 'Clear all leads'}
-                className={hasExported ? 'border-red-300 text-red-600 hover:bg-red-50' : 'opacity-40 cursor-not-allowed'}
+                onClick={() => hasExported && setShowClearModal(true)}
+                title={!hasExported ? 'Export the list first to enable this' : 'Permanently delete all leads'}
+                className={hasExported
+                  ? 'border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400'
+                  : 'border-gray-200 text-gray-400 cursor-not-allowed'}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Clear All
+                Clear All {!hasExported && <span className="text-xs ml-1">(export first)</span>}
               </Button>
             </div>
           )}
