@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import BrandedLayout from '@/components/qr/BrandedLayout';
+import BusinessCardDisplay from '@/components/qr/BusinessCardDisplay';
 
 function parseWifi(content) {
   // Standard QR WiFi format: WIFI:S:ssid;T:WPA;P:password;;
@@ -375,6 +376,15 @@ export default function Redirect() {
           return;
         }
 
+        // Parse business card JSON content
+        if (data.content_type === 'business_card') {
+          try {
+            data.bc = JSON.parse(data.content);
+          } catch {
+            data.bc = {};
+          }
+        }
+
         setState({ status: 'display', data });
       } catch (error) {
         console.error('Redirect error:', error);
@@ -399,6 +409,11 @@ export default function Redirect() {
   const { data } = state;
   const dc = data.design_config || {};
   const branded = !!(dc.landing_header_image || dc.landing_brand_logo || dc.landing_theme_color);
+
+  // Business card gets its own full-page display
+  if (data.content_type === 'business_card') {
+    return <BusinessCardDisplay data={{ ...data.bc, design_config: dc }} />;
+  }
 
   return (
     <BrandedLayout designConfig={dc}>

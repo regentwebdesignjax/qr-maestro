@@ -6,12 +6,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Plus, Trash2, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import BusinessCardForm from './BusinessCardForm';
 
 const CONTENT_TYPES = [
 { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
+{ value: 'business_card', label: 'Digital Business Card', icon: CreditCard, desc: 'Rich profile card with headshot & socials', dynamicOnly: true, proOnly: true },
 { value: 'text', label: 'Plain Text', icon: Type, desc: 'Simple text message or information', dynamicOnly: true },
 { value: 'wifi', label: 'WiFi Credentials', icon: Wifi, desc: 'Let people connect to your network', dynamicOnly: true },
 { value: 'vcard', label: 'vCard Contact', icon: User, desc: 'Share your contact information', dynamicOnly: true },
@@ -100,6 +102,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
 
   const [wifiData, setWifiData] = useState({ ssid: '', password: '', encryption: 'WPA' });
   const [customPlatforms, setCustomPlatforms] = useState([]);
+  const [bcData, setBcData] = useState({});
 
   const [formData, setFormData] = useState({
     name: '',
@@ -229,14 +232,18 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   };
 
   const handleSaveQR = () => {
-    if (!formData.name || !formData.content) {alert('Please fill in all required fields');return;}
+    const isBc = formData.content_type === 'business_card';
+    if (!formData.name || (!formData.content && !isBc)) { alert('Please fill in all required fields'); return; }
+    if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
     const shortCode = formData.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
   };
 
   const steps = ['QR Code Type', 'Name & Content', 'Design'];
   const canProceedStep0 = !!formData.content_type;
-  const canProceedStep1 = !!formData.name && !!formData.content;
+  const canProceedStep1 = formData.content_type === 'business_card'
+    ? !!formData.name && !!bcData.name
+    : !!formData.name && !!formData.content;
   const dc = formData.design_config;
 
   const EyeShapeButton = ({ field, value, label, children }) =>
@@ -323,9 +330,11 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               <div>
                 <p className="text-gray-600 text-sm mb-2">What type of content will this QR code contain?</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {CONTENT_TYPES.map(({ value, label, icon: Icon, desc }) => {
+                  {CONTENT_TYPES.map(({ value, label, icon: Icon, desc, proOnly }) => {
                   const isUrlOnly = value !== 'url';
-                  const isDisabled = formData.type === 'static' && isUrlOnly;
+                  const isStaticDisabled = formData.type === 'static' && isUrlOnly;
+                  const isProDisabled = proOnly && !isPro;
+                  const isDisabled = isStaticDisabled || isProDisabled;
 
                   return (
                     <button key={value} type="button"
@@ -338,11 +347,14 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                     'border-primary bg-primary/5' :
                     'border-gray-200 hover:border-gray-300'}`
                     }>
-                        <Icon className={`w-4 h-4 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
+                        <div className="flex items-center gap-1">
+                          <Icon className={`w-4 h-4 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
+                          {isProDisabled && <Lock className="w-3 h-3 text-gray-400" />}
+                        </div>
                         <div>
                           <p className={`font-medium text-xs ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
                           <p className={`text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
-                            {isDisabled ? 'Static only supports URLs' : desc}
+                            {isStaticDisabled ? 'Static only supports URLs' : isProDisabled ? 'Black Belt only' : desc}
                           </p>
                         </div>
                       </button>);
@@ -362,6 +374,21 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                 <Input id="name" placeholder="e.g., Product Landing Page" value={formData.name}
               onChange={(e) => {handleChange('name', e.target.value);triggerPreview({ name: e.target.value });}} />
               </div>
+              {/* Business Card special form */}
+              {formData.content_type === 'business_card' && (
+                <BusinessCardForm
+                  data={bcData}
+                  onChange={(updated) => {
+                    setBcData(updated);
+                    // Serialize to JSON string as the content field
+                    const serialized = JSON.stringify(updated);
+                    handleChange('content', serialized);
+                    triggerPreview({ content: serialized });
+                  }}
+                />
+              )}
+
+              {formData.content_type !== 'business_card' && (
               <div>
                 <Label htmlFor="content">
                   {formData.content_type === 'url' && 'Destination URL *'}
@@ -664,6 +691,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
               }
                 </div>
+              )}
             </motion.div>
           }
 

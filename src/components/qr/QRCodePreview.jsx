@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import BusinessCardPreview from './BusinessCardPreview';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -290,6 +290,13 @@ export default function QRCodePreview({ qrData }) {
         </div>
       </div>
     );
+  }
+
+  // Business Card: show mobile card preview instead of QR matrix
+  if (qrData.content_type === 'business_card') {
+    let bcData = {};
+    try { bcData = JSON.parse(qrData.content || '{}'); } catch {}
+    return <BusinessCardPreview data={bcData} />;
   }
 
   const dc = qrData.design_config || {};
