@@ -1,13 +1,26 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle } from 'lucide-react';
+import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import BrandedLayout from '@/components/qr/BrandedLayout';
 
 function parseWifi(content) {
-  const lines = content.split('\n');
+  // Standard QR WiFi format: WIFI:S:ssid;T:WPA;P:password;;
+  if (content.startsWith('WIFI:')) {
+    const result = {};
+    const inner = content.replace(/^WIFI:/, '').replace(/;;$/, '');
+    inner.split(';').forEach(part => {
+      const [k, ...rest] = part.split(':');
+      const val = rest.join(':');
+      if (k === 'S') result.ssid = val;
+      else if (k === 'T') result.encryption = val;
+      else if (k === 'P') result.password = val;
+    });
+    return result;
+  }
+  // Legacy line-based fallback
   const result = {};
-  lines.forEach(line => {
+  content.split('\n').forEach(line => {
     const [key, ...rest] = line.split(':');
     result[key?.trim().toLowerCase()] = rest.join(':').trim();
   });
@@ -49,10 +62,10 @@ function WifiDisplay({ content, branded }) {
             <p className="text-lg font-mono bg-gray-100 px-3 py-1 rounded">{wifi.password}</p>
           </div>
         )}
-        {wifi.encryption && (
+        {wifi.encryption && wifi.encryption !== 'nopass' && (
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Security</p>
-            <p className="font-medium">{wifi.encryption}</p>
+            <p className="font-medium">{wifi.encryption === 'WPA' ? 'WPA/WPA2' : wifi.encryption}</p>
           </div>
         )}
         <p className="text-xs text-gray-400 pt-2">Go to Settings → WiFi to connect manually</p>
@@ -194,6 +207,7 @@ function SocialDisplay({ content, branded }) {
     return platformUrls[platform] || `https://${platform}.com/${cleanHandle}`;
   };
 
+  const KNOWN_PLATFORMS = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
   const social = parseSocial(content);
 
   return (
@@ -208,7 +222,10 @@ function SocialDisplay({ content, branded }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {Object.entries(social).map(([platform, handle]) => {
-          const displayUrl = getUrl(platform, handle);
+          const isCustom = platform.startsWith('custom_');
+          const displayLabel = isCustom ? platform.replace('custom_', '') : platform;
+          const displayUrl = isCustom ? handle : getUrl(platform, handle);
+          const isKnown = KNOWN_PLATFORMS.includes(platform);
           return (
             <a
               key={platform}
@@ -217,8 +234,11 @@ function SocialDisplay({ content, branded }) {
               rel="noopener noreferrer"
               className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
             >
+              {(!isKnown || isCustom) && (
+                <LinkIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              )}
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 capitalize font-medium">{platform}</p>
+                <p className="text-xs text-gray-500 capitalize font-medium">{displayLabel}</p>
                 <p className="text-sm text-gray-700 hover:text-primary font-medium break-words">{handle}</p>
               </div>
             </a>

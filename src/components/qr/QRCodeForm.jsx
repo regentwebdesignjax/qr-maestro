@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle } from 'lucide-react';
+import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
@@ -42,10 +42,18 @@ function generateVCardContent(vcard_data) {
   return lines.join('\n');
 }
 
-function generateSocialContent(social_data) {
+function generateSocialContent(social_data, custom_platforms = []) {
   const platforms = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
-  const content = platforms.filter((p) => social_data[p]).map((p) => `${p}:${social_data[p]}`).join('\n');
-  return content;
+  const standard = platforms.filter((p) => social_data[p]).map((p) => `${p}:${social_data[p]}`);
+  const custom = custom_platforms.filter(c => c.label && c.url).map(c => `custom_${c.label}:${c.url}`);
+  return [...standard, ...custom].join('\n');
+}
+
+function generateWifiContent(wifi_data) {
+  const ssid = wifi_data.ssid || '';
+  const password = wifi_data.password || '';
+  const encryption = wifi_data.encryption || 'WPA';
+  return `WIFI:S:${ssid};T:${encryption};P:${password};;`;
 }
 
 // Only fires preview when hex text is a valid full color
@@ -89,6 +97,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
+
+  const [wifiData, setWifiData] = useState({ ssid: '', password: '', encryption: 'WPA' });
+  const [customPlatforms, setCustomPlatforms] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -181,9 +192,18 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
     }
   };
 
-  const handleContentFileUpload = async (e) => {
+  const FILE_LIMITS = { pdf: 5, image: 2, mp3: 10 };
+
+  const handleContentFileUpload = async (e, fileType) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const limitMB = FILE_LIMITS[fileType] || 5;
+    if (file.size > limitMB * 1024 * 1024) {
+      const label = fileType === 'mp3' ? 'MP3' : fileType === 'pdf' ? 'PDF' : 'Image';
+      alert(`File too large. Maximum size for ${label} is ${limitMB}MB.`);
+      e.target.value = '';
+      return;
+    }
     setUploadingFile(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
@@ -364,8 +384,47 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
               onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
               }
                 {formData.content_type === 'wifi' &&
-              <Textarea id="content" placeholder={"SSID:YourNetwork\nPassword:YourPassword\nEncryption:WPA"} value={formData.content} rows={3}
-              onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
+              <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-500">Network Name (SSID) *</Label>
+                      <Input placeholder="MyWiFiNetwork" value={wifiData.ssid}
+                  onChange={(e) => {
+                    const next = { ...wifiData, ssid: e.target.value };
+                    setWifiData(next);
+                    const c = generateWifiContent(next);
+                    handleChange('content', c);
+                    triggerPreview({ content: c });
+                  }} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Password</Label>
+                      <Input type="password" placeholder="Password (leave blank if open)" value={wifiData.password}
+                  onChange={(e) => {
+                    const next = { ...wifiData, password: e.target.value };
+                    setWifiData(next);
+                    const c = generateWifiContent(next);
+                    handleChange('content', c);
+                    triggerPreview({ content: c });
+                  }} />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Encryption Type</Label>
+                      <Select value={wifiData.encryption} onValueChange={(v) => {
+                    const next = { ...wifiData, encryption: v };
+                    setWifiData(next);
+                    const c = generateWifiContent(next);
+                    handleChange('content', c);
+                    triggerPreview({ content: c });
+                  }}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WPA">WPA/WPA2</SelectItem>
+                          <SelectItem value="WEP">WEP</SelectItem>
+                          <SelectItem value="nopass">None (Open)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
               }
                 {formData.content_type === 'vcard' &&
               <div className="space-y-3">
@@ -412,13 +471,16 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                   </div>
               }
                 {formData.content_type === 'pdf' &&
-              <div className="flex items-center gap-2">
-                    <Input id="pdf-file" type="file" accept="application/pdf" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
-                    <Button type="button" variant="outline" onClick={() => document.getElementById('pdf-file').click()} disabled={uploadingFile}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingFile ? 'Uploading...' : 'Upload PDF'}
-                    </Button>
-                    {formData.content && <span className="text-sm text-gray-600">PDF uploaded</span>}
+              <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Input id="pdf-file" type="file" accept="application/pdf" onChange={(e) => handleContentFileUpload(e, 'pdf')} disabled={uploadingFile} className="hidden" />
+                      <Button type="button" variant="outline" onClick={() => document.getElementById('pdf-file').click()} disabled={uploadingFile}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploadingFile ? 'Uploading...' : 'Upload PDF'}
+                      </Button>
+                      {formData.content && <span className="text-sm text-gray-600">PDF uploaded</span>}
+                    </div>
+                    <p className="text-xs text-gray-400">Max file size: 5MB</p>
                   </div>
               }
                 {formData.content_type === 'social' &&
@@ -513,38 +575,84 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
                     triggerPreview({ content });
                   }} />
                       <Input id="social-blog" placeholder="Blog" value={formData.social_data?.blog || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, blog: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                    </div>
-                  </div>
-              }
+                      onChange={(e) => {
+                      const newData = { ...formData.social_data, blog: e.target.value };
+                      setFormData((prev) => ({ ...prev, social_data: newData }));
+                      const content = generateSocialContent(newData, customPlatforms);
+                      handleChange('content', content);
+                      triggerPreview({ content });
+                      }} />
+                      </div>
+
+                      {/* Custom Platforms */}
+                      {customPlatforms.length > 0 && (
+                      <div className="space-y-2">
+                       {customPlatforms.map((cp, idx) => (
+                         <div key={idx} className="flex gap-2 items-center">
+                           <Input placeholder="Label" value={cp.label}
+                             onChange={(e) => {
+                               const next = customPlatforms.map((c, i) => i === idx ? { ...c, label: e.target.value } : c);
+                               setCustomPlatforms(next);
+                               const content = generateSocialContent(formData.social_data, next);
+                               handleChange('content', content);
+                               triggerPreview({ content });
+                             }} className="w-28 shrink-0" />
+                           <Input placeholder="URL" value={cp.url}
+                             onChange={(e) => {
+                               const next = customPlatforms.map((c, i) => i === idx ? { ...c, url: e.target.value } : c);
+                               setCustomPlatforms(next);
+                               const content = generateSocialContent(formData.social_data, next);
+                               handleChange('content', content);
+                               triggerPreview({ content });
+                             }} />
+                           <Button type="button" variant="ghost" size="icon" className="shrink-0"
+                             onClick={() => {
+                               const next = customPlatforms.filter((_, i) => i !== idx);
+                               setCustomPlatforms(next);
+                               const content = generateSocialContent(formData.social_data, next);
+                               handleChange('content', content);
+                               triggerPreview({ content });
+                             }}>
+                             <Trash2 className="w-4 h-4 text-gray-400" />
+                           </Button>
+                         </div>
+                       ))}
+                      </div>
+                      )}
+                      <Button type="button" variant="outline" size="sm"
+                      onClick={() => setCustomPlatforms(prev => [...prev, { label: '', url: '' }])}>
+                      <Plus className="w-3 h-3 mr-1" /> Add Custom Platform
+                      </Button>
+                      </div>
+                      }
                 {formData.content_type === 'coupon' &&
               <Input id="content" placeholder="e.g., SAVE20OFF" value={formData.content}
               onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
               }
                 {formData.content_type === 'image' &&
-              <div className="flex items-center gap-2">
-                    <Input id="image-file" type="file" accept="image/*" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
-                    <Button type="button" variant="outline" onClick={() => document.getElementById('image-file').click()} disabled={uploadingFile}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingFile ? 'Uploading...' : 'Upload Image'}
-                    </Button>
-                    {formData.content && <span className="text-sm text-gray-600">Image uploaded</span>}
+              <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Input id="image-file" type="file" accept="image/*" onChange={(e) => handleContentFileUpload(e, 'image')} disabled={uploadingFile} className="hidden" />
+                      <Button type="button" variant="outline" onClick={() => document.getElementById('image-file').click()} disabled={uploadingFile}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploadingFile ? 'Uploading...' : 'Upload Image'}
+                      </Button>
+                      {formData.content && <span className="text-sm text-gray-600">Image uploaded</span>}
+                    </div>
+                    <p className="text-xs text-gray-400">Max file size: 2MB</p>
                   </div>
               }
                 {formData.content_type === 'mp3' &&
-              <div className="flex items-center gap-2">
-                    <Input id="audio-file" type="file" accept="audio/mpeg" onChange={handleContentFileUpload} disabled={uploadingFile} className="hidden" />
-                    <Button type="button" variant="outline" onClick={() => document.getElementById('audio-file').click()} disabled={uploadingFile}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingFile ? 'Uploading...' : 'Upload MP3'}
-                    </Button>
-                    {formData.content && <span className="text-sm text-gray-600">Audio uploaded</span>}
+              <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Input id="audio-file" type="file" accept="audio/mpeg" onChange={(e) => handleContentFileUpload(e, 'mp3')} disabled={uploadingFile} className="hidden" />
+                      <Button type="button" variant="outline" onClick={() => document.getElementById('audio-file').click()} disabled={uploadingFile}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploadingFile ? 'Uploading...' : 'Upload MP3'}
+                      </Button>
+                      {formData.content && <span className="text-sm text-gray-600">Audio uploaded</span>}
+                    </div>
+                    <p className="text-xs text-gray-400">Max file size: 10MB</p>
                   </div>
               }
                 {formData.content_type === 'call' &&
