@@ -28,6 +28,7 @@ export default function Pricing() {
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
   const extraSeats = Math.max(0, totalSeats - 10);
   const monthlyTotal = 29 + extraSeats * 3;
+  const annualTotal = 290 + extraSeats * 36;
 
   const handleUpgrade = async (period) => {
     if (!user) {
@@ -216,18 +217,39 @@ export default function Pricing() {
               <CardTitle className="text-2xl">Black Belt (Annual)</CardTitle>
               <CardDescription>The path of mastery - save 28%</CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$249</span>
+                <span className="text-4xl font-bold">${annualTotal}</span>
                 <span className="text-gray-600">/year</span>
               </div>
-              <p className="text-sm text-green-600 font-medium">
-                Just $20.75/month
-              </p>
+              {extraSeats > 0 ? (
+                <p className="text-xs text-gray-500 mt-1">$290 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $36</p>
+              ) : (
+                <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
+              )}
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
+              {/* DBC Seat Selector */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
+                <Label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+                  <Users className="w-4 h-4 text-green-600" />
+                  Total Digital Business Cards needed
+                </Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={10}
+                    value={totalSeats}
+                    onChange={(e) => setTotalSeats(Math.max(10, parseInt(e.target.value) || 10))}
+                    className="w-24 text-center font-semibold"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
+                  </span>
+                </div>
+              </div>
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited QR Codes</span>
+                  <span className="font-semibold">{totalSeats} Digital Business Cards</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />

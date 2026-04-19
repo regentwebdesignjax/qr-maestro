@@ -2,7 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.4.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
-const EXTRA_DBC_PRICE_ID = 'price_1TNv2cQJqdSd3DGEgvCK2CZ2';
+const DBC_PRICE_MONTHLY = 'price_1TNv2cQJqdSd3DGEgvCK2CZ2';
+const DBC_PRICE_ANNUAL  = 'price_1TNvFWQJqdSd3DGEGflRsrcM';
 
 Deno.serve(async (req) => {
   try {
@@ -15,13 +16,14 @@ Deno.serve(async (req) => {
 
     const { period, total_seats } = await req.json();
 
-    const priceId = period === 'monthly'
+    const basePriceId = period === 'monthly'
       ? Deno.env.get('PRICE_ID_MONTHLY')
       : Deno.env.get('PRICE_ID_ANNUAL');
 
-    // Check if user already has a Stripe customer ID
-    let customerId = user.stripe_customer_id;
+    const extraDbcPriceId = period === 'annual' ? DBC_PRICE_ANNUAL : DBC_PRICE_MONTHLY;
 
+    // Ensure customer exists
+    let customerId = user.stripe_customer_id;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -32,23 +34,14 @@ Deno.serve(async (req) => {
     }
 
     // Build line items
-    const lineItems = [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ];
+    const lineItems = [{ price: basePriceId, quantity: 1 }];
 
     const seats = total_seats || 10;
     if (seats > 10) {
-      const extraQuantity = seats - 10;
       lineItems.push({
-        price: EXTRA_DBC_PRICE_ID,
-        quantity: extraQuantity,
-        adjustable_quantity: {
-          enabled: true,
-          minimum: 1,
-        },
+        price: extraDbcPriceId,
+        quantity: seats - 10,
+        adjustable_quantity: { enabled: true, minimum: 1 },
       });
     }
 
@@ -59,10 +52,7 @@ Deno.serve(async (req) => {
       line_items: lineItems,
       success_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Dashboard?success=true`,
       cancel_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Pricing?canceled=true`,
-      metadata: {
-        user_id: user.id,
-        period: period,
-      },
+      metadata: { user_id: user.id, period },
     });
 
     return Response.json({ url: session.url });

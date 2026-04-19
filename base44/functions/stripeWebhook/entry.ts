@@ -3,10 +3,10 @@ import Stripe from 'npm:stripe@17.4.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-const EXTRA_DBC_PRICE_ID = 'price_1TNv2cQJqdSd3DGEgvCK2CZ2';
+const DBC_PRICE_IDS = new Set(['price_1TNv2cQJqdSd3DGEgvCK2CZ2', 'price_1TNvFWQJqdSd3DGEGflRsrcM']);
 
 function getExtraDbcs(lineItems) {
-  const item = lineItems?.data?.find(i => i.price?.id === EXTRA_DBC_PRICE_ID);
+  const item = lineItems?.data?.find(i => DBC_PRICE_IDS.has(i.price?.id));
   return item ? (item.quantity || 0) : 0;
 }
 
@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
   }
 
   let event;
-
   try {
     const body = await req.text();
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
@@ -36,7 +35,6 @@ Deno.serve(async (req) => {
         const period = session.metadata.period;
         const amountTotal = session.amount_total ? session.amount_total / 100 : null;
 
-        // Fetch line items to determine extra DBC seats
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { expand: ['data.price'] });
         const extraDbcs = getExtraDbcs(lineItems);
 
@@ -67,13 +65,10 @@ Deno.serve(async (req) => {
         const customerId = subscription.customer;
 
         const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: customerId });
-
         if (users.length > 0) {
           const user = users[0];
           const status = subscription.status === 'active' ? 'active' :
                         subscription.status === 'past_due' ? 'past_due' : 'canceled';
-
-          // Determine extra DBCs from subscription items
           const extraDbcs = getExtraDbcs(subscription.items);
 
           await base44.asServiceRole.entities.User.update(user.id, {
@@ -89,10 +84,8 @@ Deno.serve(async (req) => {
         const customerId = subscription.customer;
 
         const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: customerId });
-
         if (users.length > 0) {
-          const user = users[0];
-          await base44.asServiceRole.entities.User.update(user.id, {
+          await base44.asServiceRole.entities.User.update(users[0].id, {
             subscription_tier: 'free',
             subscription_status: 'none',
             subscription_period: 'none',
