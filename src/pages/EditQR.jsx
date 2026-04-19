@@ -3,39 +3,18 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Save, Info, Upload, X, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Info } from 'lucide-react';
 import QRCodePreview from '../components/qr/QRCodePreview';
-
-function isValidHex(v) { return /^#[0-9a-fA-F]{6}$/.test(v); }
-
-function ColorInput({ value, onChange }) {
-  const [text, setText] = useState(value);
-  useEffect(() => { setText(value); }, [value]);
-  return (
-    <div className="flex gap-2 mt-1">
-      <Input type="color" value={value} onChange={(e) => { setText(e.target.value); onChange(e.target.value); }} className="w-14 h-10 p-1 cursor-pointer" />
-      <Input type="text" value={text} maxLength={7} placeholder="#000000"
-        onChange={(e) => { setText(e.target.value); if (isValidHex(e.target.value)) onChange(e.target.value); }} />
-    </div>
-  );
-}
+import QRCodeForm from '../components/qr/QRCodeForm';
 
 export default function EditQR() {
   const [qrCode, setQrCode] = useState(null);
   const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({ name: '', content: '' });
-  const [designConfig, setDesignConfig] = useState({});
-  const [previewData, setPreviewData] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
-  const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
+  const [currentStep, setCurrentStep] = useState(2);
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -49,7 +28,46 @@ export default function EditQR() {
         if (qrCodes.length === 0 || qrCodes[0].type !== 'dynamic') { window.location.href = '/Dashboard'; return; }
         const qr = qrCodes[0];
         setQrCode(qr);
-        setFormData({ name: qr.name, content: qr.content });
+
+        // Parse existing content back into form fields
+        let vcard_data = {};
+        let social_data = {};
+        let wifi_data = { ssid: '', password: '', encryption: 'WPA' };
+        let bcData = {};
+
+        if (qr.content_type === 'vcard') {
+          const lines = (qr.content || '').split('\n');
+          vcard_data = {
+            name: lines.find(l => l.startsWith('FN:'))?.split(':')[1]?.trim() || '',
+            phone: lines.find(l => l.startsWith('TEL'))?.split(':')[1]?.trim() || '',
+            email: lines.find(l => l.startsWith('EMAIL:'))?.split(':')[1]?.trim() || '',
+            company: lines.find(l => l.startsWith('ORG:'))?.split(':')[1]?.trim() || '',
+            url: lines.find(l => l.startsWith('URL:'))?.split(':')[1]?.trim() || '',
+          };
+        } else if (qr.content_type === 'wifi') {
+          const ssid = qr.content.match(/S:([^;]+)/)?.[1] || '';
+          const pwd = qr.content.match(/P:([^;]+)/)?.[1] || '';
+          const enc = qr.content.match(/T:([^;]+)/)?.[1] || 'WPA';
+          wifi_data = { ssid, password: pwd, encryption: enc };
+        } else if (qr.content_type === 'social') {
+          const lines = (qr.content || '').split('\n');
+          lines.forEach(line => {
+            const [platform, url] = line.split(':');
+            if (platform && url) {
+              if (platform.startsWith('custom_')) {
+                // Custom platform - handled in QRCodeForm
+              } else {
+                social_data[platform] = url;
+              }
+            }
+          });
+        } else if (qr.content_type === 'business_card') {
+          try {
+            bcData = JSON.parse(qr.content || '{}');
+          } catch {}
+        }
+
+        // Build design config with defaults
         const dc = {
           foreground_color: '#000000',
           background_color: '#ffffff',
@@ -60,10 +78,23 @@ export default function EditQR() {
           eye_color: '',
           logo_url: '',
           qr_style: 'squares',
+          landing_header_image: '',
+          landing_brand_logo: '',
+          landing_theme_color: '#BB3F27',
+          landing_font: 'poppins',
+          lead_tag: '',
+          cta_button_color: '#BB3F27',
           ...qr.design_config,
         };
-        setDesignConfig(dc);
-        setPreviewData({ ...qr, design_config: dc });
+
+        setPreviewData({
+          ...qr,
+          design_config: dc,
+          vcard_data,
+          social_data,
+          wifi_data,
+          bcData,
+        });
       } catch (error) {
         console.error('Error fetching QR code:', error);
         window.location.href = '/Dashboard';
@@ -74,108 +105,36 @@ export default function EditQR() {
     fetchQRCode();
   }, []);
 
-  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
-
-  const updateDesign = (field, value) => {
-    setDesignConfig(prev => {
-      const next = { ...prev, [field]: value };
-      setPreviewData(pd => ({ ...pd, design_config: next }));
-      return next;
-    });
+  const handleGeneratePreview = (data) => {
+    setPreviewData(prev => ({ ...prev, ...data }));
   };
 
-  const updateContent = (field, value) => {
-    setFormData(prev => {
-      const next = { ...prev, [field]: value };
-      setPreviewData(pd => ({ ...pd, [field]: value }));
-      return next;
-    });
-  };
-
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingLogo(true);
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      const logoUrl = result?.file_url || result?.data?.file_url;
-      if (logoUrl) updateDesign('logo_url', logoUrl);
-    } catch (err) {
-      alert('Failed to upload logo. Please try again.');
-    } finally {
-      setUploadingLogo(false);
-    }
-  };
-
-  const handleHeaderImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingHeaderImage(true);
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      const url = result?.file_url || result?.data?.file_url;
-      if (url) updateDesign('landing_header_image', url);
-    } catch (err) {
-      alert('Failed to upload header image. Please try again.');
-    } finally {
-      setUploadingHeaderImage(false);
-    }
-  };
-
-  const handleBrandLogoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingBrandLogo(true);
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      const url = result?.file_url || result?.data?.file_url;
-      if (url) updateDesign('landing_brand_logo', url);
-    } catch (err) {
-      alert('Failed to upload brand logo. Please try again.');
-    } finally {
-      setUploadingBrandLogo(false);
-    }
-  };
-
-  const handleSave = async () => {
+  const handleSaveQR = async (formData) => {
     setSaving(true);
     try {
       await base44.entities.QRCode.update(qrCode.id, {
         name: formData.name,
         content: formData.content,
-        design_config: designConfig,
+        content_type: formData.content_type,
+        design_config: formData.design_config,
       });
       window.location.href = '/ViewQR?id=' + qrCode.id;
     } catch (error) {
+      console.error('Save error:', error);
       alert('Failed to update QR code. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  const EyeBtn = ({ field, value, label, children }) => (
-    <button type="button" onClick={() => updateDesign(field, value)}
-      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all ${designConfig[field] === value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
-      <div className={`w-7 h-7 flex items-center justify-center ${designConfig[field] === value ? 'text-primary' : 'text-gray-500'}`}>{children}</div>
-      <span className={`text-xs font-medium ${designConfig[field] === value ? 'text-primary' : 'text-gray-600'}`}>{label}</span>
-    </button>
-  );
-
-  const StyleBtn = ({ value, label }) => (
-    <button type="button" onClick={() => updateDesign('qr_style', value)}
-      className={`py-2 px-3 rounded-xl border-2 text-sm font-medium transition-all ${designConfig.qr_style === value ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}>
-      {label}
-    </button>
-  );
-
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
-  if (!qrCode) return null;
+  if (!qrCode || !previewData) return null;
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
+      <div className="container mx-auto px-4 max-w-6xl">
         <Link to={'/ViewQR?id=' + qrCode.id}>
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
         </Link>
@@ -184,244 +143,26 @@ export default function EditQR() {
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Left: Form */}
-          <div className="space-y-6">
+          <div>
             <Card>
-              <CardHeader><CardTitle>Content</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>Updating the URL redirects all existing scans — the QR image stays the same.</AlertDescription>
-                </Alert>
-                <div>
-                  <Label>Name</Label>
-                  <Input value={formData.name} onChange={(e) => updateContent('name', e.target.value)} />
-                </div>
-                <div>
-                  <Label>
-                    {qrCode.content_type === 'url' ? 'Destination URL' :
-                     qrCode.content_type === 'text' ? 'Text Content' :
-                     qrCode.content_type === 'wifi' ? 'WiFi Details' : 'vCard Data'}
-                  </Label>
-                  {qrCode.content_type === 'url' ? (
-                    <Input type="url" value={formData.content} onChange={(e) => updateContent('content', e.target.value)} />
-                  ) : (
-                    <Textarea value={formData.content} onChange={(e) => updateContent('content', e.target.value)} rows={4} />
-                  )}
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Short URL</p>
-                  <p className="font-mono text-sm break-all">{window.location.origin}/r?code={qrCode.short_code}</p>
-                </div>
+              <CardHeader><CardTitle>Edit Configuration</CardTitle></CardHeader>
+              <CardContent>
+                <QRCodeForm
+                  user={user}
+                  onGenerate={handleGeneratePreview}
+                  onSave={handleSaveQR}
+                  saving={saving}
+                  onStepChange={setCurrentStep}
+                  initialData={{
+                    name: qrCode.name,
+                    type: qrCode.type,
+                    content_type: qrCode.content_type,
+                    content: qrCode.content,
+                    design_config: previewData.design_config,
+                  }}
+                />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader><CardTitle>Design</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Background Color</Label>
-                  <ColorInput value={designConfig.background_color || '#ffffff'} onChange={(v) => updateDesign('background_color', v)} />
-                </div>
-
-                <div className="border rounded-xl p-4 space-y-3">
-                  <Label className="font-semibold">Foreground Color</Label>
-                  <div>
-                    <Label className="text-xs text-gray-500">Color Mode</Label>
-                    <Select value={designConfig.gradient_type || 'none'} onValueChange={(v) => updateDesign('gradient_type', v)}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Solid Color</SelectItem>
-                        <SelectItem value="linear">Linear Gradient</SelectItem>
-                        <SelectItem value="radial">Radial Gradient</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className={`grid gap-4 ${designConfig.gradient_type !== 'none' ? 'grid-cols-2' : ''}`}>
-                    <div>
-                      <Label className="text-xs text-gray-500">{designConfig.gradient_type !== 'none' ? 'Color 1' : 'Color'}</Label>
-                      <ColorInput value={designConfig.foreground_color || '#000000'} onChange={(v) => updateDesign('foreground_color', v)} />
-                    </div>
-                    {designConfig.gradient_type !== 'none' && (
-                      <div>
-                        <Label className="text-xs text-gray-500">Color 2</Label>
-                        <ColorInput value={designConfig.gradient_color2 || '#6366f1'} onChange={(v) => updateDesign('gradient_color2', v)} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {isPro && (
-                  <>
-                    <div>
-                      <Label className="mb-2 block">QR Style</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        <StyleBtn value="squares" label="Squares" />
-                        <StyleBtn value="dots" label="Dots" />
-                        <StyleBtn value="rounded" label="Rounded" />
-                      </div>
-                    </div>
-
-                    <div className="border rounded-xl p-4 space-y-3">
-                      <Label className="font-semibold">Eye (Finder) Style</Label>
-                      <div>
-                        <Label className="text-xs text-gray-500 mb-2 block">Outer Shape</Label>
-                        <div className="grid grid-cols-3 gap-2">
-                          <EyeBtn field="eye_outer_shape" value="square" label="Square">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7"><rect x="3" y="3" width="18" height="18" rx="0" /><rect x="7" y="7" width="10" height="10" rx="0" fill="currentColor" fillOpacity="0.2" /></svg>
-                          </EyeBtn>
-                          <EyeBtn field="eye_outer_shape" value="circle" label="Circle">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" fill="currentColor" fillOpacity="0.2" /></svg>
-                          </EyeBtn>
-                          <EyeBtn field="eye_outer_shape" value="rounded" label="Rounded">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7"><rect x="3" y="3" width="18" height="18" rx="6" /><rect x="7" y="7" width="10" height="10" rx="3" fill="currentColor" fillOpacity="0.2" /></svg>
-                          </EyeBtn>
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-gray-500 mb-2 block">Inner Shape</Label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <EyeBtn field="eye_inner_shape" value="square" label="Square">
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><rect x="6" y="6" width="12" height="12" /></svg>
-                          </EyeBtn>
-                          <EyeBtn field="eye_inner_shape" value="circle" label="Circle">
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><circle cx="12" cy="12" r="6" /></svg>
-                          </EyeBtn>
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-gray-500">Eye Color <span className="text-gray-400">(blank = foreground)</span></Label>
-                        <div className="flex gap-2 mt-1 items-center">
-                          <Input type="color" value={designConfig.eye_color || designConfig.foreground_color || '#000000'}
-                            onChange={(e) => updateDesign('eye_color', e.target.value)} className="w-14 h-10 p-1 cursor-pointer" />
-                          <Input type="text" value={designConfig.eye_color || ''} placeholder="Same as foreground" maxLength={7}
-                            onChange={(e) => { if (isValidHex(e.target.value) || e.target.value === '') updateDesign('eye_color', e.target.value); }} />
-                          {designConfig.eye_color && (
-                            <Button type="button" variant="ghost" size="icon" onClick={() => updateDesign('eye_color', '')}><X className="w-4 h-4" /></Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Logo</Label>
-                      {designConfig.logo_url ? (
-                        <div className="flex items-center gap-2 mt-1">
-                          <img src={designConfig.logo_url} alt="Logo" className="w-14 h-14 object-contain border rounded" />
-                          <Button type="button" variant="outline" size="sm" onClick={() => updateDesign('logo_url', '')}>
-                            <X className="w-4 h-4 mr-1" /> Remove
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input id="logo-edit" type="file" accept="image/*" onChange={handleLogoUpload} disabled={uploadingLogo} className="hidden" />
-                          <Button type="button" variant="outline" onClick={() => document.getElementById('logo-edit').click()} disabled={uploadingLogo}>
-                            <Upload className="w-4 h-4 mr-2" />{uploadingLogo ? 'Uploading...' : 'Upload Logo'}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Landing Page Branding — only relevant for non-URL content */}
-            {qrCode.content_type !== 'url' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Landing Page Branding
-                    {!isPro && <Lock className="w-4 h-4 text-gray-400" />}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!isPro ? (
-                    <Alert>
-                      <Lock className="h-4 w-4" />
-                      <AlertDescription>
-                        Landing page branding is a <strong>Black Belt</strong> feature.{' '}
-                        <Link to="/Pricing" className="font-semibold underline text-primary">Upgrade now</Link>
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <>
-                      {/* Header Image */}
-                      <div>
-                        <Label>Header Banner Image</Label>
-                        {designConfig.landing_header_image ? (
-                          <div className="mt-1 space-y-2">
-                            <img src={designConfig.landing_header_image} alt="Header" className="w-full h-24 object-cover rounded-lg border" />
-                            <Button type="button" variant="outline" size="sm" onClick={() => updateDesign('landing_header_image', '')}>
-                              <X className="w-4 h-4 mr-1" /> Remove
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="mt-1">
-                            <Input id="header-img" type="file" accept="image/*" onChange={handleHeaderImageUpload} disabled={uploadingHeaderImage} className="hidden" />
-                            <Button type="button" variant="outline" onClick={() => document.getElementById('header-img').click()} disabled={uploadingHeaderImage}>
-                              <Upload className="w-4 h-4 mr-2" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
-                            </Button>
-                            <p className="text-xs text-gray-400 mt-1">Recommended: 1200×400px (3:1 ratio)</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Brand Logo */}
-                      <div>
-                        <Label>Brand Logo</Label>
-                        {designConfig.landing_brand_logo ? (
-                          <div className="flex items-center gap-2 mt-1">
-                            <img src={designConfig.landing_brand_logo} alt="Brand logo" className="w-14 h-14 object-contain border rounded-full bg-gray-50" />
-                            <Button type="button" variant="outline" size="sm" onClick={() => updateDesign('landing_brand_logo', '')}>
-                              <X className="w-4 h-4 mr-1" /> Remove
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="mt-1">
-                            <Input id="brand-logo" type="file" accept="image/*" onChange={handleBrandLogoUpload} disabled={uploadingBrandLogo} className="hidden" />
-                            <Button type="button" variant="outline" onClick={() => document.getElementById('brand-logo').click()} disabled={uploadingBrandLogo}>
-                              <Upload className="w-4 h-4 mr-2" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
-                            </Button>
-                            <p className="text-xs text-gray-400 mt-1">Recommended: 400×400px (square)</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Theme Color */}
-                      <div>
-                        <Label>Theme Color</Label>
-                        <ColorInput
-                          value={designConfig.landing_theme_color || '#BB3F27'}
-                          onChange={(v) => updateDesign('landing_theme_color', v)}
-                        />
-                      </div>
-
-                      {/* Font */}
-                      <div>
-                        <Label>Font Style</Label>
-                        <Select value={designConfig.landing_font || 'poppins'} onValueChange={(v) => updateDesign('landing_font', v)}>
-                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="poppins">Modern (Poppins)</SelectItem>
-                            <SelectItem value="serif">Classic (Serif)</SelectItem>
-                            <SelectItem value="mono">Technical (Mono)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="flex gap-3">
-              <Link to={'/ViewQR?id=' + qrCode.id} className="flex-1">
-                <Button variant="outline" className="w-full">Cancel</Button>
-              </Link>
-              <Button onClick={handleSave} disabled={saving || !formData.name || !formData.content} className="flex-1">
-                <Save className="w-4 h-4 mr-2" />{saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
           </div>
 
           {/* Right: Live Preview */}
@@ -429,7 +170,7 @@ export default function EditQR() {
             <Card>
               <CardHeader><CardTitle>Live Preview</CardTitle></CardHeader>
               <CardContent>
-                <QRCodePreview qrData={previewData} />
+                <QRCodePreview qrData={previewData} currentStep={currentStep} />
               </CardContent>
             </Card>
           </div>

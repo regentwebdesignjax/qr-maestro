@@ -94,24 +94,72 @@ function ColorInput({ value, onChange, onPreview }) {
 
 }
 
-export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepChange }) {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepChange, initialData }) {
+  const [currentStep, setCurrentStep] = useState(initialData ? 2 : 0);
   const [direction, setDirection] = useState(1);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
 
-  const [wifiData, setWifiData] = useState({ ssid: '', password: '', encryption: 'WPA' });
-  const [customPlatforms, setCustomPlatforms] = useState([]);
-  const [bcData, setBcData] = useState({});
+  // Parse initial data for editing mode
+  const parseInitialData = () => {
+    if (!initialData) return {
+      wifi: { ssid: '', password: '', encryption: 'WPA' },
+      custom: [],
+      bc: {},
+      vcard: {},
+      social: {},
+    };
+    
+    let wifi = { ssid: '', password: '', encryption: 'WPA' };
+    let custom = [];
+    let bc = {};
+    let vcard = {};
+    let social = {};
+
+    if (initialData.content_type === 'wifi' && initialData.content) {
+      const ssid = initialData.content.match(/S:([^;]+)/)?.[1] || '';
+      const pwd = initialData.content.match(/P:([^;]+)/)?.[1] || '';
+      const enc = initialData.content.match(/T:([^;]+)/)?.[1] || 'WPA';
+      wifi = { ssid, password: pwd, encryption: enc };
+    } else if (initialData.content_type === 'business_card' && initialData.content) {
+      try { bc = JSON.parse(initialData.content); } catch {}
+    } else if (initialData.content_type === 'vcard' && initialData.content) {
+      const lines = initialData.content.split('\n');
+      vcard = {
+        name: lines.find(l => l.startsWith('FN:'))?.split(':')[1]?.trim() || '',
+        phone: lines.find(l => l.startsWith('TEL'))?.split(':')[1]?.trim() || '',
+        email: lines.find(l => l.startsWith('EMAIL:'))?.split(':')[1]?.trim() || '',
+        company: lines.find(l => l.startsWith('ORG:'))?.split(':')[1]?.trim() || '',
+        url: lines.find(l => l.startsWith('URL:'))?.split(':')[1]?.trim() || '',
+      };
+    } else if (initialData.content_type === 'social' && initialData.content) {
+      const lines = initialData.content.split('\n');
+      lines.forEach(line => {
+        const [platform, url] = line.split(':');
+        if (platform && url && !platform.startsWith('custom_')) {
+          social[platform] = url;
+        } else if (platform && url && platform.startsWith('custom_')) {
+          custom.push({ label: platform.replace('custom_', ''), url });
+        }
+      });
+    }
+
+    return { wifi, custom, bc, vcard, social };
+  };
+
+  const initialParsed = parseInitialData();
+  const [wifiData, setWifiData] = useState(initialParsed.wifi);
+  const [customPlatforms, setCustomPlatforms] = useState(initialParsed.custom);
+  const [bcData, setBcData] = useState(initialParsed.bc);
 
   const [formData, setFormData] = useState({
-    name: '',
-    type: 'static',
-    content_type: 'url',
-    content: '',
-    vcard_data: {},
-    social_data: {},
+    name: initialData?.name || '',
+    type: initialData?.type || 'static',
+    content_type: initialData?.content_type || 'url',
+    content: initialData?.content || '',
+    vcard_data: initialParsed.vcard,
+    social_data: initialParsed.social,
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
@@ -121,7 +169,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       eye_inner_shape: 'square',
       eye_color: '',
       logo_url: '',
-      qr_style: 'squares'
+      qr_style: 'squares',
+      ...(initialData?.design_config || {}),
     }
   });
 
