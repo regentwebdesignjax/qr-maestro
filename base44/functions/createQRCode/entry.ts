@@ -31,6 +31,9 @@ Deno.serve(async (req) => {
       qrCodeData.short_code = null;
     }
 
+    // Store owner email explicitly so public redirect lookups can find it without auth
+    qrCodeData.owner_email = user.email;
+
     const created = await base44.entities.QRCode.create(qrCodeData);
 
     return Response.json({ qrCode: created });

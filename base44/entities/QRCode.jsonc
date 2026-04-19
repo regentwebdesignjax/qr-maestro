@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Friendly name for the QR code"
     },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the user who owns this QR code (denormalized for public lookups)"
+    },
     "type": {
       "type": "string",
       "enum": [
@@ -28,7 +32,8 @@
         "image",
         "mp3",
         "call",
-        "sms"
+        "sms",
+        "business_card"
       ],
       "description": "Type of content encoded in the QR code"
     },
