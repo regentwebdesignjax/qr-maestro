@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,19 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
-function getDuplicates(leads) {
-  const seen = new Set();
-  const dupes = [];
+// Returns a map of email -> [all leads with that email] for emails with >1 entry
+function getDupeGroups(leads) {
+  const groups = {};
   leads.forEach(l => {
     const key = l.lead_email?.toLowerCase().trim();
     if (!key) return;
-    if (seen.has(key)) {
-      dupes.push(l);
-    } else {
-      seen.add(key);
-    }
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(l);
   });
-  return dupes;
+  return Object.fromEntries(Object.entries(groups).filter(([, arr]) => arr.length > 1));
 }
 
 function exportToCSV(leads) {
@@ -40,7 +37,7 @@ function exportToCSV(leads) {
   URL.revokeObjectURL(url);
 }
 
-function ConfirmModal({ open, title, description, warning, confirmLabel, confirmClass, onConfirm, onCancel, loading }) {
+function ConfirmModal({ open, title, description, warning, confirmLabel, onConfirm, onCancel, loading }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -52,22 +49,128 @@ function ConfirmModal({ open, title, description, warning, confirmLabel, confirm
           <div>
             <h2 className="text-lg font-bold text-gray-900">{title}</h2>
             <p className="text-sm text-gray-600 mt-1">{description}</p>
-            {warning && (
-              <p className="text-sm font-semibold text-red-600 mt-2">{warning}</p>
-            )}
+            {warning && <p className="text-sm font-semibold text-red-600 mt-2">{warning}</p>}
           </div>
         </div>
         <div className="flex gap-3 justify-end mt-6">
-          <Button variant="outline" onClick={onCancel} disabled={loading}>
-            Cancel
-          </Button>
-          <Button
-            className={confirmClass || 'bg-red-600 hover:bg-red-700 text-white'}
-            onClick={onConfirm}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={onCancel} disabled={loading}>Cancel</Button>
+          <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={onConfirm} disabled={loading}>
             {loading ? 'Deleting...' : confirmLabel}
           </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DedupeModal({ open, dupeGroups, onConfirm, onCancel, loading }) {
+  const [selected, setSelected] = useState({});
+
+  // When modal opens, pre-select all duplicates except the first (oldest) in each group
+  useEffect(() => {
+    if (!open) return;
+    const initial = {};
+    Object.values(dupeGroups).forEach(group => {
+      // Sort oldest first so we keep the first submission
+      const sorted = [...group].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+      sorted.slice(1).forEach(l => { initial[l.id] = true; });
+    });
+    setSelected(initial);
+  }, [open, dupeGroups]);
+
+  const selectedIds = Object.keys(selected).filter(id => selected[id]);
+  const toggle = (id) => setSelected(prev => ({ ...prev, [id]: !prev[id] }));
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col max-h-[85vh]">
+        {/* Header */}
+        <div className="p-6 border-b">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-full bg-amber-50 shrink-0">
+              <FilterX className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Review Duplicate Leads</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Duplicates are grouped by email. Check the entries you want to <strong>delete</strong>, then confirm.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable groups */}
+        <div className="overflow-y-auto flex-1 p-6 space-y-6">
+          {Object.entries(dupeGroups).map(([email, group]) => {
+            const sorted = [...group].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+            return (
+              <div key={email} className="border rounded-xl overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2 border-b">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email: </span>
+                  <span className="text-sm font-medium text-gray-800">{email}</span>
+                  <span className="ml-2 text-xs text-gray-400">({group.length} entries)</span>
+                </div>
+                <div className="divide-y">
+                  {sorted.map((lead, idx) => {
+                    const isFirst = idx === 0;
+                    const isChecked = !!selected[lead.id];
+                    return (
+                      <label
+                        key={lead.id}
+                        className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                          isChecked ? 'bg-red-50' : isFirst ? 'bg-green-50/50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggle(lead.id)}
+                          className="mt-1 accent-red-600"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm text-gray-900">{lead.lead_name}</span>
+                            {isFirst && (
+                              <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Keep (oldest)</span>
+                            )}
+                            {isChecked && (
+                              <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">Will delete</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-xs text-gray-400">
+                            {lead.qr_code_name && <span>Card: {lead.qr_code_name}</span>}
+                            {lead.lead_tag && <span>Tag: {lead.lead_tag}</span>}
+                            {lead.created_date && <span>{format(new Date(lead.created_date), 'MMM d, yyyy h:mm a')}</span>}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t bg-gray-50 rounded-b-2xl">
+          {selectedIds.length > 0 && (
+            <p className="text-xs text-red-600 font-medium mb-3">
+              ⚠ {selectedIds.length} lead{selectedIds.length !== 1 ? 's' : ''} selected for permanent deletion. This cannot be undone.
+            </p>
+          )}
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={onCancel} disabled={loading}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => onConfirm(selectedIds)}
+              disabled={loading || selectedIds.length === 0}
+            >
+              {loading ? 'Deleting...' : `Delete ${selectedIds.length} Selected`}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -95,18 +198,18 @@ export default function Leads() {
   });
 
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
-  const duplicates = getDuplicates(leads);
-  const dupeCount = duplicates.length;
+  const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
+  const dupeEmailCount = Object.keys(dupeGroups).length;
 
   const handleExport = () => {
     exportToCSV(leads);
     setHasExported(true);
   };
 
-  const handleDeleteDupes = async () => {
+  const handleDeleteSelected = async (ids) => {
     setDeleting(true);
-    for (const lead of duplicates) {
-      await base44.entities.Lead.delete(lead.id);
+    for (const id of ids) {
+      await base44.entities.Lead.delete(id);
     }
     setDeleting(false);
     setShowDedupeModal(false);
@@ -151,13 +254,10 @@ export default function Leads() {
 
   return (
     <div className="min-h-screen bg-background">
-      <ConfirmModal
+      <DedupeModal
         open={showDedupeModal}
-        title={`Delete ${dupeCount} Duplicate Lead${dupeCount !== 1 ? 's' : ''}?`}
-        description={`This will permanently delete ${dupeCount} duplicate lead submission${dupeCount !== 1 ? 's' : ''}, keeping only the first occurrence of each email address.`}
-        warning="This action cannot be undone. Deleted leads cannot be recovered."
-        confirmLabel={`Delete ${dupeCount} Duplicate${dupeCount !== 1 ? 's' : ''}`}
-        onConfirm={handleDeleteDupes}
+        dupeGroups={dupeGroups}
+        onConfirm={handleDeleteSelected}
         onCancel={() => setShowDedupeModal(false)}
         loading={deleting}
       />
@@ -180,10 +280,10 @@ export default function Leads() {
           </div>
           {leads.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              {dupeCount > 0 && (
+              {dupeEmailCount > 0 && (
                 <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
                   <FilterX className="w-4 h-4 mr-2" />
-                  Delete Dupes ({dupeCount})
+                  Review Dupes ({dupeEmailCount} email{dupeEmailCount !== 1 ? 's' : ''})
                 </Button>
               )}
               <Button variant="outline" onClick={handleExport}>
