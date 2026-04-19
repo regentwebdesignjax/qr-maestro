@@ -84,7 +84,7 @@ export default function BusinessCardDisplay({ data }) {
     e.preventDefault();
     setExchangeSubmitting(true);
     try {
-      await base44.asServiceRole.entities.Lead.create({
+      await base44.functions.invoke('saveLead', {
         user_email: data.owner_email || '',
         qr_code_id: data.qr_code_id || '',
         qr_code_name: data.name || '',
