@@ -84,15 +84,18 @@ export default function BusinessCardDisplay({ data }) {
     e.preventDefault();
     setExchangeSubmitting(true);
     try {
-      await base44.functions.invoke('saveLead', {
+      const payload = {
         user_email: data.owner_email || '',
         qr_code_id: data.qr_code_id || '',
         qr_code_name: data.name || '',
         lead_name: exchangeForm.name,
         lead_email: exchangeForm.email,
-      });
+      };
+      console.log('Submitting lead payload:', payload);
+      const response = await base44.functions.invoke('saveLead', payload);
+      console.log('saveLead response:', JSON.stringify(response?.data));
     } catch (err) {
-      console.error('Lead save error:', err);
+      console.error('Lead save error:', err?.response?.data || err.message);
     } finally {
       setExchangeSubmitting(false);
       setExchangeSent(true);
