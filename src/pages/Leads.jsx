@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Users, Mail, Calendar, FilterX } from 'lucide-react';
+import { Download, Users, Mail, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
-function deduplicateLeads(leads) {
+function getDuplicates(leads) {
   const seen = new Set();
-  return leads.filter(l => {
+  const dupes = [];
+  leads.forEach(l => {
     const key = l.lead_email?.toLowerCase().trim();
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    if (!key) return;
+    if (seen.has(key)) {
+      dupes.push(l);
+    } else {
+      seen.add(key);
+    }
   });
+  return dupes;
 }
 
 function exportToCSV(leads) {
@@ -35,9 +40,47 @@ function exportToCSV(leads) {
   URL.revokeObjectURL(url);
 }
 
+function ConfirmModal({ open, title, description, warning, confirmLabel, confirmClass, onConfirm, onCancel, loading }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="p-2 rounded-full bg-red-50 shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            {warning && (
+              <p className="text-sm font-semibold text-red-600 mt-2">{warning}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end mt-6">
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            className={confirmClass || 'bg-red-600 hover:bg-red-700 text-white'}
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? 'Deleting...' : confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Leads() {
   const [user, setUser] = useState(null);
-  const [dedupeOnly, setDedupeOnly] = useState(false);
+  const [hasExported, setHasExported] = useState(false);
+  const [showDedupeModal, setShowDedupeModal] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     base44.auth.me()
@@ -52,8 +95,34 @@ export default function Leads() {
   });
 
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
-  const displayLeads = dedupeOnly ? deduplicateLeads(leads) : leads;
-  const dupeCount = leads.length - deduplicateLeads(leads).length;
+  const duplicates = getDuplicates(leads);
+  const dupeCount = duplicates.length;
+
+  const handleExport = () => {
+    exportToCSV(leads);
+    setHasExported(true);
+  };
+
+  const handleDeleteDupes = async () => {
+    setDeleting(true);
+    for (const lead of duplicates) {
+      await base44.entities.Lead.delete(lead.id);
+    }
+    setDeleting(false);
+    setShowDedupeModal(false);
+    queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
+  };
+
+  const handleClearAll = async () => {
+    setDeleting(true);
+    for (const lead of leads) {
+      await base44.entities.Lead.delete(lead.id);
+    }
+    setDeleting(false);
+    setShowClearModal(false);
+    setHasExported(false);
+    queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
+  };
 
   if (!user) {
     return (
@@ -82,38 +151,71 @@ export default function Leads() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ConfirmModal
+        open={showDedupeModal}
+        title={`Delete ${dupeCount} Duplicate Lead${dupeCount !== 1 ? 's' : ''}?`}
+        description={`This will permanently delete ${dupeCount} duplicate lead submission${dupeCount !== 1 ? 's' : ''}, keeping only the first occurrence of each email address.`}
+        warning="This action cannot be undone. Deleted leads cannot be recovered."
+        confirmLabel={`Delete ${dupeCount} Duplicate${dupeCount !== 1 ? 's' : ''}`}
+        onConfirm={handleDeleteDupes}
+        onCancel={() => setShowDedupeModal(false)}
+        loading={deleting}
+      />
+      <ConfirmModal
+        open={showClearModal}
+        title={`Clear All ${leads.length} Lead${leads.length !== 1 ? 's' : ''}?`}
+        description={`This will permanently delete all ${leads.length} lead submission${leads.length !== 1 ? 's' : ''} from your account.`}
+        warning="This action cannot be undone. All leads will be permanently lost."
+        confirmLabel="Clear All Leads"
+        onConfirm={handleClearAll}
+        onCancel={() => setShowClearModal(false)}
+        loading={deleting}
+      />
+
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
             <p className="text-gray-500 mt-1">Contacts collected via your Digital Business Cards</p>
           </div>
           {leads.length > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {dupeCount > 0 && (
-                <Button
-                  variant={dedupeOnly ? 'default' : 'outline'}
-                  onClick={() => setDedupeOnly(v => !v)}
-                  className={dedupeOnly ? 'bg-primary text-primary-foreground' : ''}
-                >
+                <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
                   <FilterX className="w-4 h-4 mr-2" />
-                  {dedupeOnly ? `Deduped (${dupeCount} removed)` : `Deduplicate (${dupeCount} dupes)`}
+                  Delete Dupes ({dupeCount})
                 </Button>
               )}
-              <Button variant="outline" onClick={() => exportToCSV(displayLeads)}>
+              <Button variant="outline" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
                 Export CSV
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowClearModal(true)}
+                disabled={!hasExported}
+                title={!hasExported ? 'Export the list first before clearing' : 'Clear all leads'}
+                className={hasExported ? 'border-red-300 text-red-600 hover:bg-red-50' : 'opacity-40 cursor-not-allowed'}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
               </Button>
             </div>
           )}
         </div>
 
+        {!hasExported && leads.length > 0 && (
+          <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            Export your leads first to enable the "Clear All" option.
+          </p>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
-              {displayLeads.length} Lead{displayLeads.length !== 1 ? 's' : ''}
-              {dedupeOnly && <span className="text-xs font-normal text-muted-foreground ml-1">(deduplicated)</span>}
+              {leads.length} Lead{leads.length !== 1 ? 's' : ''}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,7 +242,7 @@ export default function Leads() {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayLeads.map(lead => (
+                    {leads.map(lead => (
                       <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
                         <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
                         <td className="py-3 pr-4">
