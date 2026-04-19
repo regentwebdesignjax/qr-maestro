@@ -105,7 +105,7 @@ async function renderQR(canvas, qrData) {
     const phone = lines.find(l => l.startsWith('Phone:'))?.split(':')[1]?.trim() || '';
     const email = lines.find(l => l.startsWith('Email:'))?.split(':')[1]?.trim() || '';
     const company = lines.find(l => l.startsWith('Company:'))?.split(':')[1]?.trim() || '';
-    content = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nORG:${company}\nEND:VCARD`;
+    content = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:;${name};;;\nORG:${company}\nTEL;TYPE=CELL:${phone}\nEMAIL:${email}\nEND:VCARD`;
   } else if (qrData.content_type === 'business_card') {
     // For QR tab on business card, encode a placeholder URL
     content = `${window.location.origin}/r?code=preview`;

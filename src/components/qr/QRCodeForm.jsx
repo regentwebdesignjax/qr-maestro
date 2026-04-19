@@ -36,9 +36,10 @@ function generateVCardContent(vcard_data) {
   if (!vcard_data?.name) return '';
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
   lines.push(`FN:${vcard_data.name}`);
-  if (vcard_data.phone) lines.push(`TEL:${vcard_data.phone}`);
-  if (vcard_data.email) lines.push(`EMAIL:${vcard_data.email}`);
+  lines.push(`N:;${vcard_data.name};;;`);
   if (vcard_data.company) lines.push(`ORG:${vcard_data.company}`);
+  if (vcard_data.phone) lines.push(`TEL;TYPE=CELL:${vcard_data.phone}`);
+  if (vcard_data.email) lines.push(`EMAIL:${vcard_data.email}`);
   if (vcard_data.url) lines.push(`URL:${vcard_data.url}`);
   lines.push('END:VCARD');
   return lines.join('\n');

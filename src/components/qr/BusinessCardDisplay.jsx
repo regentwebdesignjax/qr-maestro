@@ -6,10 +6,11 @@ import { base44 } from '@/api/base44Client';
 function buildVCard(data) {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
   if (data.name) lines.push(`FN:${data.name}`);
-  if (data.phone) lines.push(`TEL:${data.phone}`);
-  if (data.email) lines.push(`EMAIL:${data.email}`);
+  if (data.name) lines.push(`N:;${data.name};;;`);
   if (data.company) lines.push(`ORG:${data.company}`);
   if (data.title) lines.push(`TITLE:${data.title}`);
+  if (data.phone) lines.push(`TEL;TYPE=CELL:${data.phone}`);
+  if (data.email) lines.push(`EMAIL:${data.email}`);
   if (data.website) lines.push(`URL:${data.website}`);
   lines.push('END:VCARD');
   return lines.join('\n');

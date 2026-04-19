@@ -32,8 +32,13 @@ function parseVCard(content) {
   const lines = content.split('\n');
   const result = {};
   lines.forEach(line => {
-    const [key, ...rest] = line.split(':');
-    result[key?.trim().toLowerCase()] = rest.join(':').trim();
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return;
+    const rawKey = line.substring(0, colonIdx).trim().toLowerCase();
+    const val = line.substring(colonIdx + 1).trim();
+    // Normalize keys with parameters (e.g. "tel;type=cell" → "tel")
+    const key = rawKey.split(';')[0];
+    if (!result[key]) result[key] = val;
   });
   return result;
 }
