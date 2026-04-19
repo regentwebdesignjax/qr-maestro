@@ -93,7 +93,7 @@ function ColorInput({ value, onChange, onPreview }) {
 
 }
 
-export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
+export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepChange }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -228,6 +228,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving }) {
   const goTo = (step) => {
     setDirection(step > currentStep ? 1 : -1);
     setCurrentStep(step);
+    onStepChange?.(step);
     triggerPreview();
   };
 

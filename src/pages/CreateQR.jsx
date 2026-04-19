@@ -12,6 +12,7 @@ export default function CreateQR() {
   const [user, setUser] = useState(null);
   const [qrData, setQrData] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function CreateQR() {
                 onGenerate={handleGenerate}
                 onSave={handleSave}
                 saving={saving}
+                onStepChange={setCurrentStep}
               />
             </CardContent>
           </Card>
@@ -87,7 +89,7 @@ export default function CreateQR() {
                 <CardTitle>Live Preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <QRCodePreview qrData={qrData} />
+                <QRCodePreview qrData={qrData} currentStep={currentStep} />
               </CardContent>
             </Card>
           </div>
