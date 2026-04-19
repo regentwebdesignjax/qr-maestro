@@ -55,6 +55,17 @@ export default function BusinessCardDisplay({ data }) {
   const [exchangeForm, setExchangeForm] = useState({ name: '', email: '' });
   const [exchangeSent, setExchangeSent] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
+  const ctaColor = data.design_config?.cta_button_color || themeColor;
+
+  // Determine text color based on luminance
+  const isLight = (hex) => {
+    const c = hex.replace('#', '');
+    const r = parseInt(c.substring(0,2), 16);
+    const g = parseInt(c.substring(2,4), 16);
+    const b = parseInt(c.substring(4,6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 160;
+  };
+  const ctaTextColor = isLight(ctaColor) ? '#000000' : '#ffffff';
 
   const handleSaveContact = () => {
     const vcf = buildVCard(data);
@@ -125,13 +136,15 @@ export default function BusinessCardDisplay({ data }) {
         <div className="flex gap-3 mb-6">
           <button
             onClick={handleSaveContact}
-            className="dbc-primary flex-1 py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: ctaColor, color: ctaTextColor }}
+            className="flex-1 py-3 rounded-xl font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
           >
             Save Contact
           </button>
           <button
             onClick={() => setShowExchange(!showExchange)}
-            className="dbc-primary-border flex-1 py-3 rounded-xl font-semibold text-sm border-2 hover:bg-gray-100 transition-colors dbc-primary-text"
+            style={{ borderColor: ctaColor, color: ctaColor }}
+            className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 hover:bg-gray-100 transition-colors"
           >
             Exchange Info
           </button>
