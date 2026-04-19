@@ -119,6 +119,10 @@
             "mono"
           ],
           "description": "Font family for the landing page"
+        },
+        "lead_tag": {
+          "type": "string",
+          "description": "Optional tag (e.g. Employee ID or Region Code) to attach to leads captured from this card"
         }
       }
     },

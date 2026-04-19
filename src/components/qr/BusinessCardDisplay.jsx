@@ -90,6 +90,7 @@ export default function BusinessCardDisplay({ data }) {
         qr_code_name: data.name || '',
         lead_name: exchangeForm.name,
         lead_email: exchangeForm.email,
+        lead_tag: data.design_config?.lead_tag || '',
       };
       console.log('Submitting lead payload:', payload);
       const response = await base44.functions.invoke('saveLead', payload);

@@ -377,16 +377,28 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               </div>
               {/* Business Card special form */}
               {formData.content_type === 'business_card' && (
-                <BusinessCardForm
-                  data={bcData}
-                  onChange={(updated) => {
-                    setBcData(updated);
-                    // Serialize to JSON string as the content field
-                    const serialized = JSON.stringify(updated);
-                    handleChange('content', serialized);
-                    triggerPreview({ content: serialized });
-                  }}
-                />
+                <>
+                  <BusinessCardForm
+                    data={bcData}
+                    onChange={(updated) => {
+                      setBcData(updated);
+                      const serialized = JSON.stringify(updated);
+                      handleChange('content', serialized);
+                      triggerPreview({ content: serialized });
+                    }}
+                  />
+                  <div className="space-y-1 pt-2">
+                    <Label htmlFor="lead-tag">Employee ID / Lead Tag <span className="text-gray-400 font-normal">(Optional)</span></Label>
+                    <Input
+                      id="lead-tag"
+                      placeholder="e.g. EMP-1042 or Region-West"
+                      value={formData.design_config?.lead_tag || ''}
+                      onChange={(e) => handleDesignChange('lead_tag', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Used to track and route leads in your CSV exports.</p>
+                  </div>
+                </>
+              )
               )}
 
               {formData.content_type !== 'business_card' && (

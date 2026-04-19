@@ -7,11 +7,12 @@ import { Download, Users, Mail, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 function exportToCSV(leads) {
-  const header = ['Name', 'Email', 'Source Card', 'Date'];
+  const header = ['Name', 'Email', 'Source Card', 'Lead Tag', 'Date'];
   const rows = leads.map(l => [
     `"${(l.lead_name || '').replace(/"/g, '""')}"`,
     `"${(l.lead_email || '').replace(/"/g, '""')}"`,
     `"${(l.qr_code_name || '').replace(/"/g, '""')}"`,
+    `"${(l.lead_tag || '').replace(/"/g, '""')}"`,
     `"${l.created_date ? format(new Date(l.created_date), 'yyyy-MM-dd HH:mm') : ''}"`,
   ]);
   const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -108,6 +109,7 @@ export default function Leads() {
                       <th className="pb-3 pr-4 font-medium">Name</th>
                       <th className="pb-3 pr-4 font-medium">Email</th>
                       <th className="pb-3 pr-4 font-medium">Source Card</th>
+                      <th className="pb-3 pr-4 font-medium">Lead Tag</th>
                       <th className="pb-3 font-medium">Date</th>
                     </tr>
                   </thead>
@@ -122,6 +124,13 @@ export default function Leads() {
                           </a>
                         </td>
                         <td className="py-3 pr-4 text-gray-600">{lead.qr_code_name || '—'}</td>
+                        <td className="py-3 pr-4">
+                          {lead.lead_tag ? (
+                            <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded">
+                              {lead.lead_tag}
+                            </span>
+                          ) : <span className="text-gray-300">—</span>}
+                        </td>
                         <td className="py-3 text-gray-400 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
