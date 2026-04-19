@@ -28,7 +28,7 @@ export default function Pricing() {
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
   const extraSeats = Math.max(0, totalSeats - 10);
   const monthlyTotal = 29 + extraSeats * 3;
-  const annualTotal = 290 + extraSeats * 36;
+  const annualTotal = 249 + extraSeats * 36;
 
   const handleUpgrade = async (period) => {
     if (!user) {
