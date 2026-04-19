@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { base44 } from '@/api/base44Client';
 
 function buildVCard(data) {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
@@ -54,6 +55,7 @@ export default function BusinessCardDisplay({ data }) {
   const [showExchange, setShowExchange] = useState(false);
   const [exchangeForm, setExchangeForm] = useState({ name: '', email: '' });
   const [exchangeSent, setExchangeSent] = useState(false);
+  const [exchangeSubmitting, setExchangeSubmitting] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
   const ctaColor = data.design_config?.cta_button_color || themeColor;
 
@@ -78,10 +80,23 @@ export default function BusinessCardDisplay({ data }) {
     URL.revokeObjectURL(url);
   };
 
-  const handleExchangeSubmit = (e) => {
+  const handleExchangeSubmit = async (e) => {
     e.preventDefault();
-    console.log('Exchange info submitted:', exchangeForm);
-    setExchangeSent(true);
+    setExchangeSubmitting(true);
+    try {
+      await base44.asServiceRole.entities.Lead.create({
+        user_email: data.owner_email || '',
+        qr_code_id: data.qr_code_id || '',
+        qr_code_name: data.name || '',
+        lead_name: exchangeForm.name,
+        lead_email: exchangeForm.email,
+      });
+    } catch (err) {
+      console.error('Lead save error:', err);
+    } finally {
+      setExchangeSubmitting(false);
+      setExchangeSent(true);
+    }
   };
 
   const socialLinks = data.social_links || [];
@@ -176,9 +191,10 @@ export default function BusinessCardDisplay({ data }) {
                 />
                 <button
                   type="submit"
-                  className="dbc-primary w-full py-2.5 rounded-lg text-white font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                  disabled={exchangeSubmitting}
+                  className="dbc-primary w-full py-2.5 rounded-lg text-white font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
                 >
-                  Send <ArrowRight className="w-4 h-4" />
+                  {exchangeSubmitting ? 'Sending...' : <><span>Send</span><ArrowRight className="w-4 h-4" /></>}
                 </button>
               </form>
             )}

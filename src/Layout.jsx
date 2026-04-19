@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -96,6 +96,12 @@ export default function Layout({ children, currentPageName }) {
                     <QrCode className="w-4 h-4" />
                     Create QR
                   </Link>
+                  {(user?.subscription_tier === 'pro' || user?.role === 'admin') && (
+                    <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
+                      <Users className="w-4 h-4" />
+                      Leads
+                    </Link>
+                  )}
                   {user?.role === 'admin' && (
                     <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm">
                       <Shield className="w-4 h-4" />

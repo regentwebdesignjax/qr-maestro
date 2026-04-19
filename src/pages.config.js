@@ -58,6 +58,7 @@ import MyQRCodes from './pages/MyQRCodes';
 import Pricing from './pages/Pricing';
 import ViewQR from './pages/ViewQR';
 import WhyUs from './pages/WhyUs';
+import Leads from './pages/Leads';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Pricing": Pricing,
     "ViewQR": ViewQR,
     "WhyUs": WhyUs,
+    "Leads": Leads,
 }
 
 export const pagesConfig = {

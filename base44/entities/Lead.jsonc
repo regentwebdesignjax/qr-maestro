@@ -1,0 +1,31 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the DBC owner who collected this lead"
+    },
+    "qr_code_id": {
+      "type": "string",
+      "description": "ID of the QR code / DBC that generated this lead"
+    },
+    "qr_code_name": {
+      "type": "string",
+      "description": "Name of the source card at capture time"
+    },
+    "lead_name": {
+      "type": "string",
+      "description": "Name provided by the lead"
+    },
+    "lead_email": {
+      "type": "string",
+      "description": "Email provided by the lead"
+    }
+  },
+  "required": [
+    "user_email",
+    "lead_name",
+    "lead_email"
+  ]
+}
