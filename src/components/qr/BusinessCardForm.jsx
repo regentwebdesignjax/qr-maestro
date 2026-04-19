@@ -3,18 +3,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Upload, X, User, Building2, Link2 } from 'lucide-react';
+import { Upload, X, User, Building2, Link2, Plus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 function SECTION({ icon: Icon, title, children }) {
   return (
-  <div className="space-y-3">
-    <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
-      <Icon className="w-4 h-4 text-primary" />
-      <span className="text-sm font-semibold text-gray-700">{title}</span>
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
+        <Icon className="w-4 h-4 text-primary" />
+        <span className="text-sm font-semibold text-gray-700">{title}</span>
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
   );
 }
 
@@ -62,6 +62,21 @@ function ImageUploader({ label, hint, value, onChange, id }) {
 export default function BusinessCardForm({ data, onChange }) {
   const set = (field, value) => onChange({ ...data, [field]: value });
 
+  const socialLinks = data.social_links || [];
+
+  const addLink = () => {
+    set('social_links', [...socialLinks, { platform: '', url: '' }]);
+  };
+
+  const updateLink = (idx, field, value) => {
+    const next = socialLinks.map((l, i) => i === idx ? { ...l, [field]: value } : l);
+    set('social_links', next);
+  };
+
+  const removeLink = (idx) => {
+    set('social_links', socialLinks.filter((_, i) => i !== idx));
+  };
+
   return (
     <div className="space-y-6">
       {/* Identity */}
@@ -82,10 +97,6 @@ export default function BusinessCardForm({ data, onChange }) {
             <Label className="text-xs text-gray-600">Job Title</Label>
             <Input className="mt-1" placeholder="Head Sensei" value={data.title || ''} onChange={(e) => set('title', e.target.value)} />
           </div>
-        </div>
-        <div>
-          <Label className="text-xs text-gray-600">Pronouns</Label>
-          <Input className="mt-1" placeholder="they/them" value={data.pronouns || ''} onChange={(e) => set('pronouns', e.target.value)} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">Bio</Label>
@@ -132,15 +143,31 @@ export default function BusinessCardForm({ data, onChange }) {
           <Label className="text-xs text-gray-600">Website</Label>
           <Input className="mt-1" placeholder="https://sensei.io" value={data.website || ''} onChange={(e) => set('website', e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs text-gray-600">LinkedIn</Label>
-            <Input className="mt-1" placeholder="linkedin.com/in/..." value={data.linkedin || ''} onChange={(e) => set('linkedin', e.target.value)} />
-          </div>
-          <div>
-            <Label className="text-xs text-gray-600">Instagram</Label>
-            <Input className="mt-1" placeholder="@handle" value={data.instagram || ''} onChange={(e) => set('instagram', e.target.value)} />
-          </div>
+
+        {/* Dynamic Social Links */}
+        <div className="space-y-2">
+          <Label className="text-xs text-gray-600">Social Links</Label>
+          {socialLinks.map((link, idx) => (
+            <div key={idx} className="flex gap-2 items-center">
+              <Input
+                placeholder="Platform (e.g. LinkedIn)"
+                value={link.platform}
+                onChange={(e) => updateLink(idx, 'platform', e.target.value)}
+                className="w-32 shrink-0"
+              />
+              <Input
+                placeholder="URL or handle"
+                value={link.url}
+                onChange={(e) => updateLink(idx, 'url', e.target.value)}
+              />
+              <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => removeLink(idx)}>
+                <Trash2 className="w-4 h-4 text-gray-400" />
+              </Button>
+            </div>
+          ))}
+          <Button type="button" variant="outline" size="sm" onClick={addLink}>
+            <Plus className="w-3 h-3 mr-1" /> Add Link
+          </Button>
         </div>
       </SECTION>
     </div>
