@@ -120,9 +120,12 @@ Deno.serve(async (req) => {
     }
 
     // For text, wifi, vcard, business_card — return raw content for the client to display
+    // Note: owner_email is stored directly on the QR code record as created_by (email string)
+    const ownerEmail = typeof qrCode.created_by === 'string' ? qrCode.created_by : '';
+
     return Response.json({
       id: qrCode.id,
-      created_by: qrCode.created_by,
+      owner_email: ownerEmail,
       content_type: contentType,
       content: qrCode.content,
       name: qrCode.name,

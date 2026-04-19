@@ -384,7 +384,7 @@ export default function Redirect() {
             data.bc = {};
           }
           // Attach owner info for lead capture
-          data.bc.owner_email = data.created_by || '';
+          data.bc.owner_email = data.owner_email || '';
           data.bc.qr_code_id = data.id || '';
         }
 
