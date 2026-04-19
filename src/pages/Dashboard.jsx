@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon, Lock, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Eye, QrCode as QrCodeIcon, Lock, Zap, AlertTriangle } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 
 export default function Dashboard() {
@@ -74,6 +74,11 @@ export default function Dashboard() {
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const canCreateStatic = isPro || staticCount < 3;
 
+  const dbcCapacity = 10 + (user.purchased_extra_dbcs || 0);
+  const activeDbcCount = qrCodes.filter(qr => qr.content_type === 'vcard' && qr.is_active !== false).length;
+  const dbcLimitReached = isPro && activeDbcCount >= dbcCapacity;
+  const dbcOverLimit = isPro && activeDbcCount > dbcCapacity;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -91,12 +96,21 @@ export default function Dashboard() {
                 Manage Subscription
               </Button>
             )}
-            <Link to="/CreateQR">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
-                <Plus className="w-4 h-4 mr-2" />
-                Strike a New Code
-              </Button>
-            </Link>
+            {dbcLimitReached ? (
+              <Link to="/Pricing">
+                <Button className="bg-gray-400 hover:bg-gray-400 text-white font-semibold cursor-not-allowed" disabled>
+                  <Lock className="w-4 h-4 mr-2" />
+                  DBC Limit Reached — Purchase More
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/CreateQR">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Strike a New Code
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -165,6 +179,31 @@ export default function Dashboard() {
               </CardContent>
           </Card>
         </div>
+
+        {/* DBC Over-Limit Warning */}
+        {dbcOverLimit && (
+          <Card className="mb-6 border-red-300 bg-red-50">
+            <CardContent className="pt-5 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-red-800">Digital Business Card limit exceeded</p>
+                    <p className="text-sm text-red-700 mt-0.5">
+                      You have {activeDbcCount} active DBCs but your plan includes {dbcCapacity}. Purchase additional seats to stay compliant.
+                    </p>
+                  </div>
+                </div>
+                <Link to="/Pricing">
+                  <Button className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Purchase More Seats
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Upgrade Banner for Free Users */}
         {!isPro && (

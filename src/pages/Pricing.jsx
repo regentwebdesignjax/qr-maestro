@@ -4,11 +4,14 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Check, Zap, Users } from 'lucide-react';
 
 export default function Pricing() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [totalSeats, setTotalSeats] = useState(10);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -23,6 +26,8 @@ export default function Pricing() {
   }, []);
 
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
+  const extraSeats = Math.max(0, totalSeats - 10);
+  const monthlyTotal = 29 + extraSeats * 3;
 
   const handleUpgrade = async (period) => {
     if (!user) {
@@ -34,13 +39,14 @@ export default function Pricing() {
     setLoading(true);
     base44.analytics.track({
       eventName: 'upgrade_checkout_initiated',
-      properties: { plan: 'black_belt', period, user_email: user.email },
+      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats },
     });
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
         period,
         user_id: user.id,
         email: user.email,
+        total_seats: totalSeats,
       });
 
       if (response.data.url) {
@@ -133,15 +139,37 @@ export default function Pricing() {
               <CardTitle className="text-2xl">Black Belt (Monthly)</CardTitle>
               <CardDescription>Master the way of the code</CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$29</span>
+                <span className="text-4xl font-bold">${monthlyTotal}</span>
                 <span className="text-gray-600">/month</span>
               </div>
+              {extraSeats > 0 && (
+                <p className="text-xs text-gray-500 mt-1">$29 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $3</p>
+              )}
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
+              {/* DBC Seat Selector */}
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+                <Label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+                  <Users className="w-4 h-4 text-primary" />
+                  Total Digital Business Cards needed
+                </Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={10}
+                    value={totalSeats}
+                    onChange={(e) => setTotalSeats(Math.max(10, parseInt(e.target.value) || 10))}
+                    className="w-24 text-center font-semibold"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {extraSeats > 0 ? `+${extraSeats} extra @ $3/mo each` : 'First 10 included'}
+                  </span>
+                </div>
+              </div>
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited QR Codes</span>
+                  <span className="font-semibold">{totalSeats} Digital Business Cards</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />

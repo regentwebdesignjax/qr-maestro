@@ -1,0 +1,49 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "subscription_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro"
+      ],
+      "default": "free"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "active",
+        "past_due",
+        "canceled"
+      ],
+      "default": "none"
+    },
+    "subscription_period": {
+      "type": "string",
+      "enum": [
+        "none",
+        "monthly",
+        "annual"
+      ],
+      "default": "none"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "purchased_extra_dbcs": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of additional Digital Business Cards purchased beyond the base 10"
+    }
+  }
+}
