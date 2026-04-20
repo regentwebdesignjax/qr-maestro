@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, QrCode as QrCodeIcon, FolderOpen } from 'lucide-react';
+import { Plus, QrCode as QrCodeIcon, FolderOpen, Layers } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 import QRMobileCard from '../components/qr/QRMobileCard';
@@ -147,13 +147,24 @@ export default function MyQRCodes() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">My QR Codes</h1>
             <p className="text-sm text-gray-600">Manage all your QR codes</p>
           </div>
-          <Link to="/CreateQR">
-            <Button className="h-11">
-              <Plus className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Create New</span>
-              <span className="sm:hidden">New</span>
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            {isPro && (
+              <Link to="/BulkCreate">
+                <Button variant="outline" className="h-11">
+                  <Layers className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Bulk Create</span>
+                  <span className="sm:hidden">Bulk</span>
+                </Button>
+              </Link>
+            )}
+            <Link to="/CreateQR">
+              <Button className="h-11">
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Create New</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Quick Stats */}
