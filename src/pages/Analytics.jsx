@@ -81,8 +81,11 @@ export default function Analytics() {
         if (qrCodes.length === 0) { window.location.href = '/Dashboard'; return; }
         setQrCode(qrCodes[0]);
 
+        console.log('Analytics fetching for ID:', id);
         const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: id });
-        setScans(scanResponse.data?.scans || []);
+        const receivedScans = scanResponse.data?.scans || [];
+        console.log('Scans received:', receivedScans.length, receivedScans);
+        setScans(receivedScans);
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {
