@@ -45,10 +45,18 @@ function generateVCardContent(vcard_data) {
   return lines.join('\n');
 }
 
+function ensureHttps(url) {
+  if (!url) return url;
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return 'https://' + trimmed;
+}
+
 function generateSocialContent(social_data, custom_platforms = []) {
   const platforms = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
-  const standard = platforms.filter((p) => social_data[p]).map((p) => `${p}:${social_data[p]}`);
-  const custom = custom_platforms.filter(c => c.label && c.url).map(c => `custom_${c.label}:${c.url}`);
+  const standard = platforms.filter((p) => social_data[p]).map((p) => `${p}:${ensureHttps(social_data[p])}`);
+  const custom = custom_platforms.filter(c => c.label && c.url).map(c => `custom_${c.label}:${ensureHttps(c.url)}`);
   return [...standard, ...custom].join('\n');
 }
 
@@ -574,8 +582,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               }
                 {formData.content_type === 'social' &&
               <div className="space-y-3">
+                    <p className="text-xs text-gray-500">Enter the full URL to your profile, including <span className="font-medium">https://</span></p>
                     <div className="grid grid-cols-2 gap-3">
-                      <Input id="social-facebook" placeholder="Facebook" value={formData.social_data?.facebook || ''}
+                      <Input id="social-facebook" placeholder="https://facebook.com/yourpage" value={formData.social_data?.facebook || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, facebook: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -583,7 +592,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-instagram" placeholder="Instagram" value={formData.social_data?.instagram || ''}
+                      <Input id="social-instagram" placeholder="https://instagram.com/yourhandle" value={formData.social_data?.instagram || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, instagram: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -591,7 +600,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-x" placeholder="X (Twitter)" value={formData.social_data?.x || ''}
+                      <Input id="social-x" placeholder="https://x.com/yourhandle" value={formData.social_data?.x || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, x: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -599,7 +608,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-linkedin" placeholder="LinkedIn" value={formData.social_data?.linkedin || ''}
+                      <Input id="social-linkedin" placeholder="https://linkedin.com/in/yourprofile" value={formData.social_data?.linkedin || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, linkedin: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -607,7 +616,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-youtube" placeholder="YouTube" value={formData.social_data?.youtube || ''}
+                      <Input id="social-youtube" placeholder="https://youtube.com/@yourchannel" value={formData.social_data?.youtube || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, youtube: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -615,7 +624,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-tiktok" placeholder="TikTok" value={formData.social_data?.tiktok || ''}
+                      <Input id="social-tiktok" placeholder="https://tiktok.com/@yourhandle" value={formData.social_data?.tiktok || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, tiktok: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -623,7 +632,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-threads" placeholder="Threads" value={formData.social_data?.threads || ''}
+                      <Input id="social-threads" placeholder="https://threads.net/@yourhandle" value={formData.social_data?.threads || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, threads: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -631,7 +640,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-telegram" placeholder="Telegram" value={formData.social_data?.telegram || ''}
+                      <Input id="social-telegram" placeholder="https://t.me/yourhandle" value={formData.social_data?.telegram || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, telegram: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -639,7 +648,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-rss" placeholder="RSS Feed" value={formData.social_data?.rss || ''}
+                      <Input id="social-rss" placeholder="https://yourblog.com/feed" value={formData.social_data?.rss || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, rss: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -647,7 +656,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-podcast" placeholder="Podcast" value={formData.social_data?.podcast || ''}
+                      <Input id="social-podcast" placeholder="https://podcasts.apple.com/..." value={formData.social_data?.podcast || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, podcast: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -655,7 +664,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-website" placeholder="Website" value={formData.social_data?.website || ''}
+                      <Input id="social-website" placeholder="https://yourwebsite.com" value={formData.social_data?.website || ''}
                   onChange={(e) => {
                     const newData = { ...formData.social_data, website: e.target.value };
                     setFormData((prev) => ({ ...prev, social_data: newData }));
@@ -663,7 +672,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', content);
                     triggerPreview({ content });
                   }} />
-                      <Input id="social-blog" placeholder="Blog" value={formData.social_data?.blog || ''}
+                      <Input id="social-blog" placeholder="https://yourblog.com" value={formData.social_data?.blog || ''}
                       onChange={(e) => {
                       const newData = { ...formData.social_data, blog: e.target.value };
                       setFormData((prev) => ({ ...prev, social_data: newData }));

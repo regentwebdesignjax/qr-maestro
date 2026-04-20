@@ -183,7 +183,10 @@ function SocialDisplay({ content, branded }) {
     const result = {};
     text.split('\n').forEach(line => {
       if (line.trim()) {
-        const [platform, value] = line.split(':').map(s => s.trim());
+        const colonIdx = line.indexOf(':');
+        if (colonIdx === -1) return;
+        const platform = line.substring(0, colonIdx).trim();
+        const value = line.substring(colonIdx + 1).trim();
         if (platform && value) result[platform] = value;
       }
     });
@@ -246,7 +249,9 @@ function SocialDisplay({ content, branded }) {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500 capitalize font-medium">{displayLabel}</p>
-                <p className="text-sm text-gray-700 hover:text-primary font-medium break-words">{handle}</p>
+                <p className="text-sm text-gray-700 hover:text-primary font-medium break-words">
+                  {handle.replace(/^https?:\/\/(www\.)?/, '')}
+                </p>
               </div>
             </a>
           );
