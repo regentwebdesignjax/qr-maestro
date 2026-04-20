@@ -93,17 +93,21 @@ Deno.serve(async (req) => {
     // Geo-locate synchronously before responding so data is always saved
     const geo = await geoLocate(ip);
 
-    await base44.asServiceRole.entities.Scan.create({
-      qr_code_id: qrCode.id,
-      device_type: deviceType,
-      browser,
-      os,
-      country: geo.country || null,
-      state: geo.state || null,
-      city: geo.city || null,
-      lat: geo.lat || null,
-      lng: geo.lng || null,
-    }).catch((e) => console.error('Scan create error:', e.message));
+    try {
+      await base44.asServiceRole.entities.Scan.create({
+        qr_code_id: qrCode.id,
+        device_type: deviceType,
+        browser,
+        os,
+        country: geo.country || null,
+        state: geo.state || null,
+        city: geo.city || null,
+        lat: geo.lat || null,
+        lng: geo.lng || null,
+      });
+    } catch (e) {
+      console.error('Scan create error:', e.message, JSON.stringify(e?.response?.data || {}));
+    }
 
     await base44.asServiceRole.entities.QRCode.update(qrCode.id, {
       scan_count: (qrCode.scan_count || 0) + 1,

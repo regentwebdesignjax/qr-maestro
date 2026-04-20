@@ -81,8 +81,8 @@ export default function Analytics() {
         if (qrCodes.length === 0) { window.location.href = '/Dashboard'; return; }
         setQrCode(qrCodes[0]);
 
-        const scanData = await base44.entities.Scan.filter({ qr_code_id: id });
-        setScans(scanData);
+        const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: id });
+        setScans(scanResponse.data?.scans || []);
       } catch (error) {
         console.error('Error fetching analytics:', error);
       } finally {

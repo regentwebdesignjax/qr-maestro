@@ -104,8 +104,8 @@ export default function ViewQR() {
         setQrCode(qr);
 
         if (qr.type === 'dynamic') {
-          const scanData = await base44.entities.Scan.filter({ qr_code_id: qr.id });
-          setScans(scanData);
+          const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: qr.id });
+          setScans(scanResponse.data?.scans || []);
         }
       } catch (error) {
         console.error('Error fetching QR code:', error);
