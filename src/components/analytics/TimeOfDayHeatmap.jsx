@@ -16,9 +16,10 @@ export default function TimeOfDayHeatmap({ scans }) {
   const grid = Array.from({ length: 7 }, () => Array(24).fill(0));
 
   scans.forEach(scan => {
-    const date = new Date(scan.created_date);
-    const day = getDay(date);   // 0 = Sun
-    const hour = getHours(date);
+    const raw = scan.created_date.endsWith('Z') ? scan.created_date : scan.created_date + 'Z';
+    const date = new Date(raw);
+    const day = getDay(date);   // 0 = Sun, local time
+    const hour = getHours(date); // local hour
     grid[day][hour]++;
   });
 

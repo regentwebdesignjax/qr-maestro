@@ -10,7 +10,10 @@ export default function ScansOverTimeChart({ scans, dateRange }) {
 
   const chartData = days.map((day) => {
     const dateStr = format(day, 'yyyy-MM-dd');
-    const count = scans.filter(s => format(new Date(s.created_date), 'yyyy-MM-dd') === dateStr).length;
+    const count = scans.filter(s => {
+      const raw = s.created_date.endsWith('Z') ? s.created_date : s.created_date + 'Z';
+      return format(new Date(raw), 'yyyy-MM-dd') === dateStr;
+    }).length;
     return { date: format(day, days.length > 14 ? 'MMM d' : 'MMM dd'), scans: count };
   });
 

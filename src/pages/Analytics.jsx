@@ -121,7 +121,11 @@ export default function Analytics() {
 
     const result = scans.filter(scan => {
       if (!scan.created_date) return false;
-      const d = new Date(scan.created_date); // auto-converts UTC → local
+      // The DB returns strings like "2026-04-20T02:19:07.574000" WITHOUT a Z suffix.
+      // Without Z, browsers parse this as LOCAL time instead of UTC — causing wrong results.
+      // Force UTC parsing by appending Z if not already present.
+      const rawDate = scan.created_date.endsWith('Z') ? scan.created_date : scan.created_date + 'Z';
+      const d = new Date(rawDate);
       if (isNaN(d.getTime())) return false;
       return d >= rangeStart && d <= rangeEnd;
     });
