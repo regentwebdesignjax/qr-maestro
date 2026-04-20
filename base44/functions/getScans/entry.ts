@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'QR code not found' }, { status: 404 });
     }
     const qrCode = qrCodes[0];
-    const ownerMatch = qrCode.created_by === user.email || qrCode.owner_email === user.email;
+    const ownerMatch = qrCode.owner_email === user.email || qrCode.created_by === user.email || qrCode.created_by === user.id;
     if (!ownerMatch && user.role !== 'admin') {
       console.error(`getScans: ownership mismatch. qr.created_by=${qrCode.created_by}, qr.owner_email=${qrCode.owner_email}, user=${user.email}`);
       return Response.json({ error: 'Forbidden' }, { status: 403 });
