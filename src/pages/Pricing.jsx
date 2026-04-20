@@ -12,6 +12,7 @@ export default function Pricing() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [totalSeats, setTotalSeats] = useState(10);
+  const [inputSeats, setInputSeats] = useState('10');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -156,14 +157,24 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                    type="number"
-                    min={10}
-                    value={totalSeats}
-                    onChange={(e) => setTotalSeats(Math.max(10, parseInt(e.target.value) || 10))}
-                    className="w-24 text-center font-semibold"
+                   type="number"
+                   min={10}
+                   value={inputSeats}
+                   onChange={(e) => {
+                     const raw = e.target.value;
+                     setInputSeats(raw);
+                     const parsed = Math.max(10, parseInt(raw) || 10);
+                     setTotalSeats(parsed);
+                   }}
+                   onBlur={() => {
+                     const val = Math.max(10, parseInt(inputSeats) || 10);
+                     setInputSeats(String(val));
+                     setTotalSeats(val);
+                   }}
+                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
                   />
                   <span className="text-sm text-gray-500">
-                    {extraSeats > 0 ? `+${extraSeats} extra @ $3/mo each` : 'First 10 included'}
+                   {extraSeats > 0 ? `+${extraSeats} extra @ $3/mo each` : 'First 10 included'}
                   </span>
                 </div>
               </div>
@@ -235,14 +246,24 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                    type="number"
-                    min={10}
-                    value={totalSeats}
-                    onChange={(e) => setTotalSeats(Math.max(10, parseInt(e.target.value) || 10))}
-                    className="w-24 text-center font-semibold"
+                   type="number"
+                   min={10}
+                   value={inputSeats}
+                   onChange={(e) => {
+                     const raw = e.target.value;
+                     setInputSeats(raw);
+                     const parsed = Math.max(10, parseInt(raw) || 10);
+                     setTotalSeats(parsed);
+                   }}
+                   onBlur={() => {
+                     const val = Math.max(10, parseInt(inputSeats) || 10);
+                     setInputSeats(String(val));
+                     setTotalSeats(val);
+                   }}
+                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
                   />
                   <span className="text-sm text-gray-500">
-                    {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
+                   {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
                   </span>
                 </div>
               </div>
