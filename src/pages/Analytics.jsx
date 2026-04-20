@@ -77,14 +77,20 @@ export default function Analytics() {
           (currentUser.subscription_tier === 'pro' && currentUser.subscription_status === 'active');
         if (!isPro) { setLoading(false); return; }
 
-        const qrCodes = await base44.entities.QRCode.filter({ id, created_by: currentUser.email });
+        const qrCodes = await base44.entities.QRCode.filter({ id });
         if (qrCodes.length === 0) { window.location.href = '/Dashboard'; return; }
-        setQrCode(qrCodes[0]);
+        const qr = qrCodes[0];
+        // Ownership: accept either created_by or owner_email match
+        if (qr.created_by !== currentUser.email && qr.owner_email !== currentUser.email && currentUser.role !== 'admin') {
+          window.location.href = '/Dashboard';
+          return;
+        }
+        setQrCode(qr);
 
-        console.log('Analytics fetching for ID:', id);
+        console.log(`Analytics Page fetching scans for ID: ${id}`);
         const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: id });
         const receivedScans = scanResponse.data?.scans || [];
-        console.log('Scans received:', receivedScans.length, receivedScans);
+        console.log(`Analytics Page received ${receivedScans.length} scans from backend for ID ${id}`, receivedScans);
         setScans(receivedScans);
       } catch (error) {
         console.error('Error fetching analytics:', error);
