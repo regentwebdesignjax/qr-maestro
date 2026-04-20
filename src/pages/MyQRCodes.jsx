@@ -12,6 +12,7 @@ import QRMobileCard from '../components/qr/QRMobileCard';
 export default function MyQRCodes() {
   const [user, setUser] = useState(null);
   const [activeFolder, setActiveFolder] = useState('all');
+  const [showFolders, setShowFolders] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -136,8 +137,6 @@ export default function MyQRCodes() {
   const handleFolderRename = (folderId, newName) => {
     updateFolderMutation.mutate({ folderId, name: newName });
   };
-
-  const [showFolders, setShowFolders] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
