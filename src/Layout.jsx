@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Button } from '@/components/ui/button';
 import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, Users, Menu, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -15,6 +16,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import BottomNav from '@/components/BottomNav';
 
 export default function Layout({ children, currentPageName }) {
+  usePageMeta(currentPageName);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -258,6 +260,7 @@ export default function Layout({ children, currentPageName }) {
             />
           </div>
           <p>&copy; 2026 QR Sensei. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Forged with discipline in Jacksonville, FL.</p>
           <div className="flex justify-center gap-6 mt-4 text-xs font-poppins">
             <Link to="/PrivacyPolicy" className="text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy
