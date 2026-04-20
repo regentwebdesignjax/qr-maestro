@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { maskUrl } from '@/lib/maskUrl';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -191,7 +192,7 @@ export default function ViewQR() {
                     );
                   }
                   return (
-                    <p className="font-medium text-gray-800 break-all text-sm">{qrCode.content}</p>
+                   <p className="font-medium text-gray-800 break-all text-sm">{maskUrl(qrCode.content)}</p>
                   );
                 })()}
               </div>

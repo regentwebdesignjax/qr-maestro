@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { maskUrl } from '@/lib/maskUrl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import BrandedLayout from '@/components/qr/BrandedLayout';
@@ -277,6 +278,7 @@ function CouponDisplay({ content, branded }) {
 }
 
 function ImageDisplay({ content, branded }) {
+  const safeUrl = maskUrl(content);
   return (
     <Card className="max-w-md w-full">
       <CardHeader className="pb-2">
@@ -288,13 +290,14 @@ function ImageDisplay({ content, branded }) {
         </div>
       </CardHeader>
       <CardContent>
-        <img src={content} alt="Shared" className="w-full rounded-lg" />
+        <img src={safeUrl} alt="Shared" className="w-full rounded-lg" />
       </CardContent>
     </Card>
   );
 }
 
 function MP3Display({ content, branded }) {
+  const safeUrl = maskUrl(content);
   return (
     <Card className="max-w-sm w-full">
       <CardHeader className="pb-2">
@@ -307,7 +310,7 @@ function MP3Display({ content, branded }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <audio controls className="w-full">
-          <source src={content} type="audio/mpeg" />
+          <source src={safeUrl} type="audio/mpeg" />
           Your browser does not support the audio element.
         </audio>
       </CardContent>

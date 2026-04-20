@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
+import { maskUrl } from '@/lib/maskUrl';
 
 function buildVCard(data) {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
@@ -118,13 +119,13 @@ export default function BusinessCardDisplay({ data }) {
       <div className="relative w-full">
         <div className="w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
           {data.banner_url && (
-            <img src={data.banner_url} alt="Banner" className="w-full h-full object-cover" />
+            <img src={maskUrl(data.banner_url)} alt={`${data.name || ''} Banner`} className="w-full h-full object-cover" />
           )}
         </div>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
           <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-gray-200 flex items-center justify-center">
             {data.headshot_url ? (
-              <img src={data.headshot_url} alt={data.name} className="w-full h-full object-cover" />
+              <img src={maskUrl(data.headshot_url)} alt={`${data.name || 'Profile'} headshot`} className="w-full h-full object-cover" />
             ) : (
               <UserPlus className="w-10 h-10 text-gray-400" />
             )}
@@ -142,7 +143,7 @@ export default function BusinessCardDisplay({ data }) {
           {(data.company || data.company_logo_url) && (
             <div className="flex items-center justify-center gap-2 mt-2">
               {data.company_logo_url && (
-                <img src={data.company_logo_url} alt={data.company} className="w-5 h-5 object-contain rounded" />
+                <img src={maskUrl(data.company_logo_url)} alt={`${data.company || ''} logo`} className="w-5 h-5 object-contain rounded" />
               )}
               {data.company && <span className="text-sm font-semibold text-gray-700">{data.company}</span>}
             </div>
