@@ -331,44 +331,75 @@ export default function Leads() {
                 <p className="text-sm text-gray-400 mt-1">Leads appear when someone submits the "Exchange Info" form on your Digital Business Card.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 pr-4 font-medium">Name</th>
-                      <th className="pb-3 pr-4 font-medium">Email</th>
-                      <th className="pb-3 pr-4 font-medium">Source Card</th>
-                      <th className="pb-3 pr-4 font-medium">Lead Tag</th>
-                      <th className="pb-3 font-medium">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leads.map(lead => (
-                      <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
-                        <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
-                        <td className="py-3 pr-4">
-                          <a href={`mailto:${lead.lead_email}`} className="text-primary hover:underline flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {lead.lead_email}
-                          </a>
-                        </td>
-                        <td className="py-3 pr-4 text-gray-600">{lead.qr_code_name || '—'}</td>
-                        <td className="py-3 pr-4">
-                          {lead.lead_tag ? (
-                            <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded">
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-3 pr-4 font-medium">Name</th>
+                        <th className="pb-3 pr-4 font-medium">Email</th>
+                        <th className="pb-3 pr-4 font-medium">Source Card</th>
+                        <th className="pb-3 pr-4 font-medium">Lead Tag</th>
+                        <th className="pb-3 font-medium">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leads.map(lead => (
+                        <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
+                          <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
+                          <td className="py-3 pr-4">
+                            <a href={`mailto:${lead.lead_email}`} className="text-primary hover:underline flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {lead.lead_email}
+                            </a>
+                          </td>
+                          <td className="py-3 pr-4 text-gray-600">{lead.qr_code_name || '—'}</td>
+                          <td className="py-3 pr-4">
+                            {lead.lead_tag ? (
+                              <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded">
+                                {lead.lead_tag}
+                              </span>
+                            ) : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="py-3 text-gray-400 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="md:hidden space-y-3">
+                  {leads.map(lead => (
+                    <div key={lead.id} className="rounded-xl border border-border bg-gray-50/50 p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{lead.lead_name}</p>
+                          {lead.lead_tag && (
+                            <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded mt-1">
                               {lead.lead_tag}
                             </span>
-                          ) : <span className="text-gray-300">—</span>}
-                        </td>
-                        <td className="py-3 text-gray-400 flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 shrink-0">
+                          {lead.created_date ? format(new Date(lead.created_date), 'MMM d') : ''}
+                        </p>
+                      </div>
+                      <a href={`mailto:${lead.lead_email}`} className="flex items-center gap-1.5 text-sm text-primary">
+                        <Mail className="w-3.5 h-3.5" />
+                        {lead.lead_email}
+                      </a>
+                      {lead.qr_code_name && (
+                        <p className="text-xs text-muted-foreground">Card: {lead.qr_code_name}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

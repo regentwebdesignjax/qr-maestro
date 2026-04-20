@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import QRCodeForm from '../components/qr/QRCodeForm';
 import QRCodePreview from '../components/qr/QRCodePreview';
@@ -13,6 +13,7 @@ export default function CreateQR() {
   const [qrData, setQrData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -63,7 +64,30 @@ export default function CreateQR() {
           </Button>
         </Link>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Create QR Code</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Create QR Code</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="md:hidden h-10 gap-2"
+            onClick={() => setShowMobilePreview(v => !v)}
+          >
+            {showMobilePreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showMobilePreview ? 'Hide Preview' : 'Preview'}
+          </Button>
+        </div>
+
+        {/* Mobile Preview Panel */}
+        {showMobilePreview && (
+          <Card className="md:hidden mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Live Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <QRCodePreview qrData={qrData} currentStep={currentStep} />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Form Section */}
@@ -82,8 +106,8 @@ export default function CreateQR() {
             </CardContent>
           </Card>
 
-          {/* Sticky Preview Section */}
-          <div className="lg:sticky lg:top-24">
+          {/* Sticky Preview Section — desktop only */}
+          <div className="hidden lg:block lg:sticky lg:top-24">
             <Card>
               <CardHeader>
                 <CardTitle>Live Preview</CardTitle>

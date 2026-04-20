@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Save, Info } from 'lucide-react';
+import { ArrowLeft, Save, Info, Eye, EyeOff } from 'lucide-react';
 import QRCodePreview from '../components/qr/QRCodePreview';
 import QRCodeForm from '../components/qr/QRCodeForm';
 
@@ -15,6 +15,7 @@ export default function EditQR() {
   const [saving, setSaving] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [currentStep, setCurrentStep] = useState(2);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -139,7 +140,30 @@ export default function EditQR() {
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit QR Code</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Edit QR Code</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="md:hidden h-10 gap-2"
+            onClick={() => setShowMobilePreview(v => !v)}
+          >
+            {showMobilePreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showMobilePreview ? 'Hide Preview' : 'Preview'}
+          </Button>
+        </div>
+
+        {/* Mobile Preview Panel */}
+        {showMobilePreview && (
+          <Card className="md:hidden mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Live Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <QRCodePreview qrData={previewData} currentStep={currentStep} />
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Left: Form */}
@@ -165,8 +189,8 @@ export default function EditQR() {
             </Card>
           </div>
 
-          {/* Right: Live Preview */}
-          <div className="lg:sticky lg:top-24">
+          {/* Right: Live Preview — desktop only */}
+          <div className="hidden lg:block lg:sticky lg:top-24">
             <Card>
               <CardHeader><CardTitle>Live Preview</CardTitle></CardHeader>
               <CardContent>

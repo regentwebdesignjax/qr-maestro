@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, Users } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, Users, Menu, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import BottomNav from '@/components/BottomNav';
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
@@ -66,7 +68,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-0 md:pb-0">
       {/* Header Navigation */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled || currentPageName !== 'Home' ? 'bg-white border-b border-border shadow-sm' : 'bg-transparent border-b border-transparent'}`}>
         <div className="container mx-auto px-4">
@@ -133,34 +135,94 @@ export default function Layout({ children, currentPageName }) {
                 <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
               ) : user ? (
                 <>
-                  {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
-                    <Link to="/Pricing">
-                      <Button variant="outline" className="font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
-                        Upgrade Rank
+                  {/* Desktop: Upgrade + Dropdown */}
+                  <div className="hidden md:flex items-center gap-3">
+                    {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
+                      <Link to="/Pricing">
+                        <Button variant="outline" className="font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
+                          Upgrade Rank
+                        </Button>
+                      </Link>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          {user.full_name || user.email}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleBilling}>
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Billing & Subscription
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Log Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Mobile: Hamburger Sheet */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="icon" className="md:hidden h-10 w-10">
+                        <Menu className="w-5 h-5" />
                       </Button>
-                    </Link>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        {user.full_name || user.email}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleBilling}>
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Billing & Subscription
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Log Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-72 p-0">
+                      <SheetHeader className="p-6 border-b bg-muted/30">
+                        <SheetTitle className="text-left">Menu</SheetTitle>
+                        <div className="flex items-center gap-3 mt-2">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">{user.full_name || 'User'}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </div>
+                      </SheetHeader>
+                      <div className="p-4 space-y-1">
+                        {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
+                          <Link to="/Pricing">
+                            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors">
+                              <CreditCard className="w-4 h-4" />
+                              Upgrade to Black Belt
+                            </button>
+                          </Link>
+                        )}
+                        <button
+                          onClick={handleBilling}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                        >
+                          <CreditCard className="w-4 h-4 text-gray-400" />
+                          Billing & Subscription
+                        </button>
+                        {user.role === 'admin' && (
+                          <Link to="/AdminDashboard">
+                            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary hover:bg-primary/5 transition-colors text-sm">
+                              <Shield className="w-4 h-4" />
+                              Admin Dashboard
+                            </button>
+                          </Link>
+                        )}
+                        <div className="pt-2 border-t mt-2">
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors text-sm"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Log Out
+                          </button>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </>
               ) : (
                 <>
@@ -178,12 +240,15 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Page Content */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         {children}
       </main>
 
+      {/* Bottom Nav — mobile only */}
+      {user && <BottomNav user={user} />}
+
       {/* Footer */}
-      <footer className="bg-white border-t border-border py-8 mt-auto">
+      <footer className="bg-white border-t border-border py-8 mt-auto hidden md:block">
         <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
           <div className="flex items-center justify-center mb-2">
             <img
