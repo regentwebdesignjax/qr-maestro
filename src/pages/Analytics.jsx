@@ -91,6 +91,11 @@ export default function Analytics() {
         const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: id });
         const receivedScans = scanResponse.data?.scans || [];
         console.log(`Analytics Page received ${receivedScans.length} scans from backend for ID ${id}`, receivedScans);
+        if (receivedScans.length > 0) {
+          console.log('First scan sample:', JSON.stringify(receivedScans[0]));
+          console.log('First scan created_date parsed:', new Date(receivedScans[0].created_date).toString());
+        }
+        console.log('Processed Scans Array:', receivedScans);
         setScans(receivedScans);
       } catch (error) {
         console.error('Error fetching analytics:', error);
@@ -108,13 +113,23 @@ export default function Analytics() {
     return getDateRange(preset);
   }, [preset, customRange]);
 
-  const filteredScans = useMemo(() => scans.filter(scan => {
-    const d = new Date(scan.created_date);
-    return isWithinInterval(d, {
-      start: startOfDay(dateRange.from),
-      end: endOfDay(dateRange.to || dateRange.from),
+  const filteredScans = useMemo(() => {
+    // Scans are stored in UTC. To avoid filtering out late-night local scans
+    // (e.g. 10pm EST = 2am UTC "next day"), we expand the window by 1 day on each side.
+    const rangeStart = startOfDay(dateRange.from);
+    const rangeEnd = endOfDay(dateRange.to || dateRange.from);
+    // Add 24h buffer on the end to catch UTC-shifted scans
+    const bufferedEnd = new Date(rangeEnd.getTime() + 24 * 60 * 60 * 1000);
+
+    const result = scans.filter(scan => {
+      if (!scan.created_date) return false;
+      const d = new Date(scan.created_date);
+      if (isNaN(d.getTime())) return false;
+      return d >= rangeStart && d <= bufferedEnd;
     });
-  }), [scans, dateRange]);
+    console.log(`Date filter [${rangeStart.toISOString()} → ${bufferedEnd.toISOString()}]: ${scans.length} total → ${result.length} filtered`);
+    return result;
+  }, [scans, dateRange]);
 
   const uniqueScanners = useMemo(() => {
     // Approximate unique scanners by grouping by device_type + browser + country combo
