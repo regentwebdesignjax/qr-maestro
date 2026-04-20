@@ -80,9 +80,12 @@ export default function Analytics() {
         const qrCodes = await base44.entities.QRCode.filter({ id });
         if (qrCodes.length === 0) { window.location.href = '/Dashboard'; return; }
         const qr = qrCodes[0];
-        // Ownership: accept either created_by or owner_email match
-        if (qr.created_by !== currentUser.email && qr.owner_email !== currentUser.email && currentUser.role !== 'admin') {
-          window.location.href = '/Dashboard';
+        // Ownership: accept owner_email match, or created_by match (by email or user ID), or admin
+        const isOwner = qr.owner_email === currentUser.email ||
+          qr.created_by === currentUser.email ||
+          qr.created_by === currentUser.id;
+        if (!isOwner && currentUser.role !== 'admin') {
+          window.location.href = '/MyQRCodes';
           return;
         }
         setQrCode(qr);
