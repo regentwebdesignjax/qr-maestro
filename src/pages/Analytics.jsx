@@ -114,20 +114,18 @@ export default function Analytics() {
   }, [preset, customRange]);
 
   const filteredScans = useMemo(() => {
-    // Scans are stored in UTC. To avoid filtering out late-night local scans
-    // (e.g. 10pm EST = 2am UTC "next day"), we expand the window by 1 day on each side.
+    // new Date(utcString) converts to local time automatically.
+    // startOfDay/endOfDay operate in local time, so this filter is timezone-correct.
     const rangeStart = startOfDay(dateRange.from);
     const rangeEnd = endOfDay(dateRange.to || dateRange.from);
-    // Add 24h buffer on the end to catch UTC-shifted scans
-    const bufferedEnd = new Date(rangeEnd.getTime() + 24 * 60 * 60 * 1000);
 
     const result = scans.filter(scan => {
       if (!scan.created_date) return false;
-      const d = new Date(scan.created_date);
+      const d = new Date(scan.created_date); // auto-converts UTC → local
       if (isNaN(d.getTime())) return false;
-      return d >= rangeStart && d <= bufferedEnd;
+      return d >= rangeStart && d <= rangeEnd;
     });
-    console.log(`Date filter [${rangeStart.toISOString()} → ${bufferedEnd.toISOString()}]: ${scans.length} total → ${result.length} filtered`);
+    console.log(`Date filter [${rangeStart.toISOString()} → ${rangeEnd.toISOString()}]: ${scans.length} total → ${result.length} filtered`);
     return result;
   }, [scans, dateRange]);
 
