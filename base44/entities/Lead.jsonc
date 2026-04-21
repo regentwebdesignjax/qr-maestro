@@ -25,6 +25,10 @@
     "lead_tag": {
       "type": "string",
       "description": "Optional tag (e.g. Employee ID or Region Code) for routing leads after CSV export"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes provided by the lead (e.g. context about how they met or what they're interested in)"
     }
   },
   "required": [

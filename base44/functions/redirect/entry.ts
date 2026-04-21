@@ -80,6 +80,23 @@ Deno.serve(async (req) => {
 
     const qrCode = qrCodes[0];
 
+    // Subscription check for dynamic QR codes
+    if (qrCode.type === 'dynamic' && qrCode.owner_email) {
+      const owners = await base44.asServiceRole.entities.User.filter({ email: qrCode.owner_email });
+      const owner = owners[0];
+      // Allow admins and active Pro subscribers; block lapsed subscriptions
+      if (owner && owner.role !== 'admin') {
+        const subStatus = owner.subscription_status;
+        const subTier = owner.subscription_tier;
+        if (subTier === 'pro' && subStatus !== 'active') {
+          return Response.json({
+            content_type: 'inactive',
+            message: 'This professional identity is currently resting. Please contact the owner to reactivate.',
+          });
+        }
+      }
+    }
+
     // Get scanner IP from headers (works behind proxies/CDNs)
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || req.headers.get('x-real-ip')

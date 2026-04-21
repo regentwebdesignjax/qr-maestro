@@ -389,6 +389,11 @@ export default function Redirect() {
           return;
         }
 
+        if (data.content_type === 'inactive') {
+          setState({ status: 'inactive', data });
+          return;
+        }
+
         // Parse business card JSON content
         if (data.content_type === 'business_card') {
           try {
@@ -410,6 +415,20 @@ export default function Redirect() {
 
     run();
   }, []);
+
+  if (state.status === 'inactive') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🥋</span>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Card Inactive</h2>
+          <p className="text-gray-500 text-sm">{state.data?.message || 'This professional identity is currently resting. Please contact the owner to reactivate.'}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (state.status === 'loading') {
     return (

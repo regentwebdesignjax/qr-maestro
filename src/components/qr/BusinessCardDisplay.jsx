@@ -55,7 +55,7 @@ function normalizeUrl(url, platform) {
 
 export default function BusinessCardDisplay({ data }) {
   const [showExchange, setShowExchange] = useState(false);
-  const [exchangeForm, setExchangeForm] = useState({ name: '', email: '' });
+  const [exchangeForm, setExchangeForm] = useState({ name: '', email: '', notes: '' });
   const [exchangeSent, setExchangeSent] = useState(false);
   const [exchangeSubmitting, setExchangeSubmitting] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
@@ -93,6 +93,7 @@ export default function BusinessCardDisplay({ data }) {
         lead_name: exchangeForm.name,
         lead_email: exchangeForm.email,
         lead_tag: data.design_config?.lead_tag || '',
+        notes: exchangeForm.notes || '',
       };
       console.log('Submitting lead payload:', payload);
       const response = await base44.functions.invoke('saveLead', payload);
@@ -195,6 +196,13 @@ export default function BusinessCardDisplay({ data }) {
                   value={exchangeForm.email}
                   onChange={(e) => setExchangeForm(p => ({ ...p, email: e.target.value }))}
                   required
+                />
+                <textarea
+                  placeholder="Notes (e.g. Met you at the Jacksonville Tech Expo, or I'd like to talk to Sales about...)"
+                  value={exchangeForm.notes}
+                  onChange={(e) => setExchangeForm(p => ({ ...p, notes: e.target.value }))}
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                 />
                 <button
                   type="submit"

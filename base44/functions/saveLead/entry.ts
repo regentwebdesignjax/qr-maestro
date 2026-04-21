@@ -4,9 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { user_email, qr_code_id, qr_code_name, lead_name, lead_email, lead_tag } = body;
+    const { user_email, qr_code_id, qr_code_name, lead_name, lead_email, lead_tag, notes } = body;
 
-    console.log('saveLead called with:', JSON.stringify({ user_email, qr_code_id, qr_code_name, lead_name, lead_email, lead_tag }));
+    console.log('saveLead called with:', JSON.stringify({ user_email, qr_code_id, qr_code_name, lead_name, lead_email, lead_tag, notes }));
 
     if (!lead_name || !lead_email || !user_email) {
       console.error('Missing required fields');
@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
       lead_name,
       lead_email,
       lead_tag: lead_tag || '',
+      notes: notes || '',
     });
 
     console.log('Lead created successfully:', JSON.stringify(result));

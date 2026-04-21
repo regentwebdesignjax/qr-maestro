@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const formatContentType = (type) => ({ url: 'URL', text: 'Text', wifi: 'WiFi', vcard: 'vCard' }[type] || type);
 
-export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder }) {
+export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder }) {
   const [selected, setSelected] = useState(new Set());
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
@@ -148,9 +148,14 @@ export default function QRCodeList({ qrCodes, isPro, onDelete, folders = [], qrF
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={qr.type === 'dynamic' ? 'default' : 'secondary'}>
-                      {qr.type === 'static' ? 'Static' : 'Dynamic'}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant={qr.type === 'dynamic' ? 'default' : 'secondary'}>
+                        {qr.type === 'static' ? 'Static' : 'Dynamic'}
+                      </Badge>
+                      {qr.type === 'dynamic' && !subActive && (
+                        <Badge variant="destructive" className="text-xs">Inactive</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>{formatContentType(qr.content_type)}</TableCell>
 

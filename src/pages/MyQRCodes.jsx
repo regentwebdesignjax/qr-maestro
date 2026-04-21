@@ -114,6 +114,7 @@ export default function MyQRCodes() {
   }
 
   const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
+  const subActive = user.role === 'admin' || user.subscription_tier !== 'pro' || user.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
 
@@ -261,6 +262,7 @@ export default function MyQRCodes() {
                   <QRCodeList
                     qrCodes={visibleQrCodes}
                     isPro={isPro}
+                    subActive={subActive}
                     folders={folders}
                     qrFolderMap={qrFolderMap}
                     onDelete={(id) => deleteQRMutation.mutate(id)}

@@ -19,12 +19,13 @@ function getDupeGroups(leads) {
 }
 
 function exportToCSV(leads) {
-  const header = ['Name', 'Email', 'Source Card', 'Lead Tag', 'Date'];
+  const header = ['Name', 'Email', 'Source Card', 'Lead Tag', 'Notes', 'Date'];
   const rows = leads.map(l => [
     `"${(l.lead_name || '').replace(/"/g, '""')}"`,
     `"${(l.lead_email || '').replace(/"/g, '""')}"`,
     `"${(l.qr_code_name || '').replace(/"/g, '""')}"`,
     `"${(l.lead_tag || '').replace(/"/g, '""')}"`,
+    `"${(l.notes || '').replace(/"/g, '""')}"`,
     `"${l.created_date ? format(new Date(l.created_date), 'yyyy-MM-dd HH:mm') : ''}"`,
   ]);
   const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -341,6 +342,7 @@ export default function Leads() {
                         <th className="pb-3 pr-4 font-medium">Email</th>
                         <th className="pb-3 pr-4 font-medium">Source Card</th>
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
+                        <th className="pb-3 pr-4 font-medium">Notes</th>
                         <th className="pb-3 font-medium">Date</th>
                       </tr>
                     </thead>
@@ -360,6 +362,11 @@ export default function Leads() {
                               <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded">
                                 {lead.lead_tag}
                               </span>
+                            ) : <span className="text-gray-300">—</span>}
+                          </td>
+                          <td className="py-3 pr-4 text-gray-600 max-w-[200px]">
+                            {lead.notes ? (
+                              <span className="text-xs line-clamp-2" title={lead.notes}>{lead.notes}</span>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="py-3 text-gray-400 flex items-center gap-1">
