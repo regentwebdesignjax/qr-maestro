@@ -172,14 +172,26 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
 
   // When transparent bg is on, we fill the canvas white first then punch holes
   // for the QR modules using destination-out so they become transparent.
-  if (transparentBg) {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvasPx, canvasPx);
+  // Always draw modules with the foreground/gradient color regardless of transparent bg
+  let patternFill;
+  if (gradientType === 'linear') {
+    const grad = ctx.createLinearGradient(0, 0, canvasPx, canvasPx);
+    grad.addColorStop(0, fgColor);
+    grad.addColorStop(1, gradientColor2);
+    patternFill = grad;
+  } else if (gradientType === 'radial') {
+    const cx = canvasPx / 2, cy = canvasPx / 2;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasPx / 1.5);
+    grad.addColorStop(0, fgColor);
+    grad.addColorStop(1, gradientColor2);
+    patternFill = grad;
+  } else {
+    patternFill = fgColor;
   }
 
-  const drawModules = (compositeOp, fill) => {
+  const drawModules = (fill) => {
     ctx.save();
-    ctx.globalCompositeOperation = compositeOp;
+    ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = fill;
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
@@ -201,27 +213,7 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
     ctx.restore();
   };
 
-  if (transparentBg) {
-    // Punch out QR module shapes so they become transparent
-    drawModules('destination-out', 'rgba(0,0,0,1)');
-  } else {
-    let patternFill;
-    if (gradientType === 'linear') {
-      const grad = ctx.createLinearGradient(0, 0, canvasPx, canvasPx);
-      grad.addColorStop(0, fgColor);
-      grad.addColorStop(1, gradientColor2);
-      patternFill = grad;
-    } else if (gradientType === 'radial') {
-      const cx = canvasPx / 2, cy = canvasPx / 2;
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasPx / 1.5);
-      grad.addColorStop(0, fgColor);
-      grad.addColorStop(1, gradientColor2);
-      patternFill = grad;
-    } else {
-      patternFill = fgColor;
-    }
-    drawModules('source-over', patternFill);
-  }
+  drawModules(patternFill);
 
   const eyePositions = [
     { or: 0, oc: 0 },
@@ -231,9 +223,8 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
   eyePositions.forEach(({ or, oc }) => {
     const px = (oc + margin) * cellSize;
     const py = (or + margin) * cellSize;
-    // For transparent mode, use the foreground color as eyeColor so eyes get punched through too
-    const resolvedEyeColor = transparentBg ? 'rgba(0,0,0,1)' : eyeColor;
-    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, resolvedEyeColor, bgColor, transparentBg);
+    // Always use the resolved eyeColor (falls back to fgColor), never force black
+    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, eyeColor, bgColor, transparentBg);
   });
 
   if (dc.logo_url) {
