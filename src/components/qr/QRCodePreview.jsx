@@ -297,11 +297,23 @@ function QRCanvasView({ qrData }) {
     toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
   };
 
+  const transparent = !!(qrData.design_config?.transparent_background);
+
   const handleDownloadSVG = () => {
     const svgEl = document.getElementById('qr-svg-export');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
-    const svgStr = serializer.serializeToString(svgEl);
+    let svgStr = serializer.serializeToString(svgEl);
+
+    // Post-process: strip background rect when transparency is on
+    if (transparent) {
+      svgStr = svgStr.replace(/<rect[^>]*fill=["'](#ffffff|white)["'][^>]*width=["']100%["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect[^>]*width=["']100%["'][^>]*fill=["'](#ffffff|white)["'][^>]*\/?>/gi, '');
+      // Also strip any leading full-size rect by matching explicit width/height equal to 512
+      svgStr = svgStr.replace(/<rect[^>]*width=["']512["'][^>]*height=["']512["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect[^>]*height=["']512["'][^>]*width=["']512["'][^>]*\/?>/gi, '');
+    }
+
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -319,16 +331,34 @@ function QRCanvasView({ qrData }) {
   }
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
-  const bgColor = dc.transparent_background ? 'transparent' : (dc.background_color || '#ffffff');
+  // Pass undefined bgColor when transparent so qrcode.react renders no background rect
+  const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
 
   return (
     <div className="space-y-4">
       {/* Hidden SVG used for vector export */}
       <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <QRCodeSVG id="qr-svg-export" value={svgContent || ' '} size={512} fgColor={fgColor} bgColor={bgColor} level="H" />
+        <QRCodeSVG
+          id="qr-svg-export"
+          value={svgContent || ' '}
+          size={512}
+          fgColor={fgColor}
+          bgColor={svgBgColor}
+          includeMargin={false}
+          level="H"
+        />
       </div>
 
-      <div className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+      {/* Checkered background when transparent so white QR codes are visible */}
+      <div
+        className="p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+        style={transparent ? {
+          backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
+          backgroundSize: '16px 16px',
+          backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
+          backgroundColor: '#fff',
+        } : { backgroundColor: '#fff' }}
+      >
         <div className="relative inline-block">
           <canvas ref={canvasRef} />
         </div>
@@ -412,7 +442,14 @@ export default function QRCodePreview({ qrData, currentStep }) {
     const svgEl = document.getElementById('qr-svg-export-main');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
-    const svgStr = serializer.serializeToString(svgEl);
+    let svgStr = serializer.serializeToString(svgEl);
+    const transparent = !!(qrData.design_config?.transparent_background);
+    if (transparent) {
+      svgStr = svgStr.replace(/<rect[^>]*fill=["'](#ffffff|white)["'][^>]*width=["']100%["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect[^>]*width=["']100%["'][^>]*fill=["'](#ffffff|white)["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect[^>]*width=["']512["'][^>]*height=["']512["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect[^>]*height=["']512["'][^>]*width=["']512["'][^>]*\/?>/gi, '');
+    }
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -452,8 +489,9 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   // ── Standard QR preview ──
   const dc = qrData.design_config || {};
+  const transparent = !!dc.transparent_background;
   const fgColor = dc.foreground_color || '#000000';
-  const svgBgColor = dc.transparent_background ? 'transparent' : (dc.background_color || '#ffffff');
+  const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
 
   // Build SVG content string
   let svgContent = qrData.content || '';
@@ -461,11 +499,26 @@ export default function QRCodePreview({ qrData, currentStep }) {
     svgContent = `${window.location.origin}/r?code=${qrData.short_code}`;
   }
 
+  const checkerStyle = {
+    backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
+    backgroundSize: '16px 16px',
+    backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
+    backgroundColor: '#fff',
+  };
+
   return (
     <div className="space-y-4">
       {/* Hidden SVG for vector export */}
       <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <QRCodeSVG id="qr-svg-export-main" value={svgContent || ' '} size={512} fgColor={fgColor} bgColor={svgBgColor} level="H" />
+        <QRCodeSVG
+          id="qr-svg-export-main"
+          value={svgContent || ' '}
+          size={512}
+          fgColor={fgColor}
+          bgColor={svgBgColor}
+          includeMargin={false}
+          level="H"
+        />
       </div>
 
       {qrData.type === 'dynamic' && (
@@ -477,7 +530,10 @@ export default function QRCodePreview({ qrData, currentStep }) {
         </Alert>
       )}
 
-      <div className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+      <div
+        className="p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+        style={transparent ? checkerStyle : { backgroundColor: '#fff' }}
+      >
         <div className="relative inline-block">
           <canvas ref={canvasRef} />
         </div>
