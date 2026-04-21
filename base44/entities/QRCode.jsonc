@@ -55,6 +55,11 @@
         "background_color": {
           "type": "string"
         },
+        "transparent_background": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, the QR code background is transparent"
+        },
         "gradient_type": {
           "type": "string",
           "enum": [
