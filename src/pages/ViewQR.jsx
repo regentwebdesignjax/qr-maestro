@@ -101,6 +101,11 @@ export default function ViewQR() {
         }
 
         const qr = qrCodes[0];
+        // Ensure design_config is always a parsed object, never a raw string
+        if (typeof qr.design_config === 'string') {
+          try { qr.design_config = JSON.parse(qr.design_config); } catch { qr.design_config = {}; }
+        }
+        if (!qr.design_config) qr.design_config = {};
         setQrCode(qr);
 
         if (qr.type === 'dynamic') {

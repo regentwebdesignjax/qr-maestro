@@ -569,6 +569,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   // ── Standard QR preview ──
   const transparent = !!dc.transparent_background;
+  console.log('QRCodePreview received transparency:', transparent, '| design_config:', dc);
   const fgColor = dc.foreground_color || '#000000';
   const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
 
