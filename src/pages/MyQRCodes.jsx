@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Plus, QrCode as QrCodeIcon, FolderOpen, Layers } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
@@ -145,7 +146,12 @@ export default function MyQRCodes() {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">My QR Codes</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My QR Codes</h1>
+              <Badge variant={isPro ? 'default' : 'secondary'} className="text-sm">
+                {isPro ? 'Black Belt' : 'White Belt'}
+              </Badge>
+            </div>
             <p className="text-sm text-gray-600">Manage all your QR codes</p>
           </div>
           <div className="flex gap-2">

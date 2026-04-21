@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, LayoutDashboard, Users, Menu, X } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, Users, Menu } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -88,10 +88,6 @@ export default function Layout({ children, currentPageName }) {
             <nav className="hidden md:flex items-center gap-6">
               {user ? (
                 <>
-                  <Link to="/Dashboard" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
-                    <LayoutDashboard className="w-4 h-4" />
-                    Dashboard
-                  </Link>
                   <Link to="/MyQRCodes" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
                     <QrCode className="w-4 h-4" />
                     My QR Codes
