@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Download, Info, Smartphone, QrCode, FileImage, FileCode2, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -294,7 +293,8 @@ function QRCanvasView({ qrData }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
-  const transparent = !!(qrData.design_config?.transparent_background);
+  const dc = qrData.design_config || {};
+  const transparent = !!dc.transparent_background;
 
   const handleDownloadPNG = async () => {
     console.log(`Background layer detected and removed: ${transparent}`);
@@ -314,28 +314,35 @@ function QRCanvasView({ qrData }) {
     }
   };
 
-  const handleDownloadSVG = () => {
-    const svgEl = document.getElementById('qr-svg-export');
-    if (!svgEl) return;
-    const serializer = new XMLSerializer();
-    let svgStr = serializer.serializeToString(svgEl);
+  const handleDownloadSVG = async () => {
+    const fgCol = dc.foreground_color || '#000000';
+    const bgCol = transparent ? '#00000000' : (dc.background_color || '#ffffff');
+    let content = qrData.content || '';
+    if (qrData.type === 'dynamic' && qrData.short_code) {
+      content = `${window.location.origin}/r?code=${qrData.short_code}`;
+    }
+
+    let svgStr = await QRCode.toString(content, {
+      type: 'svg',
+      margin: transparent ? 0 : 2,
+      color: { dark: fgCol, light: bgCol },
+      errorCorrectionLevel: 'H',
+    });
 
     let bgRemoved = false;
     if (transparent) {
-      // Use DOMParser for reliable background rect removal
       const parser = new DOMParser();
       const doc = parser.parseFromString(svgStr, 'image/svg+xml');
       const rects = doc.querySelectorAll('rect');
+      const svgSize = doc.querySelector('svg')?.getAttribute('width');
       rects.forEach(rect => {
         const fill = (rect.getAttribute('fill') || '').toLowerCase();
         const w = rect.getAttribute('width');
         const h = rect.getAttribute('height');
-        const svgSize = doc.querySelector('svg')?.getAttribute('width') || '512';
-        // Remove if it's a background: white/transparent fill, or matches full canvas dimensions
         if (
-          fill === '#ffffff' || fill === 'white' || fill === 'transparent' ||
+          fill === '#ffffff' || fill === 'white' || fill === 'transparent' || fill === '#00000000' ||
           w === '100%' || h === '100%' ||
-          (w === svgSize && h === svgSize)
+          (svgSize && w === svgSize && h === svgSize)
         ) {
           rect.parentNode.removeChild(rect);
           bgRemoved = true;
@@ -364,31 +371,8 @@ function QRCanvasView({ qrData }) {
     }
   };
 
-  // Build the QR content string for SVG export
-  let svgContent = qrData.content || '';
-  if (qrData.type === 'dynamic' && qrData.short_code) {
-    svgContent = `${window.location.origin}/r?code=${qrData.short_code}`;
-  }
-  const dc = qrData.design_config || {};
-  const fgColor = dc.foreground_color || '#000000';
-  // Pass undefined bgColor when transparent so qrcode.react renders no background rect
-  const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
-
   return (
     <div className="space-y-4">
-      {/* Hidden SVG used for vector export */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <QRCodeSVG
-          id="qr-svg-export"
-          value={svgContent || ' '}
-          size={512}
-          fgColor={fgColor}
-          bgColor={svgBgColor}
-          includeMargin={!transparent}
-          level="H"
-        />
-      </div>
-
       {/* Checkered background when transparent so white QR codes are visible */}
       <div
         className="p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
@@ -491,27 +475,37 @@ export default function QRCodePreview({ qrData, currentStep }) {
     }
   };
 
-  const handleDownloadSVG = () => {
+  const handleDownloadSVG = async () => {
     const transparent = !!dc.transparent_background;
-    const svgEl = document.getElementById('qr-svg-export-main');
-    if (!svgEl) return;
-    const serializer = new XMLSerializer();
-    let svgStr = serializer.serializeToString(svgEl);
+    const fgCol = dc.foreground_color || '#000000';
+    const bgCol = transparent ? '#00000000' : (dc.background_color || '#ffffff');
+
+    let content = qrData.content || '';
+    if (qrData.type === 'dynamic' && qrData.short_code) {
+      content = `${window.location.origin}/r?code=${qrData.short_code}`;
+    }
+
+    let svgStr = await QRCode.toString(content, {
+      type: 'svg',
+      margin: transparent ? 0 : 2,
+      color: { dark: fgCol, light: bgCol },
+      errorCorrectionLevel: 'H',
+    });
 
     let bgRemoved = false;
     if (transparent) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(svgStr, 'image/svg+xml');
       const rects = doc.querySelectorAll('rect');
+      const svgSize = doc.querySelector('svg')?.getAttribute('width');
       rects.forEach(rect => {
         const fill = (rect.getAttribute('fill') || '').toLowerCase();
         const w = rect.getAttribute('width');
         const h = rect.getAttribute('height');
-        const svgSize = doc.querySelector('svg')?.getAttribute('width') || '512';
         if (
-          fill === '#ffffff' || fill === 'white' || fill === 'transparent' ||
+          fill === '#ffffff' || fill === 'white' || fill === 'transparent' || fill === '#00000000' ||
           w === '100%' || h === '100%' ||
-          (w === svgSize && h === svgSize)
+          (svgSize && w === svgSize && h === svgSize)
         ) {
           rect.parentNode.removeChild(rect);
           bgRemoved = true;
@@ -570,14 +564,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
   // ── Standard QR preview ──
   const transparent = !!dc.transparent_background;
   console.log('QRCodePreview received transparency:', transparent, '| design_config:', dc);
-  const fgColor = dc.foreground_color || '#000000';
-  const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
-
-  // Build SVG content string
-  let svgContent = qrData.content || '';
-  if (qrData.type === 'dynamic' && qrData.short_code) {
-    svgContent = `${window.location.origin}/r?code=${qrData.short_code}`;
-  }
 
   const checkerStyle = {
     backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
@@ -588,19 +574,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   return (
     <div className="space-y-4">
-      {/* Hidden SVG for vector export */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <QRCodeSVG
-          id="qr-svg-export-main"
-          value={svgContent || ' '}
-          size={512}
-          fgColor={fgColor}
-          bgColor={svgBgColor}
-          includeMargin={!transparent}
-          level="H"
-        />
-      </div>
-
       {qrData.type === 'dynamic' && (
         <Alert>
           <Info className="h-4 w-4" />
