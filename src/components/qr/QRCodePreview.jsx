@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Info, Smartphone, QrCode, FileImage, FileCode2, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/components/ui/use-toast';
+
 import BusinessCardPreview from './BusinessCardPreview';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -293,7 +293,6 @@ function PreviewToggle({ active, onChange }) {
 function QRCanvasView({ qrData }) {
   const canvasRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!qrData?.content) return;
@@ -314,15 +313,6 @@ function QRCanvasView({ qrData }) {
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
-    if (transparent) {
-      toast({
-        title: 'Download Complete!',
-        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
-        duration: 6000,
-      });
-    } else {
-      toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
-    }
   };
 
   const handleDownloadSVG = async () => {
@@ -371,15 +361,6 @@ function QRCanvasView({ qrData }) {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    if (transparent) {
-      toast({
-        title: 'Download Complete!',
-        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
-        duration: 6000,
-      });
-    } else {
-      toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
-    }
   };
 
   return (
@@ -442,7 +423,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
   const canvasRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [bcTab, setBcTab] = useState('landing');
-  const { toast } = useToast();
 
   // Auto-switch tab based on step
   useEffect(() => {
@@ -477,15 +457,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
-    if (transparent) {
-      toast({
-        title: 'Download Complete!',
-        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
-        duration: 6000,
-      });
-    } else {
-      toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
-    }
   };
 
   const handleDownloadSVG = async () => {
@@ -536,15 +507,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    if (transparent) {
-      toast({
-        title: 'Download Complete!',
-        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
-        duration: 6000,
-      });
-    } else {
-      toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
-    }
   };
 
   if (!qrData) {
