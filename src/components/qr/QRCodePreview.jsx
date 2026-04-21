@@ -444,7 +444,9 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }, [currentStep, qrData?.content_type]);
 
   useEffect(() => {
-    if (!qrData?.content && !(qrData.type === 'dynamic' && qrData.short_code)) return;
+    const isDynamic = qrData?.type === 'dynamic' && qrData?.short_code;
+    const hasContent = !!qrData?.content;
+    if (!isDynamic && !hasContent) return;
     if (qrData.content_type === 'business_card') return; // handled separately
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -563,7 +565,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   // ── Standard QR preview ──
   const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
-  console.log('QRCodePreview received transparency:', transparent, '| design_config:', dc);
 
   const checkerStyle = {
     backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
@@ -571,6 +572,18 @@ export default function QRCodePreview({ qrData, currentStep }) {
     backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
     backgroundColor: '#fff',
   };
+
+  // If the foreground color is white/very-light OR transparent bg is on, show checker so QR is visible
+  const fgIsLight = (() => {
+    const fg = (dc.foreground_color || '#000000').replace('#', '');
+    if (fg.length !== 6) return false;
+    const r = parseInt(fg.slice(0, 2), 16);
+    const g = parseInt(fg.slice(2, 4), 16);
+    const b = parseInt(fg.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.85;
+  })();
+  const useChecker = transparent || fgIsLight;
 
   return (
     <div className="space-y-4">
@@ -585,7 +598,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
       <div
         className="p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
-        style={transparent ? checkerStyle : { backgroundColor: '#fff' }}
+        style={useChecker ? checkerStyle : { backgroundColor: '#fff' }}
       >
         <div className="relative inline-block">
           <canvas ref={canvasRef} />

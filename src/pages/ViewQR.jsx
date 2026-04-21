@@ -78,6 +78,28 @@ function parseContentFields(contentType, content) {
   return null;
 }
 
+// Normalize a raw QR code record so top-level fields are always available.
+// The API may return the entity with user-defined fields nested under `.data`.
+function normalizeQRCode(raw) {
+  if (!raw) return raw;
+  // If top-level fields are already present (e.g. `type`, `content_type`), use as-is
+  if (raw.type || raw.content_type) {
+    const qr = { ...raw };
+    if (typeof qr.design_config === 'string') {
+      try { qr.design_config = JSON.parse(qr.design_config); } catch { qr.design_config = {}; }
+    }
+    if (!qr.design_config) qr.design_config = {};
+    return qr;
+  }
+  // Otherwise flatten `.data` into the top level
+  const qr = { ...raw, ...(raw.data || {}) };
+  if (typeof qr.design_config === 'string') {
+    try { qr.design_config = JSON.parse(qr.design_config); } catch { qr.design_config = {}; }
+  }
+  if (!qr.design_config) qr.design_config = {};
+  return qr;
+}
+
 export default function ViewQR() {
   const [qrCode, setQrCode] = useState(null);
   const [scans, setScans] = useState([]);
@@ -100,12 +122,7 @@ export default function ViewQR() {
           return;
         }
 
-        const qr = qrCodes[0];
-        // Ensure design_config is always a parsed object, never a raw string
-        if (typeof qr.design_config === 'string') {
-          try { qr.design_config = JSON.parse(qr.design_config); } catch { qr.design_config = {}; }
-        }
-        if (!qr.design_config) qr.design_config = {};
+        const qr = normalizeQRCode(qrCodes[0]);
         setQrCode(qr);
 
         if (qr.type === 'dynamic') {
@@ -135,10 +152,10 @@ export default function ViewQR() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <Link to="/Dashboard">
+        <Link to="/MyQRCodes">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Back to My QR Codes
           </Button>
         </Link>
 
@@ -149,7 +166,7 @@ export default function ViewQR() {
               <CardTitle>QR Code</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodePreview key={qrCode.id + '_' + String(qrCode.design_config?.transparent_background)} qrData={qrCode} />
+              <QRCodePreview qrData={qrCode} />
             </CardContent>
           </Card>
 
