@@ -444,7 +444,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }, [currentStep, qrData?.content_type]);
 
   useEffect(() => {
-    if (!qrData?.content) return;
+    if (!qrData?.content && !(qrData.type === 'dynamic' && qrData.short_code)) return;
     if (qrData.content_type === 'business_card') return; // handled separately
     const canvas = canvasRef.current;
     if (!canvas) return;
