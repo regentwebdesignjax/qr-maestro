@@ -149,7 +149,7 @@ export default function ViewQR() {
               <CardTitle>QR Code</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodePreview qrData={qrCode} />
+              <QRCodePreview key={qrCode.id + '_' + String(qrCode.design_config?.transparent_background)} qrData={qrCode} />
             </CardContent>
           </Card>
 

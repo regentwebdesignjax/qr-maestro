@@ -18,7 +18,7 @@ function getQRContent(qr) {
  */
 export async function downloadQRPng(qr) {
   const dc = qr.design_config || {};
-  const transparent = !!dc.transparent_background;
+  const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
   const content = getQRContent(qr);
   const fgColor = dc.foreground_color || '#000000';
   const bgColor = dc.background_color || '#ffffff';
@@ -66,7 +66,7 @@ export async function downloadQRPng(qr) {
  */
 export async function downloadQRSvg(qr) {
   const dc = qr.design_config || {};
-  const transparent = !!dc.transparent_background;
+  const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
   const content = getQRContent(qr);
   const fgColor = dc.foreground_color || '#000000';
   const bgColor = transparent ? 'transparent' : (dc.background_color || '#ffffff');
