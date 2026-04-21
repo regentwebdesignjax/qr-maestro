@@ -128,6 +128,14 @@
         "lead_tag": {
           "type": "string",
           "description": "Optional tag (e.g. Employee ID or Region Code) to attach to leads captured from this card"
+        },
+        "cta_button_color": {
+          "type": "string",
+          "description": "Background color for CTA buttons on the business card landing page"
+        },
+        "cta_text_color": {
+          "type": "string",
+          "description": "Text color for CTA buttons on the business card landing page"
         }
       }
     },

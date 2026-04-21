@@ -33,15 +33,7 @@ export default function BusinessCardPreview({ data = {} }) {
 
   const themeColor = '#BB3F27';
   const ctaColor = data.design_config?.cta_button_color || themeColor;
-  const isLight = (hex) => {
-    const c = (hex || '').replace('#', '');
-    if (c.length < 6) return false;
-    const r = parseInt(c.substring(0,2), 16);
-    const g = parseInt(c.substring(2,4), 16);
-    const b = parseInt(c.substring(4,6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 160;
-  };
-  const ctaTextColor = isLight(ctaColor) ? '#000000' : '#ffffff';
+  const ctaTextColor = data.design_config?.cta_text_color || '#ffffff';
   const socialLinks = data.social_links || [];
 
   return (

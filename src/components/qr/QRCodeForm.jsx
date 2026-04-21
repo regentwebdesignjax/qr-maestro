@@ -921,17 +921,17 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <div>
                       <Label className="text-xs text-gray-500">Button Background</Label>
                       <ColorInput
-                        value={dc.landing_button_bg || '#BB3F27'}
-                        onChange={(v) => handleDesignChange('landing_button_bg', v)}
-                        onPreview={(v) => handleDesignChange('landing_button_bg', v)}
+                        value={dc.cta_button_color || '#BB3F27'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
                       />
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Button Text Color</Label>
                       <ColorInput
-                        value={dc.landing_button_text || '#ffffff'}
-                        onChange={(v) => handleDesignChange('landing_button_text', v)}
-                        onPreview={(v) => handleDesignChange('landing_button_text', v)}
+                        value={dc.cta_text_color || '#ffffff'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
                       />
                     </div>
                   </div>
