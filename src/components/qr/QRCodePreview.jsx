@@ -37,37 +37,60 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeColor, bgColor) {
+function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeColor, bgColor, transparent) {
   const outerPx = cellSize * 7;
   const innerPx = cellSize * 3;
   const innerOff = cellSize * 2;
   const r = cellSize * 1.2;
 
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(originX, originY, outerPx, outerPx);
+  // Clear or fill the full eye area first
+  if (transparent) {
+    ctx.clearRect(originX, originY, outerPx, outerPx);
+  } else {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(originX, originY, outerPx, outerPx);
+  }
+
   ctx.fillStyle = eyeColor;
+
+  // Helper: erase the "gap" between outer ring and inner dot
+  const clearGap = () => {
+    if (transparent) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,1)';
+    } else {
+      ctx.fillStyle = bgColor;
+    }
+  };
+  const restoreAfterGap = () => {
+    if (transparent) {
+      ctx.restore();
+    }
+    ctx.fillStyle = eyeColor;
+  };
 
   if (outerShape === 'circle') {
     ctx.beginPath();
     ctx.arc(originX + outerPx / 2, originY + outerPx / 2, outerPx / 2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = bgColor;
+    clearGap();
     ctx.beginPath();
     ctx.arc(originX + outerPx / 2, originY + outerPx / 2, outerPx / 2 - cellSize, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = eyeColor;
+    restoreAfterGap();
   } else if (outerShape === 'rounded') {
     roundRectPath(ctx, originX, originY, outerPx, outerPx, r);
     ctx.fill();
-    ctx.fillStyle = bgColor;
+    clearGap();
     roundRectPath(ctx, originX + cellSize, originY + cellSize, outerPx - cellSize * 2, outerPx - cellSize * 2, r * 0.5);
     ctx.fill();
-    ctx.fillStyle = eyeColor;
+    restoreAfterGap();
   } else {
     ctx.fillRect(originX, originY, outerPx, outerPx);
-    ctx.fillStyle = bgColor;
+    clearGap();
     ctx.fillRect(originX + cellSize, originY + cellSize, outerPx - cellSize * 2, outerPx - cellSize * 2);
-    ctx.fillStyle = eyeColor;
+    restoreAfterGap();
   }
 
   if (innerShape === 'circle') {
@@ -174,7 +197,7 @@ async function renderQR(canvas, qrData) {
   eyePositions.forEach(({ or, oc }) => {
     const px = (oc + margin) * cellSize;
     const py = (or + margin) * cellSize;
-    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, eyeColor, bgColor);
+    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, eyeColor, bgColor, transparentBg);
   });
 
   if (dc.logo_url) {
