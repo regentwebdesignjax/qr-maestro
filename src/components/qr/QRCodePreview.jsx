@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
-import { Download, Info, Smartphone, QrCode } from 'lucide-react';
+import { Download, Info, Smartphone, QrCode, FileImage, FileCode2, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/components/ui/use-toast';
 import BusinessCardPreview from './BusinessCardPreview';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -102,7 +105,16 @@ function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeCol
   }
 }
 
-async function renderQR(canvas, qrData) {
+// Renders QR at a given pixel size onto a canvas and returns it
+async function renderQRToCanvas(qrData, size = 300) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  await renderQR(canvas, qrData, size);
+  return canvas;
+}
+
+async function renderQR(canvas, qrData, canvasPx = 300) {
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
   const transparentBg = !!dc.transparent_background;
@@ -138,7 +150,6 @@ async function renderQR(canvas, qrData) {
   const qrMatrix = QRCode.create(content, { errorCorrectionLevel: 'H' });
   const modules = qrMatrix.modules;
   const size = modules.size;
-  const canvasPx = 300;
   const margin = 2;
   const totalModules = size + margin * 2;
   const cellSize = canvasPx / totalModules;
@@ -265,8 +276,8 @@ function PreviewToggle({ active, onChange }) {
 
 function QRCanvasView({ qrData }) {
   const canvasRef = useRef(null);
-  const containerRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!qrData?.content) return;
@@ -277,59 +288,86 @@ function QRCanvasView({ qrData }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
-  const handleDownloadQRC = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const hiCanvas = document.createElement('canvas');
-    hiCanvas.width = canvas.width * 2;
-    hiCanvas.height = canvas.height * 2;
-    const hiCtx = hiCanvas.getContext('2d');
-    hiCtx.drawImage(canvas, 0, 0, hiCanvas.width, hiCanvas.height);
+  const handleDownloadPNG = async () => {
+    const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
+    toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
   };
 
+  const handleDownloadSVG = () => {
+    const svgEl = document.getElementById('qr-svg-export');
+    if (!svgEl) return;
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svgEl);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${qrData.name || 'qrcode'}.svg`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
+  };
+
+  // Build the QR content string for SVG export
+  let svgContent = qrData.content || '';
+  if (qrData.type === 'dynamic' && qrData.short_code) {
+    svgContent = `${window.location.origin}/r?code=${qrData.short_code}`;
+  }
   const dc = qrData.design_config || {};
-  const frameStyle = dc.frame_style || 'none';
-  const frameText = dc.frame_text || 'Scan Me';
-  const frameColor = dc.frame_color || '#000000';
+  const fgColor = dc.foreground_color || '#000000';
+  const bgColor = dc.transparent_background ? 'transparent' : (dc.background_color || '#ffffff');
 
   return (
     <div className="space-y-4">
+      {/* Hidden SVG used for vector export */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <QRCodeSVG id="qr-svg-export" value={svgContent || ' '} size={512} fgColor={fgColor} bgColor={bgColor} level="H" />
+      </div>
+
       <div className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-        <div ref={containerRef} className="relative inline-block">
-          {frameStyle !== 'none' ? (
-            <div className={`
-              ${frameStyle === 'basic' ? 'border-4 p-4' : ''}
-              ${frameStyle === 'modern' ? 'shadow-xl rounded-2xl p-6 bg-gradient-to-br from-gray-50 to-white' : ''}
-              ${frameStyle === 'badge' ? 'rounded-3xl p-8 shadow-2xl' : ''}
-            `} style={{
-              borderColor: frameStyle === 'basic' ? frameColor : 'transparent',
-              background: frameStyle === 'badge' ? `linear-gradient(135deg, ${frameColor}15, ${frameColor}05)` : undefined,
-            }}>
-              {frameText && (
-                <div className="text-center mb-4">
-                  <p className="font-bold text-lg" style={{ color: frameColor }}>{frameText}</p>
-                </div>
-              )}
-              <canvas ref={canvasRef} />
-              {frameStyle === 'modern' && (
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-500">Point your camera here</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <canvas ref={canvasRef} />
-          )}
+        <div className="relative inline-block">
+          <canvas ref={canvasRef} />
         </div>
       </div>
-      <Button onClick={handleDownloadQRC} variant="outline" className="w-full" disabled={!qrCodeUrl}>
-        <Download className="w-4 h-4 mr-2" /> Download PNG
-      </Button>
+
+      <DownloadMenu name={qrData.name} onPNG={handleDownloadPNG} onSVG={handleDownloadSVG} disabled={!qrCodeUrl} />
     </div>
+  );
+}
+
+// ─── Shared Download Dropdown ─────────────────────────────────────────────────
+
+function DownloadMenu({ name, onPNG, onSVG, disabled }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="w-full" disabled={disabled}>
+          <Download className="w-4 h-4 mr-2" />
+          Download
+          <ChevronDown className="w-4 h-4 ml-auto" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={onPNG} className="cursor-pointer">
+          <FileImage className="w-4 h-4 mr-2 text-blue-500" />
+          <div>
+            <p className="font-medium">PNG (High Resolution)</p>
+            <p className="text-xs text-muted-foreground">1024×1024 — best for general use</p>
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onSVG} className="cursor-pointer">
+          <FileCode2 className="w-4 h-4 mr-2 text-purple-500" />
+          <div>
+            <p className="font-medium">SVG (Vector)</p>
+            <p className="text-xs text-muted-foreground">Scalable — best for print & design</p>
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -337,9 +375,9 @@ function QRCanvasView({ qrData }) {
 
 export default function QRCodePreview({ qrData, currentStep }) {
   const canvasRef = useRef(null);
-  const containerRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [bcTab, setBcTab] = useState('landing');
+  const { toast } = useToast();
 
   // Auto-switch tab based on step
   useEffect(() => {
@@ -361,18 +399,28 @@ export default function QRCodePreview({ qrData, currentStep }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
-  const handleDownload = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const hiCanvas = document.createElement('canvas');
-    hiCanvas.width = canvas.width * 2;
-    hiCanvas.height = canvas.height * 2;
-    const hiCtx = hiCanvas.getContext('2d');
-    hiCtx.drawImage(canvas, 0, 0, hiCanvas.width, hiCanvas.height);
+  const handleDownloadPNG = async () => {
+    const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
+    toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
+  };
+
+  const handleDownloadSVG = () => {
+    const svgEl = document.getElementById('qr-svg-export-main');
+    if (!svgEl) return;
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svgEl);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${qrData.name || 'qrcode'}.svg`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
   };
 
   if (!qrData) {
@@ -404,12 +452,22 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   // ── Standard QR preview ──
   const dc = qrData.design_config || {};
-  const frameStyle = dc.frame_style || 'none';
-  const frameText = dc.frame_text || 'Scan Me';
-  const frameColor = dc.frame_color || '#000000';
+  const fgColor = dc.foreground_color || '#000000';
+  const svgBgColor = dc.transparent_background ? 'transparent' : (dc.background_color || '#ffffff');
+
+  // Build SVG content string
+  let svgContent = qrData.content || '';
+  if (qrData.type === 'dynamic' && qrData.short_code) {
+    svgContent = `${window.location.origin}/r?code=${qrData.short_code}`;
+  }
 
   return (
     <div className="space-y-4">
+      {/* Hidden SVG for vector export */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <QRCodeSVG id="qr-svg-export-main" value={svgContent || ' '} size={512} fgColor={fgColor} bgColor={svgBgColor} level="H" />
+      </div>
+
       {qrData.type === 'dynamic' && (
         <Alert>
           <Info className="h-4 w-4" />
@@ -420,31 +478,8 @@ export default function QRCodePreview({ qrData, currentStep }) {
       )}
 
       <div className="bg-white p-8 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-        <div ref={containerRef} className="relative inline-block">
-          {frameStyle !== 'none' ? (
-            <div className={`
-              ${frameStyle === 'basic' ? 'border-4 p-4' : ''}
-              ${frameStyle === 'modern' ? 'shadow-xl rounded-2xl p-6 bg-gradient-to-br from-gray-50 to-white' : ''}
-              ${frameStyle === 'badge' ? 'rounded-3xl p-8 shadow-2xl' : ''}
-            `} style={{
-              borderColor: frameStyle === 'basic' ? frameColor : 'transparent',
-              background: frameStyle === 'badge' ? `linear-gradient(135deg, ${frameColor}15, ${frameColor}05)` : undefined,
-            }}>
-              {frameText && (
-                <div className="text-center mb-4">
-                  <p className="font-bold text-lg" style={{ color: frameColor }}>{frameText}</p>
-                </div>
-              )}
-              <canvas ref={canvasRef} />
-              {frameStyle === 'modern' && (
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-500">Point your camera here</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <canvas ref={canvasRef} />
-          )}
+        <div className="relative inline-block">
+          <canvas ref={canvasRef} />
         </div>
       </div>
 
@@ -454,9 +489,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
         <p><strong>Content Type:</strong> {qrData.content_type}</p>
       </div>
 
-      <Button onClick={handleDownload} variant="outline" className="w-full" disabled={!qrCodeUrl}>
-        <Download className="w-4 h-4 mr-2" /> Download PNG
-      </Button>
+      <DownloadMenu name={qrData.name} onPNG={handleDownloadPNG} onSVG={handleDownloadSVG} disabled={!qrCodeUrl} />
     </div>
   );
 }
