@@ -170,39 +170,57 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
     ctx.fillRect(0, 0, canvasPx, canvasPx);
   }
 
-  let patternFill;
-  if (gradientType === 'linear') {
-    const grad = ctx.createLinearGradient(0, 0, canvasPx, canvasPx);
-    grad.addColorStop(0, fgColor);
-    grad.addColorStop(1, gradientColor2);
-    patternFill = grad;
-  } else if (gradientType === 'radial') {
-    const cx = canvasPx / 2, cy = canvasPx / 2;
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasPx / 1.5);
-    grad.addColorStop(0, fgColor);
-    grad.addColorStop(1, gradientColor2);
-    patternFill = grad;
-  } else {
-    patternFill = fgColor;
+  // When transparent bg is on, we fill the canvas white first then punch holes
+  // for the QR modules using destination-out so they become transparent.
+  if (transparentBg) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvasPx, canvasPx);
   }
 
-  ctx.fillStyle = patternFill;
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      if (!modules.get(row, col)) continue;
-      if (isEyeModule(row, col, size)) continue;
-      const x = (col + margin) * cellSize;
-      const y = (row + margin) * cellSize;
-      ctx.beginPath();
-      if (qrStyle === 'dots') {
-        ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.4, 0, Math.PI * 2);
-      } else if (qrStyle === 'rounded') {
-        ctx.roundRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1, cellSize * 0.3);
-      } else {
-        ctx.rect(x, y, cellSize, cellSize);
+  const drawModules = (compositeOp, fill) => {
+    ctx.save();
+    ctx.globalCompositeOperation = compositeOp;
+    ctx.fillStyle = fill;
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (!modules.get(row, col)) continue;
+        if (isEyeModule(row, col, size)) continue;
+        const x = (col + margin) * cellSize;
+        const y = (row + margin) * cellSize;
+        ctx.beginPath();
+        if (qrStyle === 'dots') {
+          ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.4, 0, Math.PI * 2);
+        } else if (qrStyle === 'rounded') {
+          ctx.roundRect(x + 0.5, y + 0.5, cellSize - 1, cellSize - 1, cellSize * 0.3);
+        } else {
+          ctx.rect(x, y, cellSize, cellSize);
+        }
+        ctx.fill();
       }
-      ctx.fill();
     }
+    ctx.restore();
+  };
+
+  if (transparentBg) {
+    // Punch out QR module shapes so they become transparent
+    drawModules('destination-out', 'rgba(0,0,0,1)');
+  } else {
+    let patternFill;
+    if (gradientType === 'linear') {
+      const grad = ctx.createLinearGradient(0, 0, canvasPx, canvasPx);
+      grad.addColorStop(0, fgColor);
+      grad.addColorStop(1, gradientColor2);
+      patternFill = grad;
+    } else if (gradientType === 'radial') {
+      const cx = canvasPx / 2, cy = canvasPx / 2;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, canvasPx / 1.5);
+      grad.addColorStop(0, fgColor);
+      grad.addColorStop(1, gradientColor2);
+      patternFill = grad;
+    } else {
+      patternFill = fgColor;
+    }
+    drawModules('source-over', patternFill);
   }
 
   const eyePositions = [
@@ -213,7 +231,9 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
   eyePositions.forEach(({ or, oc }) => {
     const px = (oc + margin) * cellSize;
     const py = (or + margin) * cellSize;
-    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, eyeColor, bgColor, transparentBg);
+    // For transparent mode, use the foreground color as eyeColor so eyes get punched through too
+    const resolvedEyeColor = transparentBg ? 'rgba(0,0,0,1)' : eyeColor;
+    drawEye(ctx, px, py, cellSize, eyeOuterShape, eyeInnerShape, resolvedEyeColor, bgColor, transparentBg);
   });
 
   if (dc.logo_url) {
