@@ -108,11 +108,14 @@ function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeCol
 // Renders QR at a given pixel size onto a canvas and returns it
 async function renderQRToCanvas(qrData, size = 300) {
   const canvas = document.createElement('canvas');
+  // Set dimensions before getting context to avoid implicit reset
   canvas.width = size;
   canvas.height = size;
-  // Explicitly clear to transparent before rendering
   const ctx = canvas.getContext('2d');
+  // Always clear first so transparent exports start from a 0-alpha baseline
   ctx.clearRect(0, 0, size, size);
+  // renderQR reassigns canvas.width/height which resets the context — so we pass size
+  // and accept that clearRect above is re-done inside renderQR for transparent mode
   await renderQR(canvas, qrData, size);
   return canvas;
 }
@@ -294,7 +297,7 @@ function QRCanvasView({ qrData }) {
   const transparent = !!(qrData.design_config?.transparent_background);
 
   const handleDownloadPNG = async () => {
-    console.log('Exporting QR with transparency:', transparent);
+    console.log(`Background layer detected and removed: ${transparent}`);
     const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
@@ -312,27 +315,36 @@ function QRCanvasView({ qrData }) {
   };
 
   const handleDownloadSVG = () => {
-    console.log('Exporting QR with transparency:', transparent);
     const svgEl = document.getElementById('qr-svg-export');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(svgEl);
-    console.log('SVG preview (first 300 chars):', svgStr.substring(0, 300));
 
+    let bgRemoved = false;
     if (transparent) {
-      // Nuclear option: remove ALL <rect> elements that aren't QR modules (background rects)
-      // Background rects are always the first rect and fill the entire canvas
-      svgStr = svgStr.replace(/<rect\b(?=[^>]*\bfill=["'](#ffffff|#FFFFFF|white|rgb\(255,\s*255,\s*255\))["'])[^/]*(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
-      // Also remove any rect with height="100%" or width="100%"
-      svgStr = svgStr.replace(/<rect\b[^>]*(width=["']100%["'][^>]*|height=["']100%["'][^>]*)(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
-      // Remove first rect altogether (qrcode.react always puts bg rect first)
-      svgStr = svgStr.replace(/<rect\s[^>]*\/>/, '');
-      // Ensure root svg has no background
-      svgStr = svgStr.replace(/(<svg\b[^>]*)\bstyle=["']([^"']*)["']/, (match, prefix, existingStyle) =>
-        `${prefix}style="${existingStyle} background:none;"`
-      );
-      console.log('SVG after transparency scrub (first 300 chars):', svgStr.substring(0, 300));
+      // Use DOMParser for reliable background rect removal
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+      const rects = doc.querySelectorAll('rect');
+      rects.forEach(rect => {
+        const fill = (rect.getAttribute('fill') || '').toLowerCase();
+        const w = rect.getAttribute('width');
+        const h = rect.getAttribute('height');
+        const svgSize = doc.querySelector('svg')?.getAttribute('width') || '512';
+        // Remove if it's a background: white/transparent fill, or matches full canvas dimensions
+        if (
+          fill === '#ffffff' || fill === 'white' || fill === 'transparent' ||
+          w === '100%' || h === '100%' ||
+          (w === svgSize && h === svgSize)
+        ) {
+          rect.parentNode.removeChild(rect);
+          bgRemoved = true;
+        }
+      });
+      svgStr = new XMLSerializer().serializeToString(doc.documentElement);
     }
+
+    console.log(`Background layer detected and removed: ${bgRemoved}`);
 
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -372,7 +384,7 @@ function QRCanvasView({ qrData }) {
           size={512}
           fgColor={fgColor}
           bgColor={svgBgColor}
-          includeMargin={false}
+          includeMargin={!transparent}
           level="H"
         />
       </div>
@@ -462,7 +474,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   const handleDownloadPNG = async () => {
     const transparent = !!dc.transparent_background;
-    console.log('Exporting QR with transparency:', transparent);
+    console.log(`Background layer detected and removed: ${transparent}`);
     const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
@@ -481,22 +493,34 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   const handleDownloadSVG = () => {
     const transparent = !!dc.transparent_background;
-    console.log('Exporting QR with transparency:', transparent);
     const svgEl = document.getElementById('qr-svg-export-main');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(svgEl);
-    console.log('SVG preview (first 300 chars):', svgStr.substring(0, 300));
 
+    let bgRemoved = false;
     if (transparent) {
-      svgStr = svgStr.replace(/<rect\b(?=[^>]*\bfill=["'](#ffffff|#FFFFFF|white|rgb\(255,\s*255,\s*255\))["'])[^/]*(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
-      svgStr = svgStr.replace(/<rect\b[^>]*(width=["']100%["'][^>]*|height=["']100%["'][^>]*)(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
-      svgStr = svgStr.replace(/<rect\s[^>]*\/>/, '');
-      svgStr = svgStr.replace(/(<svg\b[^>]*)\bstyle=["']([^"']*)["']/, (match, prefix, existingStyle) =>
-        `${prefix}style="${existingStyle} background:none;"`
-      );
-      console.log('SVG after transparency scrub (first 300 chars):', svgStr.substring(0, 300));
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+      const rects = doc.querySelectorAll('rect');
+      rects.forEach(rect => {
+        const fill = (rect.getAttribute('fill') || '').toLowerCase();
+        const w = rect.getAttribute('width');
+        const h = rect.getAttribute('height');
+        const svgSize = doc.querySelector('svg')?.getAttribute('width') || '512';
+        if (
+          fill === '#ffffff' || fill === 'white' || fill === 'transparent' ||
+          w === '100%' || h === '100%' ||
+          (w === svgSize && h === svgSize)
+        ) {
+          rect.parentNode.removeChild(rect);
+          bgRemoved = true;
+        }
+      });
+      svgStr = new XMLSerializer().serializeToString(doc.documentElement);
     }
+
+    console.log(`Background layer detected and removed: ${bgRemoved}`);
 
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -571,7 +595,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
           size={512}
           fgColor={fgColor}
           bgColor={svgBgColor}
-          includeMargin={false}
+          includeMargin={!transparent}
           level="H"
         />
       </div>
