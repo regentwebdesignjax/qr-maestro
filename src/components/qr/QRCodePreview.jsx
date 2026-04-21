@@ -122,7 +122,7 @@ async function renderQRToCanvas(qrData, size = 300) {
 async function renderQR(canvas, qrData, canvasPx = 300) {
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
-  const transparentBg = !!dc.transparent_background;
+  const transparentBg = dc.transparent_background === true || dc.transparent_background === 'true';
   const bgColor = transparentBg ? 'rgba(0,0,0,0)' : (dc.background_color || '#ffffff');
   const gradientType = dc.gradient_type || 'none';
   const gradientColor2 = dc.gradient_color2 || '#6366f1';
@@ -162,12 +162,12 @@ async function renderQR(canvas, qrData, canvasPx = 300) {
   canvas.width = canvasPx;
   canvas.height = canvasPx;
   const ctx = canvas.getContext('2d');
+  // Always clear first — assigning canvas.width resets the context to opaque white
+  ctx.clearRect(0, 0, canvasPx, canvasPx);
 
   if (!transparentBg) {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvasPx, canvasPx);
-  } else {
-    ctx.clearRect(0, 0, canvasPx, canvasPx);
   }
 
   let patternFill;
@@ -294,7 +294,7 @@ function QRCanvasView({ qrData }) {
   }, [qrData]);
 
   const dc = qrData.design_config || {};
-  const transparent = !!dc.transparent_background;
+  const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
 
   const handleDownloadPNG = async () => {
     console.log(`Background layer detected and removed: ${transparent}`);
@@ -457,7 +457,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
   const dc = qrData?.design_config || {};
 
   const handleDownloadPNG = async () => {
-    const transparent = !!dc.transparent_background;
+    const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
     console.log(`Background layer detected and removed: ${transparent}`);
     const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
@@ -476,7 +476,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
   };
 
   const handleDownloadSVG = async () => {
-    const transparent = !!dc.transparent_background;
+    const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
     const fgCol = dc.foreground_color || '#000000';
     const bgCol = transparent ? '#00000000' : (dc.background_color || '#ffffff');
 
@@ -562,7 +562,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }
 
   // ── Standard QR preview ──
-  const transparent = !!dc.transparent_background;
+  const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
   console.log('QRCodePreview received transparency:', transparent, '| design_config:', dc);
 
   const checkerStyle = {
