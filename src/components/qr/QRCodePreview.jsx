@@ -110,6 +110,9 @@ async function renderQRToCanvas(qrData, size = 300) {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
+  // Explicitly clear to transparent before rendering
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
   await renderQR(canvas, qrData, size);
   return canvas;
 }
@@ -288,30 +291,47 @@ function QRCanvasView({ qrData }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
+  const transparent = !!(qrData.design_config?.transparent_background);
+
   const handleDownloadPNG = async () => {
+    console.log('Exporting QR with transparency:', transparent);
     const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
-    toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
+    if (transparent) {
+      toast({
+        title: 'Download Complete!',
+        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
+        duration: 6000,
+      });
+    } else {
+      toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
+    }
   };
 
-  const transparent = !!(qrData.design_config?.transparent_background);
-
   const handleDownloadSVG = () => {
+    console.log('Exporting QR with transparency:', transparent);
     const svgEl = document.getElementById('qr-svg-export');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(svgEl);
+    console.log('SVG preview (first 300 chars):', svgStr.substring(0, 300));
 
-    // Post-process: strip background rect when transparency is on
     if (transparent) {
-      svgStr = svgStr.replace(/<rect[^>]*fill=["'](#ffffff|white)["'][^>]*width=["']100%["'][^>]*\/?>/gi, '');
-      svgStr = svgStr.replace(/<rect[^>]*width=["']100%["'][^>]*fill=["'](#ffffff|white)["'][^>]*\/?>/gi, '');
-      // Also strip any leading full-size rect by matching explicit width/height equal to 512
-      svgStr = svgStr.replace(/<rect[^>]*width=["']512["'][^>]*height=["']512["'][^>]*\/?>/gi, '');
-      svgStr = svgStr.replace(/<rect[^>]*height=["']512["'][^>]*width=["']512["'][^>]*\/?>/gi, '');
+      // Nuclear option: remove ALL <rect> elements that aren't QR modules (background rects)
+      // Background rects are always the first rect and fill the entire canvas
+      svgStr = svgStr.replace(/<rect\b(?=[^>]*\bfill=["'](#ffffff|#FFFFFF|white|rgb\(255,\s*255,\s*255\))["'])[^/]*(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
+      // Also remove any rect with height="100%" or width="100%"
+      svgStr = svgStr.replace(/<rect\b[^>]*(width=["']100%["'][^>]*|height=["']100%["'][^>]*)(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
+      // Remove first rect altogether (qrcode.react always puts bg rect first)
+      svgStr = svgStr.replace(/<rect\s[^>]*\/>/, '');
+      // Ensure root svg has no background
+      svgStr = svgStr.replace(/(<svg\b[^>]*)\bstyle=["']([^"']*)["']/, (match, prefix, existingStyle) =>
+        `${prefix}style="${existingStyle} background:none;"`
+      );
+      console.log('SVG after transparency scrub (first 300 chars):', svgStr.substring(0, 300));
     }
 
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
@@ -321,7 +341,15 @@ function QRCanvasView({ qrData }) {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
+    if (transparent) {
+      toast({
+        title: 'Download Complete!',
+        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
+        duration: 6000,
+      });
+    } else {
+      toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
+    }
   };
 
   // Build the QR content string for SVG export
@@ -429,27 +457,47 @@ export default function QRCodePreview({ qrData, currentStep }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
+  // dc must be declared before handlers (qrData may be null; handlers guard via early return above)
+  const dc = qrData?.design_config || {};
+
   const handleDownloadPNG = async () => {
+    const transparent = !!dc.transparent_background;
+    console.log('Exporting QR with transparency:', transparent);
     const hiCanvas = await renderQRToCanvas(qrData, 1024);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
-    toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
+    if (transparent) {
+      toast({
+        title: 'Download Complete!',
+        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
+        duration: 6000,
+      });
+    } else {
+      toast({ title: 'PNG downloaded', description: '1024×1024 high-resolution PNG saved.' });
+    }
   };
 
   const handleDownloadSVG = () => {
+    const transparent = !!dc.transparent_background;
+    console.log('Exporting QR with transparency:', transparent);
     const svgEl = document.getElementById('qr-svg-export-main');
     if (!svgEl) return;
     const serializer = new XMLSerializer();
     let svgStr = serializer.serializeToString(svgEl);
-    const transparent = !!(qrData.design_config?.transparent_background);
+    console.log('SVG preview (first 300 chars):', svgStr.substring(0, 300));
+
     if (transparent) {
-      svgStr = svgStr.replace(/<rect[^>]*fill=["'](#ffffff|white)["'][^>]*width=["']100%["'][^>]*\/?>/gi, '');
-      svgStr = svgStr.replace(/<rect[^>]*width=["']100%["'][^>]*fill=["'](#ffffff|white)["'][^>]*\/?>/gi, '');
-      svgStr = svgStr.replace(/<rect[^>]*width=["']512["'][^>]*height=["']512["'][^>]*\/?>/gi, '');
-      svgStr = svgStr.replace(/<rect[^>]*height=["']512["'][^>]*width=["']512["'][^>]*\/?>/gi, '');
+      svgStr = svgStr.replace(/<rect\b(?=[^>]*\bfill=["'](#ffffff|#FFFFFF|white|rgb\(255,\s*255,\s*255\))["'])[^/]*(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
+      svgStr = svgStr.replace(/<rect\b[^>]*(width=["']100%["'][^>]*|height=["']100%["'][^>]*)(\/?>|>(?:(?!<\/rect>).)*<\/rect>)/gi, '');
+      svgStr = svgStr.replace(/<rect\s[^>]*\/>/, '');
+      svgStr = svgStr.replace(/(<svg\b[^>]*)\bstyle=["']([^"']*)["']/, (match, prefix, existingStyle) =>
+        `${prefix}style="${existingStyle} background:none;"`
+      );
+      console.log('SVG after transparency scrub (first 300 chars):', svgStr.substring(0, 300));
     }
+
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -457,7 +505,15 @@ export default function QRCodePreview({ qrData, currentStep }) {
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
+    if (transparent) {
+      toast({
+        title: 'Download Complete!',
+        description: 'Note: Your white QR code is transparent and may appear "invisible" until placed over a dark background.',
+        duration: 6000,
+      });
+    } else {
+      toast({ title: 'SVG downloaded', description: 'Vector file saved — open in Illustrator or Figma.' });
+    }
   };
 
   if (!qrData) {
@@ -488,7 +544,6 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }
 
   // ── Standard QR preview ──
-  const dc = qrData.design_config || {};
   const transparent = !!dc.transparent_background;
   const fgColor = dc.foreground_color || '#000000';
   const svgBgColor = transparent ? undefined : (dc.background_color || '#ffffff');
