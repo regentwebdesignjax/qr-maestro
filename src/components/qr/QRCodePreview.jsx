@@ -528,7 +528,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
       <div>
         <PreviewToggle active={bcTab} onChange={setBcTab} />
         {bcTab === 'landing' ? (
-          <BusinessCardPreview data={bcData} />
+          <BusinessCardPreview data={{ ...bcData, design_config: qrData.design_config }} />
         ) : (
           <QRCanvasView qrData={qrData} />
         )}
