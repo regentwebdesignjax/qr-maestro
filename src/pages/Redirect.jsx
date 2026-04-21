@@ -132,7 +132,7 @@ function VCardDisplay({ content, branded }) {
             <a href={vc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-medium hover:underline">{vc.url}</a>
           </div>
         )}
-        <button onClick={handleSaveContact} className={`w-full px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity mt-4 ${branded ? 'branded-action-btn' : 'bg-primary text-white'}`}>
+        <button onClick={handleSaveContact} className={`w-full px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity mt-4 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
           Save Contact
         </button>
       </CardContent>
@@ -170,7 +170,7 @@ function PDFDisplay({ content, name, branded }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <a href={content} target="_blank" rel="noopener noreferrer" className={`inline-block px-4 py-2 rounded-lg font-medium hover:opacity-90 ${branded ? 'branded-action-btn' : 'bg-primary text-white'}`}>
+        <a href={content} target="_blank" rel="noopener noreferrer" className={`inline-block px-4 py-2 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
           Open PDF
         </a>
       </CardContent>
@@ -336,7 +336,7 @@ function CallDisplay({ content, branded }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-gray-600 mb-3">Tap to call</p>
-        <a href={`tel:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'branded-action-btn' : 'bg-primary text-white'}`}>
+        <a href={`tel:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
           {content}
         </a>
       </CardContent>
@@ -357,7 +357,7 @@ function SMSDisplay({ content, branded }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-gray-600 mb-3">Tap to send a text message</p>
-        <a href={`sms:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'branded-action-btn' : 'bg-primary text-white'}`}>
+        <a href={`sms:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
           {content}
         </a>
       </CardContent>
@@ -444,6 +444,16 @@ export default function Redirect() {
   const { data } = state;
   const dc = data.design_config || {};
   const branded = !!(dc.landing_header_image || dc.landing_brand_logo || dc.landing_theme_color);
+  const btnBg = dc.landing_button_bg || dc.landing_theme_color || '#BB3F27';
+  const btnText = dc.landing_button_text || '#ffffff';
+  const darkenHex = (hex, pct = 15) => {
+    const c = (hex || '#BB3F27').replace('#', '');
+    const factor = 1 - pct / 100;
+    const r = Math.max(0, Math.round(parseInt(c.substring(0,2), 16) * factor));
+    const g = Math.max(0, Math.round(parseInt(c.substring(2,4), 16) * factor));
+    const b = Math.max(0, Math.round(parseInt(c.substring(4,6), 16) * factor));
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+  };
 
   // Business card gets its own full-page display
   if (data.content_type === 'business_card') {
@@ -452,6 +462,7 @@ export default function Redirect() {
 
   return (
     <BrandedLayout designConfig={dc}>
+      <style>{`.lp-btn { background-color: ${btnBg} !important; color: ${btnText} !important; } .lp-btn:hover { background-color: ${darkenHex(btnBg)} !important; }`}</style>
       {data.content_type === 'wifi' && <WifiDisplay content={data.content} branded={branded} />}
       {data.content_type === 'vcard' && <VCardDisplay content={data.content} branded={branded} />}
       {data.content_type === 'text' && <TextDisplay content={data.content} name={data.name} branded={branded} />}

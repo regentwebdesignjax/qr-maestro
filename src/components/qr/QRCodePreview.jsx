@@ -82,7 +82,8 @@ function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeCol
 async function renderQR(canvas, qrData) {
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
-  const bgColor = dc.background_color || '#ffffff';
+  const transparentBg = !!dc.transparent_background;
+  const bgColor = transparentBg ? 'rgba(0,0,0,0)' : (dc.background_color || '#ffffff');
   const gradientType = dc.gradient_type || 'none';
   const gradientColor2 = dc.gradient_color2 || '#6366f1';
   const qrStyle = dc.qr_style || 'squares';
@@ -123,8 +124,12 @@ async function renderQR(canvas, qrData) {
   canvas.height = canvasPx;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, canvasPx, canvasPx);
+  if (!transparentBg) {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvasPx, canvasPx);
+  } else {
+    ctx.clearRect(0, 0, canvasPx, canvasPx);
+  }
 
   let patternFill;
   if (gradientType === 'linear') {
@@ -185,8 +190,10 @@ async function renderQR(canvas, qrData) {
         const lx = (canvasPx - drawW) / 2;
         const ly = (canvasPx - drawH) / 2;
         const pad = 6;
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(lx - pad, ly - pad, drawW + pad * 2, drawH + pad * 2);
+        if (!transparentBg) {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(lx - pad, ly - pad, drawW + pad * 2, drawH + pad * 2);
+        }
         ctx.drawImage(logo, lx, ly, drawW, drawH);
         resolve();
       };
@@ -247,13 +254,17 @@ function QRCanvasView({ qrData }) {
       .catch(err => console.error('QR render error:', err));
   }, [qrData]);
 
-  const handleDownload = async () => {
-    if (!containerRef.current) return;
-    const { default: html2canvas } = await import('html2canvas');
-    const canvas = await html2canvas(containerRef.current, { backgroundColor: null, scale: 2 });
+  const handleDownloadQRC = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const hiCanvas = document.createElement('canvas');
+    hiCanvas.width = canvas.width * 2;
+    hiCanvas.height = canvas.height * 2;
+    const hiCtx = hiCanvas.getContext('2d');
+    hiCtx.drawImage(canvas, 0, 0, hiCanvas.width, hiCanvas.height);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = hiCanvas.toDataURL('image/png');
     link.click();
   };
 
@@ -292,7 +303,7 @@ function QRCanvasView({ qrData }) {
           )}
         </div>
       </div>
-      <Button onClick={handleDownload} variant="outline" className="w-full" disabled={!qrCodeUrl}>
+      <Button onClick={handleDownloadQRC} variant="outline" className="w-full" disabled={!qrCodeUrl}>
         <Download className="w-4 h-4 mr-2" /> Download PNG
       </Button>
     </div>
@@ -328,12 +339,16 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }, [qrData]);
 
   const handleDownload = async () => {
-    if (!containerRef.current) return;
-    const { default: html2canvas } = await import('html2canvas');
-    const canvas = await html2canvas(containerRef.current, { backgroundColor: null, scale: 2 });
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const hiCanvas = document.createElement('canvas');
+    hiCanvas.width = canvas.width * 2;
+    hiCanvas.height = canvas.height * 2;
+    const hiCtx = hiCanvas.getContext('2d');
+    hiCtx.drawImage(canvas, 0, 0, hiCanvas.width, hiCanvas.height);
     const link = document.createElement('a');
     link.download = `${qrData.name || 'qrcode'}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = hiCanvas.toDataURL('image/png');
     link.click();
   };
 

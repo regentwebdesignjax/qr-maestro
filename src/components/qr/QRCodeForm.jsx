@@ -771,14 +771,33 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           <motion.div key="step2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit"
           transition={{ duration: 0.25, ease: 'easeInOut' }} className="space-y-5">
 
+              {/* Transparent Background Toggle */}
+              <div className="flex items-center justify-between p-3 border rounded-xl">
+                <div>
+                  <Label className="font-medium">Transparent Background</Label>
+                  <p className="text-xs text-gray-500 mt-0.5">When on, background color is ignored</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDesignChangeAndPreview('transparent_background', !dc.transparent_background)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${dc.transparent_background ? 'bg-primary' : 'bg-gray-200'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${dc.transparent_background ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+              {dc.transparent_background && (
+                <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  ⚠ Caution: If your QR code uses a light foreground color on a transparent background, ensure it's placed on a dark surface so it remains scannable.
+                </p>
+              )}
+
               {/* Background */}
-              <div>
+              <div className={dc.transparent_background ? 'opacity-40 pointer-events-none' : ''}>
                 <Label>Background Color</Label>
                 <ColorInput
                 value={dc.background_color}
                 onChange={(v) => handleDesignChange('background_color', v)}
                 onPreview={(v) => handleDesignChangeAndPreview('background_color', v)} />
-              
               </div>
 
               {/* Foreground / Gradient */}
@@ -895,9 +914,32 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     </div>
                   </div>
 
+                  {/* Button Colors */}
+                  <div className="border rounded-xl p-4 space-y-3">
+                  <Label className="font-semibold">Landing Page Button Colors</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Background</Label>
+                      <ColorInput
+                        value={dc.landing_button_bg || '#BB3F27'}
+                        onChange={(v) => handleDesignChange('landing_button_bg', v)}
+                        onPreview={(v) => handleDesignChange('landing_button_bg', v)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Text Color</Label>
+                      <ColorInput
+                        value={dc.landing_button_text || '#ffffff'}
+                        onChange={(v) => handleDesignChange('landing_button_text', v)}
+                        onPreview={(v) => handleDesignChange('landing_button_text', v)}
+                      />
+                    </div>
+                  </div>
+                  </div>
+
                   {/* Logo */}
                   <div>
-                    <Label>Company Logo</Label>
+                  <Label>Company Logo</Label>
                     {dc.logo_url ?
                 <div className="flex items-center gap-2 mt-1">
                         <img src={dc.logo_url} alt="Logo" className="w-14 h-14 object-contain border rounded" />

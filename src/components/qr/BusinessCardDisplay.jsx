@@ -59,17 +59,19 @@ export default function BusinessCardDisplay({ data }) {
   const [exchangeSent, setExchangeSent] = useState(false);
   const [exchangeSubmitting, setExchangeSubmitting] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
-  const ctaColor = data.design_config?.cta_button_color || themeColor;
+  const btnBg = data.design_config?.landing_button_bg || data.design_config?.cta_button_color || themeColor;
+  const btnText = data.design_config?.landing_button_text || '#ffffff';
 
-  // Determine text color based on luminance
-  const isLight = (hex) => {
+  // Auto-darken a hex color by a percentage for hover states
+  const darken = (hex, pct = 15) => {
     const c = hex.replace('#', '');
-    const r = parseInt(c.substring(0,2), 16);
-    const g = parseInt(c.substring(2,4), 16);
-    const b = parseInt(c.substring(4,6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 160;
+    const factor = 1 - pct / 100;
+    const r = Math.max(0, Math.round(parseInt(c.substring(0,2), 16) * factor));
+    const g = Math.max(0, Math.round(parseInt(c.substring(2,4), 16) * factor));
+    const b = Math.max(0, Math.round(parseInt(c.substring(4,6), 16) * factor));
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
   };
-  const ctaTextColor = isLight(ctaColor) ? '#000000' : '#ffffff';
+  const btnBgHover = darken(btnBg);
 
   const handleSaveContact = () => {
     const vcf = buildVCard(data);
@@ -114,6 +116,10 @@ export default function BusinessCardDisplay({ data }) {
         .dbc-primary { background-color: ${themeColor} !important; }
         .dbc-primary-border { border-color: ${themeColor} !important; }
         .dbc-primary-text { color: ${themeColor} !important; }
+        .dbc-btn { background-color: ${btnBg} !important; color: ${btnText} !important; }
+        .dbc-btn:hover { background-color: ${btnBgHover} !important; }
+        .dbc-btn-outline { border: 2px solid ${btnBg} !important; color: ${btnBg} !important; }
+        .dbc-btn-outline:hover { background-color: ${btnBg}18 !important; }
       `}</style>
 
       {/* Banner + Headshot overlap */}
@@ -158,15 +164,13 @@ export default function BusinessCardDisplay({ data }) {
         <div className="flex gap-3 mb-6">
           <button
             onClick={handleSaveContact}
-            style={{ backgroundColor: ctaColor, color: ctaTextColor }}
-            className="flex-1 py-3 rounded-xl font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
+            className="dbc-btn flex-1 py-3 rounded-xl font-semibold text-sm shadow-md transition-colors"
           >
             Save Contact
           </button>
           <button
             onClick={() => setShowExchange(!showExchange)}
-            style={{ borderColor: ctaColor, color: ctaColor }}
-            className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 hover:bg-gray-100 transition-colors"
+            className="dbc-btn-outline flex-1 py-3 rounded-xl font-semibold text-sm transition-colors bg-transparent"
           >
             Exchange Info
           </button>
@@ -207,7 +211,7 @@ export default function BusinessCardDisplay({ data }) {
                 <button
                   type="submit"
                   disabled={exchangeSubmitting}
-                  className="dbc-primary w-full py-2.5 rounded-lg text-white font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
+                  className="dbc-btn w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
                 >
                   {exchangeSubmitting ? 'Sending...' : <><span>Send</span><ArrowRight className="w-4 h-4" /></>}
                 </button>
