@@ -14,6 +14,7 @@ import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, Fold
 import { format } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { downloadQRPng } from '@/utils/qrExport';
 
 const formatContentType = (type) => ({ url: 'URL', text: 'Text', wifi: 'WiFi', vcard: 'vCard' }[type] || type);
 
@@ -49,35 +50,15 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
   };
 
   const handleBulkDownload = async () => {
-    const QRCode = (await import('qrcode')).default;
     for (const id of selected) {
       const qr = qrCodes.find(q => q.id === id);
       if (!qr) continue;
-      const content = qr.type === 'dynamic' && qr.short_code
-        ? `${window.location.origin}/r?code=${qr.short_code}` : qr.content;
-      const dataUrl = await QRCode.toDataURL(content, {
-        width: 1024, margin: 2,
-        color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },
-      });
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `${qr.name.replace(/[^a-z0-9]/gi, '_')}.png`;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      await downloadQRPng(qr);
     }
   };
 
   const handleDownload = async (qr) => {
-    const QRCode = (await import('qrcode')).default;
-    const content = qr.type === 'dynamic' && qr.short_code
-      ? `${window.location.origin}/r?code=${qr.short_code}` : qr.content;
-    const dataUrl = await QRCode.toDataURL(content, {
-      width: 1024, margin: 2,
-      color: { dark: qr.design_config?.foreground_color || '#000000', light: qr.design_config?.background_color || '#FFFFFF' },
-    });
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `${qr.name.replace(/[^a-z0-9]/gi, '_')}.png`;
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    await downloadQRPng(qr);
   };
 
   const startEdit = (qr) => { setEditingId(qr.id); setEditingName(qr.name); };
