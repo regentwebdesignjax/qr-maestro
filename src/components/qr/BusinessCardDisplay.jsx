@@ -202,7 +202,7 @@ export default function BusinessCardDisplay({ data }) {
                   required
                 />
                 <textarea
-                  placeholder="Notes (e.g. Met you at the Jacksonville Tech Expo, or I'd like to talk to Sales about...)"
+                  placeholder="Notes (e.g. Met you at the Tech Expo, or I'd like to talk to Sales about...)"
                   value={exchangeForm.notes}
                   onChange={(e) => setExchangeForm(p => ({ ...p, notes: e.target.value }))}
                   rows={3}
