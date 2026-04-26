@@ -22,11 +22,11 @@ export default function Pricing() {
       } catch (error) {
 
 
-        // User not logged in
-      }};fetchUser();
-  }, []);
 
-  const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
+
+
+        // User not logged in
+      }};fetchUser();}, []);const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
   const extraSeats = Math.max(0, totalSeats - 10);
   const monthlyTotal = 29 + extraSeats * 3;
   const annualTotal = 249 + extraSeats * 36;
@@ -185,15 +185,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimite Dynamic QR Codes (The Fluid Form)</span>
+                  <span className="font-semibold">Unlimited Dynamic QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Real-time Scan Analytics (Inner Vision)</span>
+                  <span className="font-semibold">Real-time Scan Analytics</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Custom Colors, Logos & Gradients (Bespoke Gi)</span>
+                  <span>Custom Colors, Logos & Gradients</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
