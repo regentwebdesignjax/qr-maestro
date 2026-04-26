@@ -21,9 +21,9 @@ export default function Pricing() {
         setUser(currentUser);
       } catch (error) {
 
+
         // User not logged in
-      }};
-    fetchUser();
+      }};fetchUser();
   }, []);
 
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
@@ -185,7 +185,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unl Dynamic QR Codes (The Fluid Form)</span>
+                  <span className="font-semibold">Unlimite Dynamic QR Codes (The Fluid Form)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
