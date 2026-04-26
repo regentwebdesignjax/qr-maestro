@@ -29,9 +29,9 @@ export default function Pricing() {
 
 
 
+
         // User not logged in
-      }};fetchUser();}, []);const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';const extraSeats = Math.max(0, totalSeats - 10);const monthlyTotal = 29 + extraSeats * 3;const annualTotal = 249 + extraSeats * 36;
-  const handleUpgrade = async (period) => {
+      }};fetchUser();}, []);const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';const extraSeats = Math.max(0, totalSeats - 10);const monthlyTotal = 29 + extraSeats * 3;const annualTotal = 249 + extraSeats * 36;const handleUpgrade = async (period) => {
     if (!user) {
       base44.analytics.track({ eventName: 'upgrade_cta_clicked', properties: { period, logged_in: false } });
       base44.auth.redirectToLogin('/Pricing');
@@ -185,7 +185,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">UnlimitedDynamic QR Codes</span>
+                  <span className="font-semibold">Unlimited Dynamic QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
