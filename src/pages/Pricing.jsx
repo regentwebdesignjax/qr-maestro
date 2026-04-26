@@ -20,17 +20,17 @@ export default function Pricing() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
+
+
+
+
+
+
+
+
+
         // User not logged in
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
-  const extraSeats = Math.max(0, totalSeats - 10);
-  const monthlyTotal = 29 + extraSeats * 3;
-  const annualTotal = 249 + extraSeats * 36;
-
+      }};fetchUser();}, []);const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';const extraSeats = Math.max(0, totalSeats - 10);const monthlyTotal = 29 + extraSeats * 3;const annualTotal = 249 + extraSeats * 36;
   const handleUpgrade = async (period) => {
     if (!user) {
       base44.analytics.track({ eventName: 'upgrade_cta_clicked', properties: { period, logged_in: false } });
@@ -41,14 +41,14 @@ export default function Pricing() {
     setLoading(true);
     base44.analytics.track({
       eventName: 'upgrade_checkout_initiated',
-      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats },
+      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats }
     });
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
         period,
         user_id: user.id,
         email: user.email,
-        total_seats: totalSeats,
+        total_seats: totalSeats
       });
 
       if (response.data.url) {
@@ -66,7 +66,7 @@ export default function Pricing() {
     setLoading(true);
     try {
       const response = await base44.functions.invoke('createPortalSession', {
-        customer_id: user.stripe_customer_id,
+        customer_id: user.stripe_customer_id
       });
 
       if (response.data.url) {
@@ -119,15 +119,15 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {user ? (
-                  <Button variant="outline" className="w-full" disabled>
+                {user ?
+                <Button variant="outline" className="w-full" disabled>
                     {isPro ? 'Downgrade' : 'Current Plan'}
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
+                  </Button> :
+
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
                     Get Started
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -144,9 +144,9 @@ export default function Pricing() {
                 <span className="text-4xl font-bold">${monthlyTotal}</span>
                 <span className="text-gray-600">/month</span>
               </div>
-              {extraSeats > 0 && (
-                <p className="text-xs text-gray-500 mt-1">$29 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $3</p>
-              )}
+              {extraSeats > 0 &&
+              <p className="text-xs text-gray-500 mt-1">$29 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $3</p>
+              }
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
               {/* DBC Seat Selector */}
@@ -157,22 +157,22 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                   type="number"
-                   min={10}
-                   value={inputSeats}
-                   onChange={(e) => {
-                     const raw = e.target.value;
-                     setInputSeats(raw);
-                     const parsed = Math.max(10, parseInt(raw) || 10);
-                     setTotalSeats(parsed);
-                   }}
-                   onBlur={() => {
-                     const val = Math.max(10, parseInt(inputSeats) || 10);
-                     setInputSeats(String(val));
-                     setTotalSeats(val);
-                   }}
-                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
-                  />
+                    type="number"
+                    min={10}
+                    value={inputSeats}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setInputSeats(raw);
+                      const parsed = Math.max(10, parseInt(raw) || 10);
+                      setTotalSeats(parsed);
+                    }}
+                    onBlur={() => {
+                      const val = Math.max(10, parseInt(inputSeats) || 10);
+                      setInputSeats(String(val));
+                      setTotalSeats(val);
+                    }}
+                    className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]" />
+                  
                   <span className="text-sm text-gray-500">
                    {extraSeats > 0 ? `+${extraSeats} extra @ $3/mo each` : 'First 10 included'}
                   </span>
@@ -185,15 +185,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Dynamic QR Codes (The Fluid Form)</span>
+                  <span className="font-semibold">UnlimitedDynamic QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Real-time Scan Analytics (Inner Vision)</span>
+                  <span className="font-semibold">Real-time Scan Analytics</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Custom Colors, Logos & Gradients (Bespoke Gi)</span>
+                  <span>Custom Colors, Logos & Gradients</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -205,16 +205,16 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {isPro && user?.subscription_period === 'monthly' ? (
-                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                {isPro && user?.subscription_period === 'monthly' ?
+                <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
+                  </Button> :
+
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || isPro && user?.subscription_period === 'annual'}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -231,11 +231,11 @@ export default function Pricing() {
                 <span className="text-4xl font-bold">${annualTotal}</span>
                 <span className="text-gray-600">/year</span>
               </div>
-              {extraSeats > 0 ? (
-                <p className="text-xs text-gray-500 mt-1">$249 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $36</p>
-              ) : (
-                <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
-              )}
+              {extraSeats > 0 ?
+              <p className="text-xs text-gray-500 mt-1">$290 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $36</p> :
+
+              <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
+              }
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
               {/* DBC Seat Selector */}
@@ -246,22 +246,22 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                   type="number"
-                   min={10}
-                   value={inputSeats}
-                   onChange={(e) => {
-                     const raw = e.target.value;
-                     setInputSeats(raw);
-                     const parsed = Math.max(10, parseInt(raw) || 10);
-                     setTotalSeats(parsed);
-                   }}
-                   onBlur={() => {
-                     const val = Math.max(10, parseInt(inputSeats) || 10);
-                     setInputSeats(String(val));
-                     setTotalSeats(val);
-                   }}
-                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
-                  />
+                    type="number"
+                    min={10}
+                    value={inputSeats}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setInputSeats(raw);
+                      const parsed = Math.max(10, parseInt(raw) || 10);
+                      setTotalSeats(parsed);
+                    }}
+                    onBlur={() => {
+                      const val = Math.max(10, parseInt(inputSeats) || 10);
+                      setInputSeats(String(val));
+                      setTotalSeats(val);
+                    }}
+                    className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]" />
+                  
                   <span className="text-sm text-gray-500">
                    {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
                   </span>
@@ -274,15 +274,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Dynamic QR Codes (The Fluid Form)</span>
+                  <span className="font-semibold">Unlimited Dynamic QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Real-time Scan Analytics (Inner Vision)</span>
+                  <span className="font-semibold">Real-time Scan Analytics</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Custom Colors, Logos & Gradients (Bespoke Gi)</span>
+                  <span>Custom Colors, Logos & Gradients</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -294,16 +294,16 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {isPro && user?.subscription_period === 'annual' ? (
-                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                {isPro && user?.subscription_period === 'annual' ?
+                <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
+                  </Button> :
+
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('annual')} disabled={loading || isPro && user?.subscription_period === 'monthly'}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -334,6 +334,6 @@ export default function Pricing() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
