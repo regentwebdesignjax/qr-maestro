@@ -36,8 +36,8 @@ export default function Home() {
             <h1 className="text-6xl font-black text-white mb-6 font-poppins leading-tight">
               Master the Art of the Scan
             </h1>
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">
-              QR Sensei provides professional QR code generation with custom styling, real-time analytics, and dynamic management. Elevate your brand.
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">QR Sensei provides professional QR code generation with custom styling, real-time analytics, and dynamic management.
+
             </p>
             <div className="flex gap-4">
               <Button
