@@ -14,14 +14,14 @@ export default function Home() {
   };
 
   const mockChartData = [
-    { date: 'Apr 12', scans: 14 },
-    { date: 'Apr 13', scans: 28 },
-    { date: 'Apr 14', scans: 19 },
-    { date: 'Apr 15', scans: 45 },
-    { date: 'Apr 16', scans: 37 },
-    { date: 'Apr 17', scans: 62 },
-    { date: 'Apr 18', scans: 54 },
-  ];
+  { date: 'Apr 12', scans: 14 },
+  { date: 'Apr 13', scans: 28 },
+  { date: 'Apr 14', scans: 19 },
+  { date: 'Apr 15', scans: 45 },
+  { date: 'Apr 16', scans: 37 },
+  { date: 'Apr 17', scans: 62 },
+  { date: 'Apr 18', scans: 54 }];
+
 
   return (
     <div className="w-full bg-background">
@@ -30,8 +30,8 @@ export default function Home() {
         {/* Left Panel: Dark with CTA */}
         <div
           className="flex-1 flex flex-col justify-center px-[5vw] py-16"
-          style={{ backgroundColor: '#142024' }}
-        >
+          style={{ backgroundColor: '#142024' }}>
+          
           <div className="max-w-xl">
             <h1 className="text-6xl font-black text-white mb-6 font-poppins leading-tight">
               Master the Art of the Scan
@@ -43,15 +43,15 @@ export default function Home() {
               <Button
                 size="lg"
                 onClick={handleGetStarted}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              >
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                
                 Get Started Free
               </Button>
               <Link to="/Pricing">
                 <Button
                   size="lg"
-                  className="bg-transparent border border-white text-white hover:bg-white hover:text-[#142024] font-semibold transition-colors duration-200"
-                >
+                  className="bg-transparent border border-white text-white hover:bg-white hover:text-[#142024] font-semibold transition-colors duration-200">
+                  
                   View Pricing
                 </Button>
               </Link>
@@ -62,13 +62,13 @@ export default function Home() {
         {/* Right Panel: Light with Sensei Graphic */}
         <div
           className="flex-1 flex items-center justify-center px-[5vw] py-16"
-          style={{ backgroundColor: '#F9F9F8' }}
-        >
-          <img
-            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/1842bba19_sensei-pose.png"
-            alt="QR Sensei"
-            className="w-full max-w-lg drop-shadow-xl"
-          />
+          style={{ backgroundColor: '#F9F9F8' }}>
+          
+          <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/6a4e08a72_QRSensei-Vision.png"
+
+          alt="QR Sensei" className="w-full max-w-lg drop-shadow-xl" />
+
+          
         </div>
       </div>
 
@@ -83,8 +83,8 @@ export default function Home() {
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/720f33124_sensei-fluid-form.png"
                 alt="The Fluid Form"
-                className="w-full max-w-sm drop-shadow-xl"
-              />
+                className="w-full max-w-sm drop-shadow-xl" />
+              
             </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -152,8 +152,8 @@ export default function Home() {
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/eb0a8a8a8_sensei-design.png"
                 alt="Bespoke Gi"
-                className="w-full max-w-xl drop-shadow-xl"
-              />
+                className="w-full max-w-xl drop-shadow-xl" />
+              
             </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -207,17 +207,17 @@ export default function Home() {
               {/* Feature Highlights */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {[
-                  { icon: Contact, label: 'One-Tap Contact Save' },
-                  { icon: Users, label: '10 Free Seats Included' },
-                  { icon: LineChart, label: 'Integrated Lead Capture' },
-                ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex flex-col items-center text-center gap-2">
+                { icon: Contact, label: 'One-Tap Contact Save' },
+                { icon: Users, label: '10 Free Seats Included' },
+                { icon: LineChart, label: 'Integrated Lead Capture' }].
+                map(({ icon: Icon, label }) =>
+                <div key={label} className="flex flex-col items-center text-center gap-2">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <p className="text-xs font-medium text-gray-700 leading-snug">{label}</p>
                   </div>
-                ))}
+                )}
               </div>
 
               <Link to="/Pricing">
@@ -295,12 +295,12 @@ export default function Home() {
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-          >
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+            
             Create Your First QR Code
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
