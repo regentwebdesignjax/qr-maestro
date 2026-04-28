@@ -64,7 +64,7 @@ export default function Home() {
           className="flex-1 flex items-center justify-center px-[5vw] py-16"
           style={{ backgroundColor: '#F9F9F8' }}>
           
-          <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/6a4e08a72_QRSensei-Vision.png"
+          <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/f467416b9_sensei-pose.png"
 
           alt="QR Sensei" className="w-full max-w-lg drop-shadow-xl" />
 
