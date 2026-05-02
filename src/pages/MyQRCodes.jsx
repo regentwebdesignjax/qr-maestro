@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, QrCode as QrCodeIcon, FolderOpen, Layers } from 'lucide-react';
+import { Plus, Lock, QrCode as QrCodeIcon, FolderOpen, Layers } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 import QRMobileCard from '../components/qr/QRMobileCard';
@@ -118,6 +118,7 @@ export default function MyQRCodes() {
   const subActive = user.role === 'admin' || user.subscription_tier !== 'pro' || user.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
+  const canCreateStatic = isPro || staticCount < 10;
 
   const visibleQrCodes = activeFolder === 'all'
     ? qrCodes
@@ -164,13 +165,23 @@ export default function MyQRCodes() {
                 </Button>
               </Link>
             )}
-            <Link to="/CreateQR">
-              <Button className="h-11">
-                <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Create New</span>
-                <span className="sm:hidden">New</span>
-              </Button>
-            </Link>
+            {canCreateStatic ? (
+              <Link to="/CreateQR">
+                <Button className="h-11">
+                  <Plus className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Create New</span>
+                  <span className="sm:hidden">New</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/Pricing">
+                <Button className="h-11 bg-gray-400 hover:bg-gray-400 cursor-not-allowed" disabled>
+                  <Lock className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Limit Reached — Upgrade</span>
+                  <span className="sm:hidden">Upgrade</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
