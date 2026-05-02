@@ -137,10 +137,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const parseInitialData = () => {
     if (!initialData) return {
       wifi: { ssid: '', password: '', encryption: 'WPA' },
-      custom: [],
+      socialLinks: [],
       bc: {},
       vcard: {},
-      social: {},
     };
     
     let wifi = { ssid: '', password: '', encryption: 'WPA' };
