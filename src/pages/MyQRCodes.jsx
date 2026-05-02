@@ -191,7 +191,7 @@ export default function MyQRCodes() {
             <CardContent className="px-4 pb-4">
               <div className="text-2xl font-bold text-gray-700">
                 {staticCount}
-                {!isPro && <span className="text-sm text-gray-500"> / 3</span>}
+                {!isPro && <span className="text-sm text-gray-500"> / 10</span>}
               </div>
             </CardContent>
           </Card>

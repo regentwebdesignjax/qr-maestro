@@ -107,7 +107,11 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span>Up to 3 Static QR Codes</span>
+                  <span>Up to 10 Static QR Codes</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span>Digital Business Card (Static)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
