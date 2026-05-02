@@ -225,13 +225,15 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
                               <p className="text-xs text-muted-foreground">1024×1024 — best for general use</p>
                             </div>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => downloadQRSvg(qr)} className="cursor-pointer">
-                            <FileCode2 className="w-4 h-4 mr-2 text-purple-500" />
-                            <div>
-                              <p className="font-medium">SVG</p>
-                              <p className="text-xs text-muted-foreground">Scalable — best for print &amp; design</p>
-                            </div>
-                          </DropdownMenuItem>
+                          {isPro && (
+                            <DropdownMenuItem onClick={() => downloadQRSvg(qr)} className="cursor-pointer">
+                              <FileCode2 className="w-4 h-4 mr-2 text-purple-500" />
+                              <div>
+                                <p className="font-medium">SVG</p>
+                                <p className="text-xs text-muted-foreground">Scalable — best for print &amp; design</p>
+                              </div>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <Button variant="ghost" size="sm" onClick={() => { if (confirm('Delete this QR code?')) onDelete(qr.id); }}>

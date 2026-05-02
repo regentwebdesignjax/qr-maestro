@@ -73,10 +73,10 @@ export default function Dashboard() {
 
   const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
-  const canCreateStatic = isPro || staticCount < 3;
+  const canCreateStatic = isPro || staticCount < 10;
 
   const dbcCapacity = 10 + (user.purchased_extra_dbcs || 0);
-  const activeDbcCount = qrCodes.filter(qr => qr.content_type === 'vcard' && qr.is_active !== false).length;
+  const activeDbcCount = qrCodes.filter(qr => (qr.content_type === 'vcard' || qr.content_type === 'business_card') && qr.is_active !== false).length;
   const dbcLimitReached = isPro && activeDbcCount >= dbcCapacity;
   const dbcOverLimit = isPro && activeDbcCount > dbcCapacity;
 
@@ -102,6 +102,13 @@ export default function Dashboard() {
                 <Button className="bg-gray-400 hover:bg-gray-400 text-white font-semibold cursor-not-allowed" disabled>
                   <Lock className="w-4 h-4 mr-2" />
                   DBC Limit Reached — Purchase More
+                </Button>
+              </Link>
+            ) : (!isPro && !canCreateStatic) ? (
+              <Link to="/Pricing">
+                <Button className="bg-gray-400 hover:bg-gray-400 text-white font-semibold cursor-not-allowed" disabled>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Limit Reached — Upgrade
                 </Button>
               </Link>
             ) : (
@@ -151,7 +158,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-3xl font-bold">
                 {staticCount}
-                {!isPro && <span className="text-lg text-gray-500"> / 3</span>}
+                {!isPro && <span className="text-lg text-gray-500"> / 10</span>}
               </div>
             </CardContent>
           </Card>
@@ -231,7 +238,7 @@ export default function Dashboard() {
           <Card className="mb-8 border-orange-200 bg-orange-50">
             <CardContent className="pt-6">
               <p className="text-orange-800">
-                You've reached the free tier limit of 3 static QR codes.{' '}
+                You've reached the free tier limit of 10 static QR codes.{' '}
                 <Link to="/Pricing" className="font-semibold underline">
                   Upgrade to Pro
                 </Link>{' '}

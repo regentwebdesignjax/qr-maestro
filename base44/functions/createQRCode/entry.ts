@@ -24,6 +24,14 @@ Deno.serve(async (req) => {
       qrCodeData.type = 'static';
     }
 
+    // Enforce: non-Pro users cannot exceed 10 static QR codes
+    if (!isPro) {
+      const existing = await base44.entities.QRCode.filter({ created_by: user.email, type: 'static' });
+      if (existing.length >= 10) {
+        return Response.json({ error: 'Free tier limit of 10 static QR codes reached. Upgrade to Black Belt for unlimited QR codes.' }, { status: 403 });
+      }
+    }
+
     // Always generate a fresh short_code server-side for dynamic codes
     if (qrCodeData.type === 'dynamic') {
       qrCodeData.short_code = generateShortCode();

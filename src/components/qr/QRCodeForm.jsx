@@ -13,7 +13,7 @@ import BusinessCardForm from './BusinessCardForm';
 
 const CONTENT_TYPES = [
 { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
-{ value: 'business_card', label: 'Digital Business Card', icon: CreditCard, desc: 'Rich profile card with headshot & socials', dynamicOnly: true, proOnly: true },
+{ value: 'business_card', label: 'Digital Business Card', icon: CreditCard, desc: 'Rich profile card with headshot & socials' },
 { value: 'text', label: 'Plain Text', icon: Type, desc: 'Simple text message or information', dynamicOnly: true },
 { value: 'wifi', label: 'WiFi Credentials', icon: Wifi, desc: 'Let people connect to your network', dynamicOnly: true },
 { value: 'vcard', label: 'vCard Contact', icon: User, desc: 'Share your contact information', dynamicOnly: true },
@@ -430,8 +430,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 <p className="text-gray-600 text-sm mb-2">What type of content will this QR code contain?</p>
                 <div className="grid grid-cols-2 gap-3">
                   {CONTENT_TYPES.map(({ value, label, icon: Icon, desc, proOnly }) => {
-                  const isUrlOnly = value !== 'url';
-                  const isStaticDisabled = formData.type === 'static' && isUrlOnly;
+                  const isStaticOnly = value !== 'url' && value !== 'business_card';
+                  const isStaticDisabled = formData.type === 'static' && isStaticOnly;
                   const isProDisabled = proOnly && !isPro;
                   const isDisabled = isStaticDisabled || isProDisabled;
 
@@ -453,7 +453,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                         <div>
                           <p className={`font-medium text-xs ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
                           <p className={`text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
-                            {isStaticDisabled ? 'Static only supports URLs' : isProDisabled ? 'Black Belt only' : desc}
+                            {isStaticDisabled ? 'Requires Dynamic (Black Belt)' : isProDisabled ? 'Black Belt only' : desc}
                           </p>
                         </div>
                       </button>);

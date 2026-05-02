@@ -40,7 +40,8 @@ export default function CreateQR() {
       window.location.href = '/Dashboard';
     } catch (error) {
       console.error('Error saving QR code:', error);
-      alert('Failed to save QR code. Please try again.');
+      const msg = error?.response?.data?.error || error?.message || '';
+      alert(msg || 'Failed to save QR code. Please try again.');
     } finally {
       setSaving(false);
     }
