@@ -182,6 +182,7 @@ export default function EditQR() {
                     type: qrCode.type,
                     content_type: qrCode.content_type,
                     content: qrCode.content,
+                    short_code: qrCode.short_code,
                     design_config: previewData.design_config,
                   }}
                 />

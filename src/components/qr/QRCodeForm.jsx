@@ -166,6 +166,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     type: initialData?.type || 'static',
     content_type: initialData?.content_type || 'url',
     content: initialData?.content || '',
+    short_code: initialData?.short_code || null,
     vcard_data: initialParsed.vcard,
     social_data: initialParsed.social,
     design_config: {
@@ -184,7 +185,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
   const isPro = user?.role === 'admin' || user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
 
-  const handleChange = (field, value) => setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field, value) => {
+    if (field === 'type') {
+      setFormData((prev) => ({
+        ...prev,
+        type: value,
+        short_code: value === 'dynamic'
+          ? (prev.short_code || Math.random().toString(36).substring(2, 10))
+          : null,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
+  };
 
   const handleDesignChange = (field, value) => {
     setFormData((prev) => ({ ...prev, design_config: { ...prev.design_config, [field]: value } }));
@@ -198,7 +211,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
         ...overrides,
         design_config: { ...prev.design_config, ...(overrides.design_config || {}) }
       };
-      const shortCode = merged.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
+      const shortCode = merged.type === 'dynamic' ? merged.short_code : null;
       onGenerate({ ...merged, short_code: shortCode });
       return prev; // don't actually change state here
     });
@@ -208,7 +221,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const handleDesignChangeAndPreview = (field, value) => {
     setFormData((prev) => {
       const next = { ...prev, design_config: { ...prev.design_config, [field]: value } };
-      const shortCode = next.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
+      const shortCode = next.type === 'dynamic' ? next.short_code : null;
       onGenerate({ ...next, short_code: shortCode });
       return next;
     });
@@ -294,7 +307,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     const isBc = formData.content_type === 'business_card';
     if (!formData.name || (!formData.content && !isBc)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
-    const shortCode = formData.type === 'dynamic' ? Math.random().toString(36).substring(2, 10) : null;
+    const shortCode = formData.type === 'dynamic'
+      ? (formData.short_code || Math.random().toString(36).substring(2, 10))
+      : null;
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
   };
 
