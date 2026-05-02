@@ -86,6 +86,23 @@ function drawEye(ctx, originX, originY, cellSize, outerShape, innerShape, eyeCol
   }
 }
 
+// Generates an SVG path string for a rounded rectangle (used in SVG eye shapes)
+function roundedRectSvgPath(x, y, w, h, r) {
+  const rad = Math.min(r, w / 2, h / 2);
+  return [
+    `M${x + rad},${y}`,
+    `H${x + w - rad}`,
+    `A${rad},${rad} 0 0 1 ${x + w},${y + rad}`,
+    `V${y + h - rad}`,
+    `A${rad},${rad} 0 0 1 ${x + w - rad},${y + h}`,
+    `H${x + rad}`,
+    `A${rad},${rad} 0 0 1 ${x},${y + h - rad}`,
+    `V${y + rad}`,
+    `A${rad},${rad} 0 0 1 ${x + rad},${y}`,
+    'Z',
+  ].join(' ');
+}
+
 function getQRContent(qr) {
   if (qr.type === 'dynamic' && qr.short_code) {
     return `${window.location.origin}/r?code=${qr.short_code}`;
@@ -234,51 +251,147 @@ export async function downloadQRPng(qr) {
 }
 
 /**
- * Downloads an SVG for a QR code record.
- * Applies foreground/background colors and transparent background.
- * Note: SVG output from the qrcode library uses square modules only;
- * gradients, custom eye shapes, logos, and rounded styles are not
- * representable in plain SVG — use PNG for full design fidelity.
+ * Downloads a true vector SVG for a QR code record.
+ * Generates SVG paths from scratch, applying all design_config properties:
+ * gradients, module styles (squares/dots/rounded), custom eye shapes,
+ * eye color, logo (base64-embedded for portability), and transparent background.
  */
 export async function downloadQRSvg(qr) {
   const dc = qr.design_config || {};
-  const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
-  const content = getQRContent(qr);
   const fgColor = dc.foreground_color || '#000000';
-  const bgColor = transparent ? 'transparent' : (dc.background_color || '#ffffff');
+  const transparentBg = dc.transparent_background === true || dc.transparent_background === 'true';
+  const bgColor = dc.background_color || '#ffffff';
+  const gradientType = dc.gradient_type || 'none';
+  const gradientColor2 = dc.gradient_color2 || '#6366f1';
+  const qrStyle = dc.qr_style || 'squares';
+  const eyeOuterShape = dc.eye_outer_shape || 'square';
+  const eyeInnerShape = dc.eye_inner_shape || 'square';
+  const eyeColor = dc.eye_color || fgColor;
 
-  const svgString = await QRCode.toString(content, {
-    type: 'svg',
-    margin: transparent ? 0 : 2,
-    color: { dark: fgColor, light: bgColor },
-  });
+  const content = getQRContent(qr);
+  const qrMatrix = QRCode.create(content, { errorCorrectionLevel: 'H' });
+  const modules = qrMatrix.modules;
+  const size = modules.size;
+  const margin = 2;
+  const total = size + margin * 2;
 
-  let finalSvg = svgString;
+  const parts = [];
 
-  if (transparent) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgString, 'image/svg+xml');
-    const rects = doc.querySelectorAll('rect');
-    const svgEl = doc.querySelector('svg');
-    const svgSize = svgEl?.getAttribute('width') || svgEl?.getAttribute('viewBox')?.split(' ')[2];
+  // SVG root — viewBox uses module-count units so everything scales perfectly
+  const shapeRendering = qrStyle === 'squares' ? ' shape-rendering="crispEdges"' : '';
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${total} ${total}" width="1024" height="1024"${shapeRendering}>`);
 
-    rects.forEach(rect => {
-      const fill = (rect.getAttribute('fill') || '').toLowerCase();
-      const w = rect.getAttribute('width');
-      const h = rect.getAttribute('height');
-      if (
-        fill === '#ffffff' || fill === 'white' || fill === 'transparent' ||
-        w === '100%' || h === '100%' ||
-        (svgSize && w === svgSize && h === svgSize)
-      ) {
-        rect.parentNode.removeChild(rect);
-      }
-    });
-
-    finalSvg = new XMLSerializer().serializeToString(doc.documentElement);
+  // Gradient defs
+  if (gradientType !== 'none') {
+    parts.push('<defs>');
+    if (gradientType === 'linear') {
+      parts.push(
+        `<linearGradient id="qr-grad" x1="0" y1="0" x2="${total}" y2="${total}" gradientUnits="userSpaceOnUse">` +
+        `<stop offset="0%" stop-color="${fgColor}"/>` +
+        `<stop offset="100%" stop-color="${gradientColor2}"/>` +
+        `</linearGradient>`
+      );
+    } else {
+      parts.push(
+        `<radialGradient id="qr-grad" cx="${total / 2}" cy="${total / 2}" r="${total / 1.5}" gradientUnits="userSpaceOnUse">` +
+        `<stop offset="0%" stop-color="${fgColor}"/>` +
+        `<stop offset="100%" stop-color="${gradientColor2}"/>` +
+        `</radialGradient>`
+      );
+    }
+    parts.push('</defs>');
   }
 
-  const blob = new Blob([finalSvg], { type: 'image/svg+xml' });
+  const fill = gradientType !== 'none' ? 'url(#qr-grad)' : fgColor;
+
+  // Background
+  if (!transparentBg) {
+    parts.push(`<rect width="${total}" height="${total}" fill="${bgColor}"/>`);
+  }
+
+  // Data modules — skip the 7×7 finder eye regions
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (!modules.get(row, col)) continue;
+      if (isEyeModule(row, col, size)) continue;
+      const x = col + margin;
+      const y = row + margin;
+      if (qrStyle === 'dots') {
+        parts.push(`<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.4" fill="${fill}"/>`);
+      } else if (qrStyle === 'rounded') {
+        parts.push(`<rect x="${x + 0.05}" y="${y + 0.05}" width="0.9" height="0.9" rx="0.3" fill="${fill}"/>`);
+      } else {
+        parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"/>`);
+      }
+    }
+  }
+
+  // Finder eyes — three corners, drawn with compound fill-rule="evenodd" paths
+  // so the gap between outer ring and inner dot is correctly transparent (not painted over)
+  const eyePositions = [
+    { or: 0, oc: 0 },
+    { or: 0, oc: size - 7 },
+    { or: size - 7, oc: 0 },
+  ];
+
+  eyePositions.forEach(({ or, oc }) => {
+    const ex = oc + margin;
+    const ey = or + margin;
+    const cx = ex + 3.5;
+    const cy = ey + 3.5;
+
+    // Outer ring — two overlapping sub-paths; evenodd makes the overlap a hole
+    let ringPath;
+    if (eyeOuterShape === 'circle') {
+      // Each full circle is drawn as two semicircular arcs so SVG can close the path
+      ringPath =
+        `M${cx - 3.5},${cy} a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z ` +
+        `M${cx - 2.5},${cy} a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0 Z`;
+    } else if (eyeOuterShape === 'rounded') {
+      ringPath =
+        roundedRectSvgPath(ex, ey, 7, 7, 1.2) + ' ' +
+        roundedRectSvgPath(ex + 1, ey + 1, 5, 5, 0.6);
+    } else {
+      // Square
+      ringPath = `M${ex},${ey} h7 v7 h-7 Z M${ex + 1},${ey + 1} h5 v5 h-5 Z`;
+    }
+    parts.push(`<path fill-rule="evenodd" fill="${eyeColor}" d="${ringPath}"/>`);
+
+    // Inner dot
+    if (eyeInnerShape === 'circle') {
+      parts.push(`<circle cx="${cx}" cy="${cy}" r="1.5" fill="${eyeColor}"/>`);
+    } else {
+      parts.push(`<rect x="${ex + 2}" y="${ey + 2}" width="3" height="3" fill="${eyeColor}"/>`);
+    }
+  });
+
+  // Logo — fetch and base64-encode for a self-contained SVG file
+  if (dc.logo_url) {
+    const logoSize = total * 0.2;
+    const lx = (total - logoSize) / 2;
+    const ly = (total - logoSize) / 2;
+    const pad = total * 0.012;
+
+    let logoHref = dc.logo_url;
+    try {
+      const resp = await fetch(dc.logo_url);
+      const blob = await resp.blob();
+      logoHref = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch { /* fall back to original URL if fetch fails */ }
+
+    if (!transparentBg) {
+      parts.push(`<rect x="${lx - pad}" y="${ly - pad}" width="${logoSize + pad * 2}" height="${logoSize + pad * 2}" fill="${bgColor}"/>`);
+    }
+    parts.push(`<image href="${logoHref}" x="${lx}" y="${ly}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`);
+  }
+
+  parts.push('</svg>');
+
+  const blob = new Blob([parts.join('\n')], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = `${(qr.name || 'qrcode').replace(/[^a-z0-9]/gi, '_')}.svg`;

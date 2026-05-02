@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { Download, Info, Smartphone, QrCode, FileImage, FileCode2, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { renderQR, renderQRToCanvas } from '@/utils/qrExport';
+import { renderQR, renderQRToCanvas, downloadQRSvg } from '@/utils/qrExport';
 
 import BusinessCardPreview from './BusinessCardPreview';
 
@@ -68,53 +67,7 @@ function QRCanvasView({ qrData }) {
     link.click();
   };
 
-  const handleDownloadSVG = async () => {
-    const fgCol = dc.foreground_color || '#000000';
-    const bgCol = transparent ? '#00000000' : (dc.background_color || '#ffffff');
-    let content = qrData.content || '';
-    if (qrData.type === 'dynamic' && qrData.short_code) {
-      content = `${window.location.origin}/r?code=${qrData.short_code}`;
-    }
-
-    let svgStr = await QRCode.toString(content, {
-      type: 'svg',
-      margin: transparent ? 0 : 2,
-      color: { dark: fgCol, light: bgCol },
-      errorCorrectionLevel: 'H',
-    });
-
-    let bgRemoved = false;
-    if (transparent) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(svgStr, 'image/svg+xml');
-      const rects = doc.querySelectorAll('rect');
-      const svgSize = doc.querySelector('svg')?.getAttribute('width');
-      rects.forEach(rect => {
-        const fill = (rect.getAttribute('fill') || '').toLowerCase();
-        const w = rect.getAttribute('width');
-        const h = rect.getAttribute('height');
-        if (
-          fill === '#ffffff' || fill === 'white' || fill === 'transparent' || fill === '#00000000' ||
-          w === '100%' || h === '100%' ||
-          (svgSize && w === svgSize && h === svgSize)
-        ) {
-          rect.parentNode.removeChild(rect);
-          bgRemoved = true;
-        }
-      });
-      svgStr = new XMLSerializer().serializeToString(doc.documentElement);
-    }
-
-    console.log(`Background layer detected and removed: ${bgRemoved}`);
-
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `${qrData.name || 'qrcode'}.svg`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleDownloadSVG = () => downloadQRSvg(qrData);
 
   return (
     <div className="space-y-4">
@@ -212,55 +165,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
     link.click();
   };
 
-  const handleDownloadSVG = async () => {
-    const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
-    const fgCol = dc.foreground_color || '#000000';
-    const bgCol = transparent ? '#00000000' : (dc.background_color || '#ffffff');
-
-    let content = qrData.content || '';
-    if (qrData.type === 'dynamic' && qrData.short_code) {
-      content = `${window.location.origin}/r?code=${qrData.short_code}`;
-    }
-
-    let svgStr = await QRCode.toString(content, {
-      type: 'svg',
-      margin: transparent ? 0 : 2,
-      color: { dark: fgCol, light: bgCol },
-      errorCorrectionLevel: 'H',
-    });
-
-    let bgRemoved = false;
-    if (transparent) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(svgStr, 'image/svg+xml');
-      const rects = doc.querySelectorAll('rect');
-      const svgSize = doc.querySelector('svg')?.getAttribute('width');
-      rects.forEach(rect => {
-        const fill = (rect.getAttribute('fill') || '').toLowerCase();
-        const w = rect.getAttribute('width');
-        const h = rect.getAttribute('height');
-        if (
-          fill === '#ffffff' || fill === 'white' || fill === 'transparent' || fill === '#00000000' ||
-          w === '100%' || h === '100%' ||
-          (svgSize && w === svgSize && h === svgSize)
-        ) {
-          rect.parentNode.removeChild(rect);
-          bgRemoved = true;
-        }
-      });
-      svgStr = new XMLSerializer().serializeToString(doc.documentElement);
-    }
-
-    console.log(`Background layer detected and removed: ${bgRemoved}`);
-
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `${qrData.name || 'qrcode'}.svg`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleDownloadSVG = () => downloadQRSvg(qrData);
 
   if (!qrData) {
     return (
