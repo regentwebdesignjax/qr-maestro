@@ -10,11 +10,11 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, FolderInput, Folder } from 'lucide-react';
+import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, FolderInput, Folder, FileImage, FileCode2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { downloadQRPng } from '@/utils/qrExport';
+import { downloadQRPng, downloadQRSvg } from '@/utils/qrExport';
 
 const formatContentType = (type) => ({ url: 'URL', text: 'Text', wifi: 'WiFi', vcard: 'vCard' }[type] || type);
 
@@ -209,9 +209,31 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
                       <Link to={'/ViewQR?id=' + qr.id}>
                         <Button variant="ghost" size="sm"><ExternalLink className="w-4 h-4" /></Button>
                       </Link>
-                      <Button variant="ghost" size="sm" onClick={() => handleDownload(qr)} title="Download">
-                        <Download className="w-4 h-4 text-primary" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" title="Download">
+                            <Download className="w-4 h-4 text-primary" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Download as</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => downloadQRPng(qr)} className="cursor-pointer">
+                            <FileImage className="w-4 h-4 mr-2 text-blue-500" />
+                            <div>
+                              <p className="font-medium">PNG</p>
+                              <p className="text-xs text-muted-foreground">1024×1024 — best for general use</p>
+                            </div>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => downloadQRSvg(qr)} className="cursor-pointer">
+                            <FileCode2 className="w-4 h-4 mr-2 text-purple-500" />
+                            <div>
+                              <p className="font-medium">SVG</p>
+                              <p className="text-xs text-muted-foreground">Scalable — best for print &amp; design</p>
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Button variant="ghost" size="sm" onClick={() => { if (confirm('Delete this QR code?')) onDelete(qr.id); }}>
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
