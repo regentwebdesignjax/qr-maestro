@@ -53,11 +53,35 @@ function ensureHttps(url) {
   return 'https://' + trimmed;
 }
 
-function generateSocialContent(social_data, custom_platforms = []) {
-  const platforms = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
-  const standard = platforms.filter((p) => social_data[p]).map((p) => `${p}:${ensureHttps(social_data[p])}`);
-  const custom = custom_platforms.filter(c => c.label && c.url).map(c => `custom_${c.label}:${ensureHttps(c.url)}`);
-  return [...standard, ...custom].join('\n');
+const SOCIAL_PLATFORMS = [
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'x', label: 'X (Twitter)' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'threads', label: 'Threads' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'rss', label: 'RSS Feed' },
+  { value: 'podcast', label: 'Podcast' },
+  { value: 'website', label: 'Website' },
+  { value: 'blog', label: 'Blog' },
+  { value: 'other', label: 'Other' },
+];
+
+const KNOWN_PLATFORMS = new Set(['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog']);
+
+function generateSocialContent(socialLinks) {
+  return socialLinks
+    .filter(link => link.platform && link.url)
+    .map(link => {
+      const url = ensureHttps(link.url);
+      if (link.platform === 'other' && link.customName) return `custom_${link.customName}:${url}`;
+      if (KNOWN_PLATFORMS.has(link.platform)) return `${link.platform}:${url}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
 }
 
 function generateWifiContent(wifi_data) {
@@ -120,10 +144,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     };
     
     let wifi = { ssid: '', password: '', encryption: 'WPA' };
-    let custom = [];
+    let socialLinks = [];
     let bc = {};
     let vcard = {};
-    let social = {};
 
     if (initialData.content_type === 'wifi' && initialData.content) {
       const ssid = initialData.content.match(/S:([^;]+)/)?.[1] || '';
@@ -144,21 +167,25 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     } else if (initialData.content_type === 'social' && initialData.content) {
       const lines = initialData.content.split('\n');
       lines.forEach(line => {
-        const [platform, url] = line.split(':');
-        if (platform && url && !platform.startsWith('custom_')) {
-          social[platform] = url;
-        } else if (platform && url && platform.startsWith('custom_')) {
-          custom.push({ label: platform.replace('custom_', ''), url });
+        const colonIdx = line.indexOf(':');
+        if (colonIdx === -1) return;
+        const platform = line.substring(0, colonIdx);
+        const url = line.substring(colonIdx + 1);
+        if (!platform || !url) return;
+        if (platform.startsWith('custom_')) {
+          socialLinks.push({ platform: 'other', customName: platform.replace('custom_', ''), url });
+        } else {
+          socialLinks.push({ platform, customName: '', url });
         }
       });
     }
 
-    return { wifi, custom, bc, vcard, social };
+    return { wifi, socialLinks, bc, vcard };
   };
 
   const initialParsed = parseInitialData();
   const [wifiData, setWifiData] = useState(initialParsed.wifi);
-  const [customPlatforms, setCustomPlatforms] = useState(initialParsed.custom);
+  const [socialLinks, setSocialLinks] = useState(initialParsed.socialLinks);
   const [bcData, setBcData] = useState(initialParsed.bc);
 
   const [formData, setFormData] = useState({
@@ -168,7 +195,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     content: initialData?.content || '',
     short_code: initialData?.short_code || null,
     vcard_data: initialParsed.vcard,
-    social_data: initialParsed.social,
     design_config: {
       foreground_color: '#000000',
       background_color: '#ffffff',
@@ -597,147 +623,60 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               }
                 {formData.content_type === 'social' &&
               <div className="space-y-3">
-                    <p className="text-xs text-gray-500">Enter the full URL to your profile, including <span className="font-medium">https://</span></p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input id="social-facebook" placeholder="https://facebook.com/yourpage" value={formData.social_data?.facebook || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, facebook: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-instagram" placeholder="https://instagram.com/yourhandle" value={formData.social_data?.instagram || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, instagram: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-x" placeholder="https://x.com/yourhandle" value={formData.social_data?.x || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, x: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-linkedin" placeholder="https://linkedin.com/in/yourprofile" value={formData.social_data?.linkedin || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, linkedin: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-youtube" placeholder="https://youtube.com/@yourchannel" value={formData.social_data?.youtube || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, youtube: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-tiktok" placeholder="https://tiktok.com/@yourhandle" value={formData.social_data?.tiktok || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, tiktok: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-threads" placeholder="https://threads.net/@yourhandle" value={formData.social_data?.threads || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, threads: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-telegram" placeholder="https://t.me/yourhandle" value={formData.social_data?.telegram || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, telegram: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-rss" placeholder="https://yourblog.com/feed" value={formData.social_data?.rss || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, rss: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-podcast" placeholder="https://podcasts.apple.com/..." value={formData.social_data?.podcast || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, podcast: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-website" placeholder="https://yourwebsite.com" value={formData.social_data?.website || ''}
-                  onChange={(e) => {
-                    const newData = { ...formData.social_data, website: e.target.value };
-                    setFormData((prev) => ({ ...prev, social_data: newData }));
-                    const content = generateSocialContent(newData);
-                    handleChange('content', content);
-                    triggerPreview({ content });
-                  }} />
-                      <Input id="social-blog" placeholder="https://yourblog.com" value={formData.social_data?.blog || ''}
-                      onChange={(e) => {
-                      const newData = { ...formData.social_data, blog: e.target.value };
-                      setFormData((prev) => ({ ...prev, social_data: newData }));
-                      const content = generateSocialContent(newData, customPlatforms);
-                      handleChange('content', content);
-                      triggerPreview({ content });
-                      }} />
+                    {socialLinks.map((link, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex gap-2 items-center">
+                          <Select value={link.platform} onValueChange={(val) => {
+                            const next = socialLinks.map((l, i) => i === idx ? { ...l, platform: val, customName: val !== 'other' ? '' : l.customName } : l);
+                            setSocialLinks(next);
+                            const content = generateSocialContent(next);
+                            handleChange('content', content);
+                            triggerPreview({ content });
+                          }}>
+                            <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Platform" /></SelectTrigger>
+                            <SelectContent>
+                              {SOCIAL_PLATFORMS.map(p => (
+                                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input placeholder="https://..." value={link.url || ''} className="flex-1"
+                            onChange={(e) => {
+                              const next = socialLinks.map((l, i) => i === idx ? { ...l, url: e.target.value } : l);
+                              setSocialLinks(next);
+                              const content = generateSocialContent(next);
+                              handleChange('content', content);
+                              triggerPreview({ content });
+                            }} />
+                          <Button type="button" variant="ghost" size="icon" className="shrink-0"
+                            onClick={() => {
+                              const next = socialLinks.filter((_, i) => i !== idx);
+                              setSocialLinks(next);
+                              const content = generateSocialContent(next);
+                              handleChange('content', content);
+                              triggerPreview({ content });
+                            }}>
+                            <Trash2 className="w-4 h-4 text-gray-400" />
+                          </Button>
+                        </div>
+                        {link.platform === 'other' && (
+                          <Input placeholder="Platform name" value={link.customName || ''} className="w-40"
+                            onChange={(e) => {
+                              const next = socialLinks.map((l, i) => i === idx ? { ...l, customName: e.target.value } : l);
+                              setSocialLinks(next);
+                              const content = generateSocialContent(next);
+                              handleChange('content', content);
+                              triggerPreview({ content });
+                            }} />
+                        )}
                       </div>
-
-                      {/* Custom Platforms */}
-                      {customPlatforms.length > 0 && (
-                      <div className="space-y-2">
-                       {customPlatforms.map((cp, idx) => (
-                         <div key={idx} className="flex gap-2 items-center">
-                           <Input placeholder="Label" value={cp.label}
-                             onChange={(e) => {
-                               const next = customPlatforms.map((c, i) => i === idx ? { ...c, label: e.target.value } : c);
-                               setCustomPlatforms(next);
-                               const content = generateSocialContent(formData.social_data, next);
-                               handleChange('content', content);
-                               triggerPreview({ content });
-                             }} className="w-28 shrink-0" />
-                           <Input placeholder="URL" value={cp.url}
-                             onChange={(e) => {
-                               const next = customPlatforms.map((c, i) => i === idx ? { ...c, url: e.target.value } : c);
-                               setCustomPlatforms(next);
-                               const content = generateSocialContent(formData.social_data, next);
-                               handleChange('content', content);
-                               triggerPreview({ content });
-                             }} />
-                           <Button type="button" variant="ghost" size="icon" className="shrink-0"
-                             onClick={() => {
-                               const next = customPlatforms.filter((_, i) => i !== idx);
-                               setCustomPlatforms(next);
-                               const content = generateSocialContent(formData.social_data, next);
-                               handleChange('content', content);
-                               triggerPreview({ content });
-                             }}>
-                             <Trash2 className="w-4 h-4 text-gray-400" />
-                           </Button>
-                         </div>
-                       ))}
-                      </div>
-                      )}
-                      <Button type="button" variant="outline" size="sm"
-                      onClick={() => setCustomPlatforms(prev => [...prev, { label: '', url: '' }])}>
-                      <Plus className="w-3 h-3 mr-1" /> Add Custom Platform
-                      </Button>
-                      </div>
-                      }
+                    ))}
+                    <Button type="button" variant="outline" size="sm"
+                      onClick={() => setSocialLinks(prev => [...prev, { platform: '', customName: '', url: '' }])}>
+                      <Plus className="w-3 h-3 mr-1" /> Add Platform
+                    </Button>
+                  </div>
+                }
                 {formData.content_type === 'coupon' &&
               <Input id="content" placeholder="e.g., SAVE20OFF" value={formData.content}
               onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
@@ -984,8 +923,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               </Alert>
             }
 
-            {/* Landing Page Branding — for all dynamic content types except business_card (has its own branding) */}
-            {formData.content_type !== 'business_card' && formData.type === 'dynamic' && (
+            {/* Landing Page Branding — for dynamic types that have a landing page (not url/business_card which redirect directly) */}
+            {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.type === 'dynamic' && (
               <div className="border rounded-xl p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="font-semibold text-sm">Landing Page Branding</Label>
