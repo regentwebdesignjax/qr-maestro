@@ -1,9 +1,24 @@
 import React from 'react';
 
+const FONT_OPTIONS = [
+  { value: 'system', label: 'System (Default)', font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+  { value: 'georgia', label: 'Georgia (Serif)', font: 'Georgia, serif' },
+  { value: 'verdana', label: 'Verdana', font: 'Verdana, sans-serif' },
+  { value: 'trebuchet', label: 'Trebuchet MS', font: '"Trebuchet MS", sans-serif' },
+  { value: 'palatino', label: 'Palatino (Serif)', font: '"Palatino Linotype", "Book Antiqua", Palatino, serif' },
+  { value: 'courier', label: 'Courier (Mono)', font: '"Courier New", monospace' },
+  { value: 'times', label: 'Times New Roman (Serif)', font: '"Times New Roman", serif' },
+  { value: 'arial', label: 'Arial', font: 'Arial, sans-serif' },
+];
+
 export default function TicketCouponDisplay({ couponData, branded, design_config }) {
   const themeColor = design_config?.landing_theme_color || '#BB3F27';
   const btnBg = design_config?.landing_button_bg || design_config?.cta_button_color || themeColor;
   const btnText = design_config?.landing_button_text || '#ffffff';
+  const fontFamily = design_config?.coupon_font || 'system';
+
+  const selectedFont = FONT_OPTIONS.find(f => f.value === fontFamily);
+  const fontStyle = selectedFont?.font || FONT_OPTIONS[0].font;
 
   const darken = (hex, pct = 15) => {
     const c = hex.replace('#', '');
@@ -32,88 +47,134 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
     buttonText = couponData.buttonText || 'Redeem Now';
   }
 
-
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Ticket Shape Container */}
-      <div className="relative">
-        {/* SVG for ticket shape with perforation */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 400 300"
-          preserveAspectRatio="xMidYMid slice"
-          style={{ pointerEvents: 'none' }}
-        >
-          <defs>
-            <pattern id="perforation" patternUnits="userSpaceOnUse" width="12" height="12">
-              <circle cx="6" cy="6" r="2" fill="#ddd" opacity="0.5" />
-            </pattern>
-          </defs>
-
-          {/* Main ticket background */}
-          <rect width="400" height="300" rx="8" fill="#f8f8f8" stroke={themeColor} strokeWidth="2" />
-
-          {/* Perforation line (vertical divider) */}
-          <line x1="180" y1="20" x2="180" y2="280" stroke="url(#perforation)" strokeWidth="2" strokeDasharray="8,4" />
-
-          {/* Left section highlight */}
-          <rect x="10" y="10" width="160" height="280" rx="6" fill="none" stroke={themeColor} strokeWidth="1" opacity="0.2" />
-        </svg>
-
-        {/* Content Container */}
-        <div className="relative p-6 h-80 flex flex-col md:flex-row">
-          {/* Left Section - Coupon Code */}
-          <div className="flex-1 flex flex-col items-center justify-center text-center md:border-r-2 md:border-dashed md:border-gray-300 md:pr-6 pb-6 md:pb-0">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-widest font-semibold text-gray-500">Use Code</p>
-              <p className="text-5xl md:text-6xl font-black" style={{ color: themeColor }}>
+    <div className="w-full flex items-center justify-center p-4">
+      {/* Ticket Container - Responsive */}
+      <div className="w-full max-w-2xl" style={{ fontFamily: fontStyle }}>
+        {/* Mobile Layout (stacked) */}
+        <div className="lg:hidden">
+          {/* Ticket Box */}
+          <div
+            className="rounded-lg p-6 space-y-4 border-2"
+            style={{
+              borderColor: themeColor,
+              backgroundColor: '#f8f8f8',
+            }}
+          >
+            {/* Code Section */}
+            <div className="text-center border-b-2 border-dashed pb-4" style={{ borderColor: themeColor }}>
+              <p className="text-xs uppercase tracking-widest font-semibold text-gray-500 mb-2">Use Code</p>
+              <p
+                className="text-4xl font-black break-words"
+                style={{ color: themeColor }}
+              >
                 {code}
               </p>
             </div>
-          </div>
 
-          {/* Right Section - Description & Button */}
-          <div className="flex-1 flex flex-col items-center justify-between md:pl-6 md:items-start">
-            {/* Description */}
-            {description && (
-              <div
-                className="prose prose-sm max-w-none text-gray-700 text-sm md:text-base mb-4 line-clamp-3"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            )}
+            {/* Description & Button Section */}
+            <div className="space-y-4">
+              {description && (
+                <div
+                  className="prose prose-sm max-w-none text-gray-700 text-sm"
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              )}
 
-            {/* Redemption Button */}
-            {redemptionUrl && (
-              <a
-                href={redemptionUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full md:w-auto px-6 py-3 rounded-lg font-semibold text-center transition-all hover:shadow-lg"
-                style={{
-                  backgroundColor: btnBg,
-                  color: btnText,
-                }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
-              >
-                {buttonText}
-              </a>
-            )}
+              {redemptionUrl && (
+                <a
+                  href={redemptionUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full px-4 py-3 rounded-lg font-semibold text-center transition-all hover:shadow-lg"
+                  style={{
+                    backgroundColor: btnBg,
+                    color: btnText,
+                  }}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
+                  onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
+                >
+                  {buttonText}
+                </a>
+              )}
 
-            {/* No URL message */}
-            {!redemptionUrl && description && (
-              <div className="text-xs text-gray-500 italic">
-                No redemption link provided
-              </div>
-            )}
+              {!redemptionUrl && description && (
+                <div className="text-xs text-gray-500 italic text-center">
+                  No redemption link provided
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Helpful text below ticket */}
-      <div className="mt-6 text-center text-xs text-gray-500">
-        <p>Take a screenshot or note the code above</p>
+        {/* Desktop Layout (side-by-side ticket) */}
+        <div className="hidden lg:block">
+          <div
+            className="rounded-lg border-2 overflow-hidden"
+            style={{ borderColor: themeColor, backgroundColor: '#f8f8f8' }}
+          >
+            <div className="flex">
+              {/* Left Section - Code */}
+              <div
+                className="flex-1 flex flex-col items-center justify-center p-8 border-r-2 border-dashed min-h-80"
+                style={{ borderColor: themeColor }}
+              >
+                <div className="text-center w-full">
+                  <p className="text-xs uppercase tracking-widest font-semibold text-gray-500 mb-3">Use Code</p>
+                  <p
+                    className="text-6xl font-black break-words"
+                    style={{ color: themeColor }}
+                  >
+                    {code}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Section - Description & Button */}
+              <div className="flex-1 flex flex-col justify-between p-8">
+                {/* Description */}
+                {description && (
+                  <div
+                    className="prose prose-sm max-w-none text-gray-700 text-sm mb-4 line-clamp-4"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                  />
+                )}
+
+                {/* Button or No URL Message */}
+                {redemptionUrl ? (
+                  <a
+                    href={redemptionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 rounded-lg font-semibold text-center transition-all hover:shadow-lg self-start"
+                    style={{
+                      backgroundColor: btnBg,
+                      color: btnText,
+                    }}
+                    onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
+                    onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
+                  >
+                    {buttonText}
+                  </a>
+                ) : (
+                  description && (
+                    <div className="text-xs text-gray-500 italic">
+                      No redemption link provided
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Helpful text below ticket */}
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>Take a screenshot or note the code above</p>
+        </div>
       </div>
     </div>
   );
 }
+
+export { FONT_OPTIONS };

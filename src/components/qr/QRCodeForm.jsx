@@ -12,6 +12,7 @@ import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { FONT_OPTIONS } from './TicketCouponDisplay';
 
 const CONTENT_TYPES = [
 { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
@@ -759,6 +760,46 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     />
                   </div>
                 )}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="font-semibold text-sm mb-4 text-gray-700">Brand Customization</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="coupon-brand-color">Brand Color</Label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="coupon-brand-color"
+                          type="color"
+                          value={formData.design_config?.landing_theme_color || '#BB3F27'}
+                          onChange={(e) => {
+                            handleDesignChangeAndPreview('landing_theme_color', e.target.value);
+                          }}
+                          className="h-10 w-20 rounded cursor-pointer"
+                        />
+                        <span className="text-sm text-gray-600">{formData.design_config?.landing_theme_color || '#BB3F27'}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Choose a color for the ticket border, code, and button</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="coupon-font">Font Style</Label>
+                      <Select
+                        value={formData.design_config?.coupon_font || 'system'}
+                        onValueChange={(v) => handleDesignChangeAndPreview('coupon_font', v)}
+                      >
+                        <SelectTrigger id="coupon-font" className="w-full">
+                          <SelectValue placeholder="Choose a font" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FONT_OPTIONS.map((font) => (
+                            <SelectItem key={font.value} value={font.value}>
+                              {font.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">Select a web-safe font for your coupon ticket</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               }
                 {formData.content_type === 'image' &&
