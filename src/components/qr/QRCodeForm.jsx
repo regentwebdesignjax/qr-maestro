@@ -694,11 +694,11 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                   <Input
                     id="coupon-code"
                     placeholder="e.g., SAVE20OFF"
-                    value={couponData.code}
+                    value={couponData?.code || ''}
                     onChange={(e) => {
                       const newCode = e.target.value;
                       setCouponData(prev => ({ ...prev, code: newCode }));
-                      const couponJson = JSON.stringify({ code: newCode, description: couponData.description, redemptionUrl: couponData.redemptionUrl, buttonText: couponData.buttonText });
+                      const couponJson = JSON.stringify({ code: newCode, description: couponData?.description || '', redemptionUrl: couponData?.redemptionUrl || '', buttonText: couponData?.buttonText || 'Redeem Now' });
                       handleChange('content', couponJson);
                       triggerPreview({ content: couponJson });
                     }}
@@ -707,10 +707,10 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 <div>
                   <Label htmlFor="coupon-description">Description * (Rich Text)</Label>
                   <ReactQuill
-                    value={couponData.description}
+                    value={couponData?.description || ''}
                     onChange={(html) => {
                       setCouponData(prev => ({ ...prev, description: html }));
-                      const couponJson = JSON.stringify({ code: couponData.code, description: html, redemptionUrl: couponData.redemptionUrl, buttonText: couponData.buttonText });
+                      const couponJson = JSON.stringify({ code: couponData?.code || '', description: html, redemptionUrl: couponData?.redemptionUrl || '', buttonText: couponData?.buttonText || 'Redeem Now' });
                       handleChange('content', couponJson);
                       triggerPreview({ content: couponJson });
                     }}
@@ -732,27 +732,27 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     id="coupon-url"
                     type="url"
                     placeholder="https://example.com/redeem"
-                    value={couponData.redemptionUrl}
+                    value={couponData?.redemptionUrl || ''}
                     onChange={(e) => {
                       const newUrl = e.target.value;
                       setCouponData(prev => ({ ...prev, redemptionUrl: newUrl }));
-                      const couponJson = JSON.stringify({ code: couponData.code, description: couponData.description, redemptionUrl: newUrl, buttonText: couponData.buttonText });
+                      const couponJson = JSON.stringify({ code: couponData?.code || '', description: couponData?.description || '', redemptionUrl: newUrl, buttonText: couponData?.buttonText || 'Redeem Now' });
                       handleChange('content', couponJson);
                       triggerPreview({ content: couponJson });
                     }}
                   />
                 </div>
-                {couponData.redemptionUrl && (
+                {(couponData?.redemptionUrl) && (
                   <div>
                     <Label htmlFor="coupon-button-text">Button Text</Label>
                     <Input
                       id="coupon-button-text"
                       placeholder="Redeem Now"
-                      value={couponData.buttonText}
+                      value={couponData?.buttonText || 'Redeem Now'}
                       onChange={(e) => {
                         const newText = e.target.value || 'Redeem Now';
                         setCouponData(prev => ({ ...prev, buttonText: newText }));
-                        const couponJson = JSON.stringify({ code: couponData.code, description: couponData.description, redemptionUrl: couponData.redemptionUrl, buttonText: newText });
+                        const couponJson = JSON.stringify({ code: couponData?.code || '', description: couponData?.description || '', redemptionUrl: couponData?.redemptionUrl || '', buttonText: newText });
                         handleChange('content', couponJson);
                         triggerPreview({ content: couponJson });
                       }}
