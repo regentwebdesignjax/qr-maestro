@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { renderQR, renderQRToCanvas, downloadQRSvg } from '@/utils/qrExport';
 
 import BusinessCardPreview from './BusinessCardPreview';
+import TicketCouponDisplay from './TicketCouponDisplay';
 
 // ─── Tab Toggle for Business Card ─────────────────────────────────────────────
 
@@ -129,14 +130,22 @@ export default function QRCodePreview({ qrData, currentStep }) {
   const canvasRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [bcTab, setBcTab] = useState('landing');
+  const [couponTab, setCouponTab] = useState('landing');
 
   // Auto-switch tab based on step
   useEffect(() => {
-    if (qrData?.content_type !== 'business_card') return;
-    if (currentStep === 2) {
-      setBcTab('qr');
-    } else {
-      setBcTab('landing');
+    if (qrData?.content_type === 'business_card') {
+      if (currentStep === 2) {
+        setBcTab('qr');
+      } else {
+        setBcTab('landing');
+      }
+    } else if (qrData?.content_type === 'coupon') {
+      if (currentStep === 2) {
+        setCouponTab('qr');
+      } else {
+        setCouponTab('landing');
+      }
     }
   }, [currentStep, qrData?.content_type]);
 
@@ -187,6 +196,27 @@ export default function QRCodePreview({ qrData, currentStep }) {
         <PreviewToggle active={bcTab} onChange={setBcTab} />
         {bcTab === 'landing' ? (
           <BusinessCardPreview data={{ ...bcData, design_config: qrData.design_config }} />
+        ) : (
+          <QRCanvasView qrData={qrData} />
+        )}
+      </div>
+    );
+  }
+
+  // ── Coupon: tabbed view ──
+  if (qrData.content_type === 'coupon') {
+    let couponData = {};
+    try {
+      couponData = JSON.parse(qrData.content || '{}');
+    } catch {
+      // Legacy format: just the coupon code
+      couponData = typeof qrData.content === 'string' ? { code: qrData.content } : {};
+    }
+    return (
+      <div>
+        <PreviewToggle active={couponTab} onChange={setCouponTab} />
+        {couponTab === 'landing' ? (
+          <TicketCouponDisplay couponData={couponData} design_config={qrData.design_config} />
         ) : (
           <QRCanvasView qrData={qrData} />
         )}
