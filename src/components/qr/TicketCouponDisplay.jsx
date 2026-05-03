@@ -48,129 +48,85 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
   }
 
   return (
-    <div className="w-full flex items-center justify-center p-4">
-      {/* Ticket Container - Responsive */}
-      <div className="w-full max-w-2xl" style={{ fontFamily: fontStyle }}>
-        {/* Mobile Layout (stacked) */}
-        <div className="lg:hidden">
-          {/* Ticket Box */}
-          <div
-            className="rounded-lg p-6 space-y-4 border-2"
-            style={{
-              borderColor: themeColor,
-              backgroundColor: '#f8f8f8',
-            }}
-          >
-            {/* Code Section */}
-            <div className="text-center border-b-2 border-dashed pb-4" style={{ borderColor: themeColor }}>
-              <p className="text-xs uppercase tracking-widest font-semibold text-gray-500 mb-2">Use Code</p>
-              <p
-                className="text-4xl font-black break-words"
-                style={{ color: themeColor }}
-              >
-                {code}
-              </p>
-            </div>
-
-            {/* Description & Button Section */}
-            <div className="space-y-4">
-              {description && (
-                <div
-                  className="prose prose-sm max-w-none text-gray-700 text-sm"
-                  dangerouslySetInnerHTML={{ __html: description }}
-                />
-              )}
-
-              {redemptionUrl && (
-                <a
-                  href={redemptionUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full px-4 py-3 rounded-lg font-semibold text-center transition-all hover:shadow-lg"
-                  style={{
-                    backgroundColor: btnBg,
-                    color: btnText,
-                  }}
-                  onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
-                  onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
-                >
-                  {buttonText}
-                </a>
-              )}
-
-              {!redemptionUrl && description && (
-                <div className="text-xs text-gray-500 italic text-center">
-                  No redemption link provided
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="w-full flex items-center justify-center p-4 bg-gray-50 min-h-screen">
+      {/* Premium Mobile-First Vertical Ticket */}
+      <div
+        className="w-full max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white"
+        style={{ fontFamily: fontStyle }}
+      >
+        {/* Top Section - Description & Messaging */}
+        <div
+          className="px-6 pt-8 pb-6 text-center"
+          style={{ backgroundColor: '#f8f8f8' }}
+        >
+          {description && (
+            <div
+              className="prose prose-sm max-w-none text-gray-700"
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          )}
+          {!description && (
+            <p className="text-gray-600 text-sm">Special Offer</p>
+          )}
         </div>
 
-        {/* Desktop Layout (side-by-side ticket) */}
-        <div className="hidden lg:block">
-          <div
-            className="rounded-lg border-2 overflow-hidden"
-            style={{ borderColor: themeColor, backgroundColor: '#f8f8f8' }}
+        {/* Middle Section - Code Display */}
+        <div className="px-6 py-8 text-center bg-white">
+          <p className="text-xs uppercase tracking-widest font-semibold text-gray-500 mb-4">
+            Use Code
+          </p>
+          <p
+            className="text-5xl font-black break-words leading-tight"
+            style={{ color: themeColor }}
           >
-            <div className="flex">
-              {/* Left Section - Code */}
-              <div
-                className="flex-1 flex flex-col items-center justify-center p-8 border-r-2 border-dashed min-h-80"
-                style={{ borderColor: themeColor }}
-              >
-                <div className="text-center w-full">
-                  <p className="text-xs uppercase tracking-widest font-semibold text-gray-500 mb-3">Use Code</p>
-                  <p
-                    className="text-6xl font-black break-words"
-                    style={{ color: themeColor }}
-                  >
-                    {code}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Section - Description & Button */}
-              <div className="flex-1 flex flex-col justify-between p-8">
-                {/* Description */}
-                {description && (
-                  <div
-                    className="prose prose-sm max-w-none text-gray-700 text-sm mb-4 line-clamp-4"
-                    dangerouslySetInnerHTML={{ __html: description }}
-                  />
-                )}
-
-                {/* Button or No URL Message */}
-                {redemptionUrl ? (
-                  <a
-                    href={redemptionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 rounded-lg font-semibold text-center transition-all hover:shadow-lg self-start"
-                    style={{
-                      backgroundColor: btnBg,
-                      color: btnText,
-                    }}
-                    onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
-                    onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
-                  >
-                    {buttonText}
-                  </a>
-                ) : (
-                  description && (
-                    <div className="text-xs text-gray-500 italic">
-                      No redemption link provided
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
+            {code}
+          </p>
         </div>
 
-        {/* Helpful text below ticket */}
-        <div className="mt-6 text-center text-xs text-gray-500">
-          <p>Take a screenshot or note the code above</p>
+        {/* Perforated Edge Divider */}
+        <div className="px-6">
+          <svg className="w-full h-8" viewBox="0 0 300 30" preserveAspectRatio="none">
+            <defs>
+              <pattern id="perforation" patternUnits="userSpaceOnUse" width="20" height="30">
+                <circle cx="10" cy="15" r="2.5" fill={themeColor} opacity="0.3" />
+              </pattern>
+            </defs>
+            <rect width="300" height="30" fill="url(#perforation)" />
+            <line x1="0" y1="15" x2="300" y2="15" stroke={themeColor} strokeWidth="0.5" opacity="0.2" />
+          </svg>
+        </div>
+
+        {/* Bottom Section - Button Area */}
+        {redemptionUrl ? (
+          <div className="px-6 py-8">
+            <a
+              href={redemptionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-6 py-4 rounded-xl font-bold text-center transition-all hover:shadow-lg uppercase tracking-wide text-sm"
+              style={{
+                backgroundColor: btnBg,
+                color: btnText,
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = btnBgHover)}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = btnBg)}
+            >
+              {buttonText}
+            </a>
+          </div>
+        ) : (
+          <div className="px-6 py-8 text-center">
+            <div className="text-xs text-gray-500 italic">
+              No redemption link provided
+            </div>
+          </div>
+        )}
+
+        {/* Footer Note */}
+        <div className="px-6 pb-6 text-center">
+          <p className="text-xs text-gray-400">
+            Take a screenshot or share this code
+          </p>
         </div>
       </div>
     </div>
