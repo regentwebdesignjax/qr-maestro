@@ -13,7 +13,6 @@ export default function Pricing() {
   const [loading, setLoading] = useState(false);
   const [totalSeats, setTotalSeats] = useState(10);
   const [inputSeats, setInputSeats] = useState('10');
-  const [promoCode, setPromoCode] = useState('');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,7 +41,7 @@ export default function Pricing() {
     setLoading(true);
     base44.analytics.track({
       eventName: 'upgrade_checkout_initiated',
-      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats, promo_code: promoCode },
+      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats },
     });
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
@@ -50,13 +49,10 @@ export default function Pricing() {
         user_id: user.id,
         email: user.email,
         total_seats: totalSeats,
-        promo_code: promoCode || undefined,
       });
 
       if (response.data.url) {
         window.location.href = response.data.url;
-      } else if (response.data.error) {
-        alert(`Promo code error: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -216,17 +212,7 @@ export default function Pricing() {
                   <span>Priority Support</span>
                 </li>
               </ul>
-              <div className="space-y-3 pt-2">
-                <div>
-                  <Label className="text-xs text-gray-600 mb-1 block">Promo Code (Optional)</Label>
-                  <Input
-                    type="text"
-                    placeholder="Enter promo code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    className="w-full text-sm"
-                  />
-                </div>
+              <div className="pt-2">
                 {isPro && user?.subscription_period === 'monthly' ? (
                   <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
@@ -319,17 +305,7 @@ export default function Pricing() {
                   <span>Priority Support</span>
                 </li>
               </ul>
-              <div className="space-y-3 pt-2">
-                <div>
-                  <Label className="text-xs text-gray-600 mb-1 block">Promo Code (Optional)</Label>
-                  <Input
-                    type="text"
-                    placeholder="Enter promo code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    className="w-full text-sm"
-                  />
-                </div>
+              <div className="pt-2">
                 {isPro && user?.subscription_period === 'annual' ? (
                   <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
