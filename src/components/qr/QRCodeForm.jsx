@@ -10,6 +10,8 @@ import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Sa
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const CONTENT_TYPES = [
 { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
@@ -146,6 +148,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     let socialLinks = [];
     let bc = {};
     let vcard = {};
+    let coupon = { code: '', description: '', redemptionUrl: '', buttonText: 'Redeem Now' };
 
     if (initialData.content_type === 'wifi' && initialData.content) {
       const ssid = initialData.content.match(/S:([^;]+)/)?.[1] || '';
@@ -177,15 +180,23 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           socialLinks.push({ platform, customName: '', url });
         }
       });
+    } else if (initialData.content_type === 'coupon' && initialData.content) {
+      try {
+        const parsed = JSON.parse(initialData.content);
+        coupon = { code: parsed.code || '', description: parsed.description || '', redemptionUrl: parsed.redemptionUrl || '', buttonText: parsed.buttonText || 'Redeem Now' };
+      } catch {
+        coupon = { code: initialData.content, description: '', redemptionUrl: '', buttonText: 'Redeem Now' };
+      }
     }
 
-    return { wifi, socialLinks, bc, vcard };
+    return { wifi, socialLinks, bc, vcard, coupon };
   };
 
   const initialParsed = parseInitialData();
   const [wifiData, setWifiData] = useState(initialParsed.wifi);
   const [socialLinks, setSocialLinks] = useState(initialParsed.socialLinks);
   const [bcData, setBcData] = useState(initialParsed.bc);
+  const [couponData, setCouponData] = useState(initialParsed.coupon);
 
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -677,8 +688,78 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                   </div>
                 }
                 {formData.content_type === 'coupon' &&
-              <Input id="content" placeholder="e.g., SAVE20OFF" value={formData.content}
-              onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="coupon-code">Promo Code *</Label>
+                  <Input
+                    id="coupon-code"
+                    placeholder="e.g., SAVE20OFF"
+                    value={couponData.code}
+                    onChange={(e) => {
+                      const newCode = e.target.value;
+                      setCouponData(prev => ({ ...prev, code: newCode }));
+                      const couponJson = JSON.stringify({ code: newCode, description: couponData.description, redemptionUrl: couponData.redemptionUrl, buttonText: couponData.buttonText });
+                      handleChange('content', couponJson);
+                      triggerPreview({ content: couponJson });
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="coupon-description">Description * (Rich Text)</Label>
+                  <ReactQuill
+                    value={couponData.description}
+                    onChange={(html) => {
+                      setCouponData(prev => ({ ...prev, description: html }));
+                      const couponJson = JSON.stringify({ code: couponData.code, description: html, redemptionUrl: couponData.redemptionUrl, buttonText: couponData.buttonText });
+                      handleChange('content', couponJson);
+                      triggerPreview({ content: couponJson });
+                    }}
+                    modules={{
+                      toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['link'],
+                      ]
+                    }}
+                    theme="snow"
+                    className="bg-white"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Format the offer details (e.g., "Get 20% off your purchase")</p>
+                </div>
+                <div>
+                  <Label htmlFor="coupon-url">Redemption URL (Optional)</Label>
+                  <Input
+                    id="coupon-url"
+                    type="url"
+                    placeholder="https://example.com/redeem"
+                    value={couponData.redemptionUrl}
+                    onChange={(e) => {
+                      const newUrl = e.target.value;
+                      setCouponData(prev => ({ ...prev, redemptionUrl: newUrl }));
+                      const couponJson = JSON.stringify({ code: couponData.code, description: couponData.description, redemptionUrl: newUrl, buttonText: couponData.buttonText });
+                      handleChange('content', couponJson);
+                      triggerPreview({ content: couponJson });
+                    }}
+                  />
+                </div>
+                {couponData.redemptionUrl && (
+                  <div>
+                    <Label htmlFor="coupon-button-text">Button Text</Label>
+                    <Input
+                      id="coupon-button-text"
+                      placeholder="Redeem Now"
+                      value={couponData.buttonText}
+                      onChange={(e) => {
+                        const newText = e.target.value || 'Redeem Now';
+                        setCouponData(prev => ({ ...prev, buttonText: newText }));
+                        const couponJson = JSON.stringify({ code: couponData.code, description: couponData.description, redemptionUrl: couponData.redemptionUrl, buttonText: newText });
+                        handleChange('content', couponJson);
+                        triggerPreview({ content: couponJson });
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
               }
                 {formData.content_type === 'image' &&
               <div className="space-y-1">
