@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: lineItems,
+      allow_promotion_codes: true,
       success_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Dashboard?success=true`,
       cancel_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Pricing?canceled=true`,
       metadata: { user_id: user.id, period },
