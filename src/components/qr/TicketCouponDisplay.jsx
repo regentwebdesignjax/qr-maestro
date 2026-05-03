@@ -76,8 +76,8 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
             Use Code
           </p>
           <p
-            className="text-5xl font-black break-words leading-tight"
-            style={{ color: themeColor }}
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black break-words leading-tight"
+            style={{ color: themeColor, wordBreak: 'break-word', overflowWrap: 'break-word' }}
           >
             {code}
           </p>
