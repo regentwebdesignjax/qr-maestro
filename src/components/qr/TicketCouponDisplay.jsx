@@ -48,7 +48,7 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
   }
 
   return (
-    <div className="w-full flex items-center justify-center p-4 bg-gray-50 min-h-screen">
+    <div className="w-full flex items-center justify-center p-4 bg-transparent">
       {/* Premium Mobile-First Vertical Ticket */}
       <div
         className="w-full max-w-sm rounded-2xl overflow-hidden shadow-lg bg-white"
