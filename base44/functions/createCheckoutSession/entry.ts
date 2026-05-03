@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { period, total_seats } = await req.json();
+    const { period, total_seats, promo_code } = await req.json();
 
     const basePriceId = period === 'monthly'
       ? Deno.env.get('PRICE_ID_MONTHLY')
@@ -45,14 +45,32 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate promo code if provided
+    let discounts = [];
+    if (promo_code) {
+      try {
+        const promotionCode = await stripe.promotionCodes.retrieve(promo_code);
+        if (!promotionCode.active) {
+          return Response.json({ error: 'Promo code is inactive' }, { status: 400 });
+        }
+        if (promotionCode.coupon.valid === false) {
+          return Response.json({ error: 'Promo code is no longer valid' }, { status: 400 });
+        }
+        discounts = [{ promotion_code: promo_code }];
+      } catch (error) {
+        return Response.json({ error: 'Invalid promo code' }, { status: 400 });
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: lineItems,
+      discounts,
       success_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Dashboard?success=true`,
       cancel_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Pricing?canceled=true`,
-      metadata: { user_id: user.id, period },
+      metadata: { user_id: user.id, period, ...(promo_code && { promo_code }) },
     });
 
     return Response.json({ url: session.url });
