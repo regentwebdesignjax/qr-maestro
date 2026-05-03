@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Plus, Trash2, CreditCard } from 'lucide-react';
+import { Lock, Upload, X, Link2, Type, Wifi, User, ChevronRight, ChevronLeft, Save, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Plus, Trash2, CreditCard, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
+import LinkpagesForm from './LinkpagesForm';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FONT_OPTIONS } from './TicketCouponDisplay';
@@ -17,6 +18,7 @@ import { FONT_OPTIONS } from './TicketCouponDisplay';
 const CONTENT_TYPES = [
 { value: 'url', label: 'URL / Website', icon: Link2, desc: 'Link to any website or webpage', dynamicOnly: false },
 { value: 'business_card', label: 'Digital Business Card', icon: CreditCard, desc: 'Rich profile card with headshot & socials' },
+{ value: 'linkpages', label: 'Linkpages', icon: Layout, desc: 'Create a branded landing page', dynamicOnly: true, proOnly: true },
 { value: 'text', label: 'Plain Text', icon: Type, desc: 'Simple text message or information', dynamicOnly: true },
 { value: 'wifi', label: 'WiFi Credentials', icon: Wifi, desc: 'Let people connect to your network', dynamicOnly: true },
 { value: 'vcard', label: 'vCard Contact', icon: User, desc: 'Share your contact information', dynamicOnly: true },
@@ -143,13 +145,53 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       socialLinks: [],
       bc: {},
       vcard: {},
+      linkpage: {
+        profile_image: '',
+        title: '',
+        description: '',
+        links: [{ button_text: '', button_url: '' }],
+        design: {
+          background_type: 'solid',
+          background_color: '#ffffff',
+          background_image: '',
+          font_family: 'open_sans',
+          title_color: '#000000',
+          description_color: '#666666',
+          button_style: 'rounded',
+          button_color: '#2f3f7f',
+          button_text_color: '#ffffff'
+        },
+        linkpage_name: '',
+        custom_slug: '',
+        browser_title: ''
+      }
     };
-    
+
     let wifi = { ssid: '', password: '', encryption: 'WPA' };
     let socialLinks = [];
     let bc = {};
     let vcard = {};
     let coupon = { code: '', description: '', redemptionUrl: '', buttonText: 'Redeem Now' };
+    let linkpage = {
+      profile_image: '',
+      title: '',
+      description: '',
+      links: [{ button_text: '', button_url: '' }],
+      design: {
+        background_type: 'solid',
+        background_color: '#ffffff',
+        background_image: '',
+        font_family: 'open_sans',
+        title_color: '#000000',
+        description_color: '#666666',
+        button_style: 'rounded',
+        button_color: '#2f3f7f',
+        button_text_color: '#ffffff'
+      },
+      linkpage_name: '',
+      custom_slug: '',
+      browser_title: ''
+    };
 
     if (initialData.content_type === 'wifi' && initialData.content) {
       const ssid = initialData.content.match(/S:([^;]+)/)?.[1] || '';
@@ -188,9 +230,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       } catch {
         coupon = { code: initialData.content, description: '', redemptionUrl: '', buttonText: 'Redeem Now' };
       }
+    } else if (initialData.content_type === 'linkpages' && initialData.content) {
+      try {
+        linkpage = JSON.parse(initialData.content);
+      } catch {}
     }
 
-    return { wifi, socialLinks, bc, vcard, coupon };
+    return { wifi, socialLinks, bc, vcard, coupon, linkpage };
   };
 
   const initialParsed = parseInitialData();
@@ -198,6 +244,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [socialLinks, setSocialLinks] = useState(initialParsed.socialLinks);
   const [bcData, setBcData] = useState(initialParsed.bc);
   const [couponData, setCouponData] = useState(initialParsed.coupon);
+  const [linkpageData, setLinkpageData] = useState(initialParsed.linkpage);
 
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -342,8 +389,10 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
   const handleSaveQR = () => {
     const isBc = formData.content_type === 'business_card';
-    if (!formData.name || (!formData.content && !isBc)) { alert('Please fill in all required fields'); return; }
+    const isLinkpages = formData.content_type === 'linkpages';
+    if (!formData.name || (!formData.content && !isBc && !isLinkpages)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
+    if (isLinkpages && (!linkpageData.title || !linkpageData.linkpage_name)) { alert('Please fill in Linkpage Title and Name'); return; }
     const shortCode = formData.type === 'dynamic'
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
@@ -354,6 +403,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const canProceedStep0 = !!formData.content_type;
   const canProceedStep1 = formData.content_type === 'business_card'
     ? !!formData.name && !!bcData.name
+    : formData.content_type === 'linkpages'
+    ? !!formData.name && !!linkpageData.title && !!linkpageData.linkpage_name
     : !!formData.name && !!formData.content;
   const dc = formData.design_config;
 
@@ -442,7 +493,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 <p className="text-gray-600 text-sm mb-2">What type of content will this QR code contain?</p>
                 <div className="grid grid-cols-2 gap-3">
                   {CONTENT_TYPES.map(({ value, label, icon: Icon, desc, proOnly }) => {
-                  const isStaticOnly = value !== 'url' && value !== 'business_card';
+                  const isStaticOnly = value !== 'url' && value !== 'business_card' && value !== 'linkpages';
                   const isStaticDisabled = formData.type === 'static' && isStaticOnly;
                   const isProDisabled = proOnly && !isPro;
                   const isDisabled = isStaticDisabled || isProDisabled;
@@ -510,7 +561,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 </>
               )}
 
-              {formData.content_type !== 'business_card' && (
+              {formData.content_type === 'linkpages' && (
+                <LinkpagesForm
+                  data={linkpageData}
+                  onChange={(updated) => {
+                    setLinkpageData(updated);
+                    const serialized = JSON.stringify(updated);
+                    handleChange('content', serialized);
+                    triggerPreview({ content: serialized });
+                  }}
+                />
+              )}
+
+              {formData.content_type !== 'business_card' && formData.content_type !== 'linkpages' && (
               <div>
                 <Label htmlFor="content">
                   {formData.content_type === 'url' && 'Destination URL *'}
@@ -1045,7 +1108,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
             }
 
             {/* Landing Page Branding — for dynamic types that have a landing page (not url/business_card which redirect directly) */}
-            {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.type === 'dynamic' && (
+            {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.content_type !== 'linkpages' && formData.type === 'dynamic' && (
               <div className="border rounded-xl p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="font-semibold text-sm">Landing Page Branding</Label>

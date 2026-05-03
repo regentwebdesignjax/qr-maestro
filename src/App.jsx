@@ -11,6 +11,7 @@ import Redirect from './pages/Redirect';
 import BulkCreate from './pages/BulkCreate';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import LinkpageLanding from './pages/LinkpageLanding';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -88,6 +89,8 @@ function App() {
           <Routes>
             {/* Public redirect route — no auth, no layout */}
             <Route path="/r" element={<Redirect />} />
+            {/* Linkpage landing route — no auth, no layout */}
+            <Route path="/linkpage/:shortCode" element={<LinkpageLanding />} />
             <Route path="/BulkCreate" element={<LayoutWrapper currentPageName="BulkCreate"><BulkCreate /></LayoutWrapper>} />
             {/* All other routes go through auth */}
             <Route path="/*" element={<AuthenticatedApp />} />
