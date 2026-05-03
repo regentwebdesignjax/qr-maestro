@@ -1,5 +1,4 @@
 import React from 'react';
-import DOMPurify from 'dompurify';
 
 export default function TicketCouponDisplay({ couponData, branded, design_config }) {
   const themeColor = design_config?.landing_theme_color || '#BB3F27';
@@ -33,10 +32,6 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
     buttonText = couponData.buttonText || 'Redeem Now';
   }
 
-  const sanitizedDescription = DOMPurify.sanitize(description, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'a'],
-    ALLOWED_ATTR: ['href', 'target', 'rel']
-  });
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -83,7 +78,7 @@ export default function TicketCouponDisplay({ couponData, branded, design_config
             {description && (
               <div
                 className="prose prose-sm max-w-none text-gray-700 text-sm md:text-base mb-4 line-clamp-3"
-                dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+                dangerouslySetInnerHTML={{ __html: description }}
               />
             )}
 
