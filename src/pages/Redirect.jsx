@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import BrandedLayout from '@/components/qr/BrandedLayout';
 import BusinessCardDisplay from '@/components/qr/BusinessCardDisplay';
+import TicketCouponDisplay from '@/components/qr/TicketCouponDisplay';
 
 function parseWifi(content) {
   // Standard QR WiFi format: WIFI:S:ssid;T:WPA;P:password;;
@@ -261,25 +262,21 @@ function SocialDisplay({ content, branded }) {
   );
 }
 
-function CouponDisplay({ content, branded }) {
-  return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-yellow-50'}`}>
-            <Tag className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-yellow-600'}`} />
-          </div>
-          <CardTitle>Coupon Code</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="text-center">
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Use code</p>
-          <p className="text-4xl font-bold text-primary">{content}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+function CouponDisplay({ content, branded, design_config }) {
+  // Parse coupon content - handle both new JSON format and legacy string format
+  let couponData;
+  if (typeof content === 'string') {
+    try {
+      couponData = JSON.parse(content);
+    } catch {
+      // Legacy format: just the coupon code string
+      couponData = content;
+    }
+  } else {
+    couponData = content;
+  }
+
+  return <TicketCouponDisplay couponData={couponData} branded={branded} design_config={design_config} />;
 }
 
 function ImageDisplay({ content, branded }) {
@@ -468,7 +465,7 @@ export default function Redirect() {
       {data.content_type === 'text' && <TextDisplay content={data.content} name={data.name} branded={branded} />}
       {data.content_type === 'pdf' && <PDFDisplay content={data.content} name={data.name} branded={branded} />}
       {data.content_type === 'social' && <SocialDisplay content={data.content} branded={branded} />}
-      {data.content_type === 'coupon' && <CouponDisplay content={data.content} branded={branded} />}
+      {data.content_type === 'coupon' && <CouponDisplay content={data.content} branded={branded} design_config={dc} />}
       {data.content_type === 'image' && <ImageDisplay content={data.content} branded={branded} />}
       {data.content_type === 'mp3' && <MP3Display content={data.content} branded={branded} />}
       {data.content_type === 'call' && <CallDisplay content={data.content} branded={branded} />}

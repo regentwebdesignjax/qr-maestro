@@ -74,7 +74,22 @@ function parseContentFields(contentType, content) {
     return fields.length > 0 ? fields : null;
   }
 
-  // For url, text, coupon, call, sms — just show the value directly
+  if (contentType === 'coupon') {
+    try {
+      const d = JSON.parse(content);
+      const fields = [];
+      if (d.code)         fields.push({ label: 'Promo Code', value: d.code });
+      if (d.description)  fields.push({ label: 'Description', value: d.description, isHtml: true });
+      if (d.redemptionUrl) fields.push({ label: 'Redemption URL', value: d.redemptionUrl, isLink: true });
+      if (d.buttonText)   fields.push({ label: 'Button Text', value: d.buttonText });
+      return fields.length > 0 ? fields : null;
+    } catch {
+      // Legacy format: just the coupon code
+      return [{ label: 'Promo Code', value: content }];
+    }
+  }
+
+  // For url, text, call, sms — just show the value directly
   return null;
 }
 
@@ -203,11 +218,17 @@ export default function ViewQR() {
                   const fields = parseContentFields(qrCode.content_type, qrCode.content);
                   if (fields) {
                     return (
-                      <div className="space-y-1.5">
-                        {fields.map(({ label, value }) => (
+                      <div className="space-y-2">
+                        {fields.map(({ label, value, isHtml, isLink }) => (
                           <div key={label} className="flex gap-2 text-sm">
                             <span className="text-muted-foreground w-20 shrink-0">{label}</span>
-                            <span className="font-medium text-gray-800 break-all">{value}</span>
+                            {isHtml ? (
+                              <div className="font-medium text-gray-800 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: value }} />
+                            ) : isLink ? (
+                              <a href={value} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline break-all">{value}</a>
+                            ) : (
+                              <span className="font-medium text-gray-800 break-all">{value}</span>
+                            )}
                           </div>
                         ))}
                       </div>
