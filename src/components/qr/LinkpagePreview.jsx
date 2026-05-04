@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ImageIcon } from 'lucide-react';
 
 const FONT_FAMILIES = {
   open_sans: "'Open Sans', sans-serif",
@@ -77,41 +78,41 @@ export default function LinkpagePreview({ data = {} }) {
           }}
         >
           {/* Profile Image */}
-          {data.profile_image && !profileError && (
-            <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6">
+            {data.profile_image && !profileError ? (
               <img
                 src={data.profile_image}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
                 onError={() => setProfileError(true)}
               />
-            </div>
-          )}
+            ) : (
+              <div className="w-24 h-24 rounded-full border-4 border-white shadow-md bg-gray-200 flex items-center justify-center">
+                <ImageIcon className="w-10 h-10 text-gray-400" />
+              </div>
+            )}
+          </div>
 
           {/* Title */}
-          {data.title && (
-            <h1
-              className="text-center text-xl font-bold mb-2"
-              style={{ color: design.title_color || '#000000' }}
-            >
-              {data.title}
-            </h1>
-          )}
+          <h1
+            className="text-center text-xl font-bold mb-2"
+            style={{ color: data.title ? (design.title_color || '#000000') : '#ccc' }}
+          >
+            {data.title || 'Your Title'}
+          </h1>
 
           {/* Description */}
-          {data.description && (
-            <p
-              className="text-center text-sm mb-6 leading-relaxed"
-              style={{ color: design.description_color || '#666666' }}
-            >
-              {data.description}
-            </p>
-          )}
+          <p
+            className="text-center text-sm mb-6 leading-relaxed"
+            style={{ color: data.description ? (design.description_color || '#666666') : '#ccc' }}
+          >
+            {data.description || 'Add a description to tell visitors more about you'}
+          </p>
 
           {/* Links */}
-          {links.length > 0 && (
-            <div className="space-y-2 mb-4">
-              {links
+          <div className="space-y-2 mb-4">
+            {links.length > 0 && links.filter((link) => link.button_text && link.button_url).length > 0 ? (
+              links
                 .filter((link) => link.button_text && link.button_url)
                 .map((link, idx) => (
                   <button
@@ -122,9 +123,34 @@ export default function LinkpagePreview({ data = {} }) {
                   >
                     {link.button_text}
                   </button>
-                ))}
-            </div>
-          )}
+                ))
+            ) : (
+              <>
+                <button
+                  type="button"
+                  style={{
+                    ...getButtonStyle(),
+                    opacity: 0.5,
+                  }}
+                  className="cursor-default"
+                  disabled
+                >
+                  Button 1
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    ...getButtonStyle(),
+                    opacity: 0.5,
+                  }}
+                  className="cursor-default"
+                  disabled
+                >
+                  Button 2
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Home indicator */}
