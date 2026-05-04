@@ -26,7 +26,7 @@ function MiniQR({ qr }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    renderQR(canvas, qr, 64).catch(() => {});
+    renderQR(canvas, qr, 200).catch(() => {});
   }, [qr]);
 
   return <canvas ref={canvasRef} className="rounded border" style={{ width: 64, height: 64 }} />;
