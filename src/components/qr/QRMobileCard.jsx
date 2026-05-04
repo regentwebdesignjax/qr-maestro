@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart2, Edit, Trash2 } from 'lucide-react';
-import QRCode from 'qrcode';
+import { renderQR } from '@/utils/qrExport';
 
 const CONTENT_TYPE_LABELS = {
   business_card: 'Business Card',
@@ -26,17 +26,7 @@ function MiniQR({ qr }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const content = qr.type === 'dynamic' && qr.short_code
-      ? `${window.location.origin}/r?code=${qr.short_code}`
-      : (qr.content || 'preview');
-    QRCode.toCanvas(canvas, content.substring(0, 200), {
-      width: 64,
-      margin: 1,
-      color: {
-        dark: qr.design_config?.foreground_color || '#000000',
-        light: qr.design_config?.background_color || '#ffffff',
-      },
-    }).catch(() => {});
+    renderQR(canvas, qr, 64).catch(() => {});
   }, [qr]);
 
   return <canvas ref={canvasRef} className="rounded border" style={{ width: 64, height: 64 }} />;

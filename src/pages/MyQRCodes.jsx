@@ -145,7 +145,7 @@ export default function MyQRCodes() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Header */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-6">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My QR Codes</h1>
