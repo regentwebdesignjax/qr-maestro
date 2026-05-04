@@ -107,6 +107,19 @@ function getQRContent(qr) {
   if (qr.type === 'dynamic' && qr.short_code) {
     return `${window.location.origin}/r?code=${qr.short_code}`;
   }
+
+  // For linkpages: encode the linkpage URL instead of the full data
+  if (qr.content_type === 'linkpages') {
+    try {
+      const linkpageData = typeof qr.content === 'string' ? JSON.parse(qr.content) : qr.content;
+      const slug = linkpageData.custom_slug || 'linkpage';
+      return `${window.location.origin}/linkpage/${slug}`;
+    } catch (e) {
+      // Fallback if parsing fails
+      return `${window.location.origin}/linkpage/linkpage`;
+    }
+  }
+
   return qr.content;
 }
 
