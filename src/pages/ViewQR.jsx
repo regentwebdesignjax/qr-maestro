@@ -11,6 +11,7 @@ import QRCodePreview from '../components/qr/QRCodePreview';
 
 const CONTENT_TYPE_LABELS = {
   business_card: 'Business Card',
+  linkpages: 'Linkpage',
   vcard: 'vCard Contact',
   url: 'Website',
   wifi: 'WiFi Credentials',
@@ -87,6 +88,15 @@ function parseContentFields(contentType, content) {
       // Legacy format: just the coupon code
       return [{ label: 'Promo Code', value: content }];
     }
+  }
+
+  if (contentType === 'linkpages') {
+    try {
+      const d = JSON.parse(content);
+      const slug = d.custom_slug || 'linkpage';
+      const url = `${window.location.origin}/linkpage/${slug}`;
+      return [{ label: 'Linkpage URL', value: url, isLink: true }];
+    } catch { return null; }
   }
 
   // For url, text, call, sms — just show the value directly
