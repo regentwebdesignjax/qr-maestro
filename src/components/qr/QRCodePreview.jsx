@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { renderQR, renderQRToCanvas, downloadQRSvg } from '@/utils/qrExport';
 
 import BusinessCardPreview from './BusinessCardPreview';
+import LinkpagePreview from './LinkpagePreview';
 import TicketCouponDisplay from './TicketCouponDisplay';
 
 // ─── Tab Toggle for Business Card ─────────────────────────────────────────────
@@ -131,6 +132,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [bcTab, setBcTab] = useState('landing');
   const [couponTab, setCouponTab] = useState('landing');
+  const [linkpageTab, setLinkpageTab] = useState('landing');
 
   // Auto-switch tab based on step
   useEffect(() => {
@@ -146,6 +148,12 @@ export default function QRCodePreview({ qrData, currentStep }) {
       } else {
         setCouponTab('landing');
       }
+    } else if (qrData?.content_type === 'linkpages') {
+      if (currentStep === 2) {
+        setLinkpageTab('qr');
+      } else {
+        setLinkpageTab('landing');
+      }
     }
   }, [currentStep, qrData?.content_type]);
 
@@ -153,7 +161,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
     const isDynamic = qrData?.type === 'dynamic' && qrData?.short_code;
     const hasContent = !!qrData?.content;
     if (!isDynamic && !hasContent) return;
-    if (qrData.content_type === 'business_card') return; // handled separately
+    if (qrData.content_type === 'business_card' || qrData.content_type === 'linkpages') return; // handled separately
     const canvas = canvasRef.current;
     if (!canvas) return;
     renderQR(canvas, qrData)
@@ -196,6 +204,22 @@ export default function QRCodePreview({ qrData, currentStep }) {
         <PreviewToggle active={bcTab} onChange={setBcTab} />
         {bcTab === 'landing' ? (
           <BusinessCardPreview data={{ ...bcData, design_config: qrData.design_config }} />
+        ) : (
+          <QRCanvasView qrData={qrData} />
+        )}
+      </div>
+    );
+  }
+
+  // ── Linkpage: tabbed view ──
+  if (qrData.content_type === 'linkpages') {
+    let linkpageData = {};
+    try { linkpageData = JSON.parse(qrData.content || '{}'); } catch {}
+    return (
+      <div>
+        <PreviewToggle active={linkpageTab} onChange={setLinkpageTab} />
+        {linkpageTab === 'landing' ? (
+          <LinkpagePreview data={linkpageData} />
         ) : (
           <QRCanvasView qrData={qrData} />
         )}
