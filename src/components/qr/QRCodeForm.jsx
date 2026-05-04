@@ -392,7 +392,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     const isLinkpages = formData.content_type === 'linkpages';
     if (!formData.name || (!formData.content && !isBc && !isLinkpages)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
-    if (isLinkpages && (!linkpageData.title || !linkpageData.linkpage_name)) { alert('Please fill in Linkpage Title and Name'); return; }
+    if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
     const shortCode = formData.type === 'dynamic'
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
@@ -404,7 +404,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const canProceedStep1 = formData.content_type === 'business_card'
     ? !!formData.name && !!bcData.name
     : formData.content_type === 'linkpages'
-    ? !!formData.name && !!linkpageData.title && !!linkpageData.linkpage_name
+    ? !!formData.name && !!linkpageData.title
     : !!formData.name && !!formData.content;
   const dc = formData.design_config;
 
@@ -532,7 +532,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           <motion.div key="step1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit"
           transition={{ duration: 0.25, ease: 'easeInOut' }} className="space-y-4">
               <div>
-                <Label htmlFor="name">QR Code Name *</Label>
+                <Label htmlFor="name">{formData.content_type === 'linkpages' ? 'QR/Linkpage Name *' : 'QR Code Name *'}</Label>
                 <Input id="name" placeholder="e.g., Product Landing Page" value={formData.name}
               onChange={(e) => {handleChange('name', e.target.value);triggerPreview({ name: e.target.value });}} />
               </div>

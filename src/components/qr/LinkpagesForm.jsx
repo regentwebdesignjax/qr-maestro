@@ -457,26 +457,22 @@ export default function LinkpagesForm({ data, onChange }) {
               className="space-y-4"
             >
               <div>
-                <Label htmlFor="linkpage-name">Linkpage Name *</Label>
-                <Input
-                  id="linkpage-name"
-                  placeholder="e.g., Stark Industries Linkpage"
-                  value={formData.linkpage_name}
-                  onChange={(e) => handleChange('linkpage_name', e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-1">For your reference only</p>
-              </div>
-
-              <div>
                 <Label htmlFor="custom-slug">Custom URL Slug (Optional)</Label>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-sm text-gray-600">your-domain.com/linkpage/</span>
-                  <Input
-                    id="custom-slug"
-                    placeholder="e.g., stark-industries"
-                    value={formData.custom_slug}
-                    onChange={(e) => handleChange('custom_slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                  />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">qr-sensei.com/linkpage/</span>
+                    <Input
+                      id="custom-slug"
+                      placeholder="e.g., stark-industries"
+                      value={formData.custom_slug}
+                      onChange={(e) => handleChange('custom_slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                    />
+                  </div>
+                  <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                    <p className="text-xs text-blue-700">
+                      <strong>Preview:</strong> qr-sensei.com/linkpage/{formData.custom_slug || 'your-slug'}
+                    </p>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">If not provided, a random slug will be generated</p>
               </div>
