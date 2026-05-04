@@ -16,26 +16,43 @@ const BUTTON_STYLES = {
 };
 
 export default function LinkpageLanding() {
-  const { shortCode } = useParams();
+  const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const [linkpageData, setLinkpageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qrCodeId, setQrCodeId] = useState(null);
 
   useEffect(() => {
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
-        // Fetch QR code data by short code
-        const qrData = await base44.functions.invoke('getQRCodeByShortCode', {
-          short_code: shortCode
-        });
+        // Fetch all linkpage QR codes and find the one matching this slug
+        // Note: In a production app, this should be a dedicated backend function
+        const result = await base44.asServiceRole.entities.QRCode.filter({
+          content_type: 'linkpages'
+        }).catch(() => []);
 
-        if (!qrData || qrData.content_type !== 'linkpages') {
+        let qrData = null;
+        for (const qr of result) {
+          try {
+            const parsed = JSON.parse(qr.content);
+            if (parsed.custom_slug === slug) {
+              qrData = qr;
+              break;
+            }
+          } catch (e) {
+            // Skip entries that can't be parsed
+          }
+        }
+
+        if (!qrData) {
           setError('Linkpage not found');
           setLoading(false);
           return;
         }
+
+        setQrCodeId(qrData.id);
 
         // Parse linkpage content
         try {
@@ -47,13 +64,15 @@ export default function LinkpageLanding() {
         }
 
         // Track scan
-        await base44.functions.invoke('trackScan', {
-          short_code: shortCode,
-          location: searchParams.get('location'),
-          utm_source: searchParams.get('utm_source'),
-          utm_medium: searchParams.get('utm_medium'),
-          utm_campaign: searchParams.get('utm_campaign')
-        }).catch(err => console.error('Failed to track scan:', err));
+        if (qrData.short_code) {
+          await base44.functions.invoke('trackScan', {
+            short_code: qrData.short_code,
+            location: searchParams.get('location'),
+            utm_source: searchParams.get('utm_source'),
+            utm_medium: searchParams.get('utm_medium'),
+            utm_campaign: searchParams.get('utm_campaign')
+          }).catch(err => console.error('Failed to track scan:', err));
+        }
 
         setLoading(false);
       } catch (err) {
@@ -64,7 +83,7 @@ export default function LinkpageLanding() {
     };
 
     fetchLinkpage();
-  }, [shortCode, searchParams]);
+  }, [slug, searchParams]);
 
   if (loading) {
     return (

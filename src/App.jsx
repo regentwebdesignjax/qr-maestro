@@ -90,7 +90,7 @@ function App() {
             {/* Public redirect route — no auth, no layout */}
             <Route path="/r" element={<Redirect />} />
             {/* Linkpage landing route — no auth, no layout */}
-            <Route path="/linkpage/:shortCode" element={<LinkpageLanding />} />
+            <Route path="/linkpage/:slug" element={<LinkpageLanding />} />
             <Route path="/BulkCreate" element={<LayoutWrapper currentPageName="BulkCreate"><BulkCreate /></LayoutWrapper>} />
             {/* All other routes go through auth */}
             <Route path="/*" element={<AuthenticatedApp />} />
