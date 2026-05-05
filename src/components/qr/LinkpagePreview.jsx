@@ -8,6 +8,22 @@ const FONT_FAMILIES = {
   roboto: "'Roboto', sans-serif",
 };
 
+function getColorBrightness(hexColor) {
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+function getAutoFontColor(bgColor, overlayColor, overlayOpacity) {
+  if (overlayOpacity > 0.5) {
+    const brightness = getColorBrightness(overlayColor);
+    return brightness > 128 ? '#000000' : '#ffffff';
+  }
+  const brightness = getColorBrightness(bgColor);
+  return brightness > 128 ? '#000000' : '#ffffff';
+}
+
 export default function LinkpagePreview({ data = {} }) {
   const [profileError, setProfileError] = useState(false);
   const [backgroundError, setBackgroundError] = useState(false);
@@ -20,10 +36,25 @@ export default function LinkpagePreview({ data = {} }) {
   const design = data.design || {};
   const fontFamily = FONT_FAMILIES[design.font_family] || FONT_FAMILIES.open_sans;
 
+  let titleColor = design.title_color || '#000000';
+  let descriptionColor = design.description_color || '#666666';
+  let buttonTextColor = design.button_text_color || '#ffffff';
+
+  if (design.auto_font_color && design.background_type === 'image') {
+    const autoColor = getAutoFontColor(
+      design.background_color || '#ffffff',
+      design.overlay_color || '#000000',
+      design.overlay_opacity || 0
+    );
+    titleColor = autoColor;
+    descriptionColor = autoColor;
+    buttonTextColor = autoColor;
+  }
+
   const getButtonStyle = () => {
     const baseStyle = {
       backgroundColor: design.button_color || '#2f3f7f',
-      color: design.button_text_color || '#ffffff',
+      color: buttonTextColor,
       border: 'none',
       fontWeight: '600',
       fontSize: '14px',
@@ -46,19 +77,43 @@ export default function LinkpagePreview({ data = {} }) {
   };
 
   const backgroundStyle = (() => {
+    const saturation = design.background_saturation ?? 100;
+    const backgroundOpacity = design.background_opacity ?? 1;
+
+    if (design.background_type === 'gradient') {
+      return {
+        background: `linear-gradient(135deg, ${design.gradient_start || '#2f3f7f'} 0%, ${design.gradient_end || '#ffffff'} 100%)`,
+        filter: saturation !== 100 ? `saturate(${saturation}%)` : undefined,
+      };
+    }
+
     if (design.background_type === 'image' && design.background_image && !backgroundError) {
       return {
         backgroundImage: `url(${design.background_image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        opacity: backgroundOpacity,
+        filter: saturation !== 100 ? `saturate(${saturation}%)` : undefined,
       };
     }
+
     return {
       backgroundColor: design.background_color || '#ffffff',
     };
   })();
 
   const links = data.links || [];
+  const hasImageBackground = design.background_type === 'image' && (design.overlay_opacity || 0) > 0;
+  const overlayStyle = hasImageBackground ? {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: design.overlay_color || '#000000',
+    opacity: design.overlay_opacity || 0,
+    pointerEvents: 'none',
+  } : null;
 
   return (
     <div className="flex justify-center">
@@ -71,12 +126,14 @@ export default function LinkpagePreview({ data = {} }) {
 
         {/* Linkpage content */}
         <div
-          className="overflow-y-auto max-h-[520px] px-6 py-8"
+          className="overflow-y-auto max-h-[520px] px-6 py-8 relative"
           style={{
             ...backgroundStyle,
             fontFamily,
           }}
         >
+          {overlayStyle && <div style={overlayStyle}></div>}
+          <div className="relative z-10">
           {/* Profile Image */}
           <div className="flex justify-center mb-6">
             {data.profile_image && !profileError ? (
@@ -93,62 +150,71 @@ export default function LinkpagePreview({ data = {} }) {
             )}
           </div>
 
-          {/* Title */}
-          <h1
-            className="text-center text-xl font-bold mb-2"
-            style={{ color: data.title ? (design.title_color || '#000000') : '#ccc' }}
-          >
-            {data.title || 'Your Title'}
-          </h1>
+            {/* Title */}
+            <h1
+              className="text-center text-xl font-bold mb-2"
+              style={{ color: data.title ? titleColor : '#ccc' }}
+            >
+              {data.title || 'Your Title'}
+            </h1>
 
-          {/* Description */}
-          <p
-            className="text-center text-sm mb-6 leading-relaxed"
-            style={{ color: data.description ? (design.description_color || '#666666') : '#ccc' }}
-          >
-            {data.description || 'Add a description to tell visitors more about you'}
-          </p>
+            {/* Description */}
+            <p
+              className="text-center text-sm mb-6 leading-relaxed"
+              style={{ color: data.description ? descriptionColor : '#ccc' }}
+            >
+              {data.description || 'Add a description to tell visitors more about you'}
+            </p>
 
-          {/* Links */}
-          <div className="space-y-2 mb-4">
-            {links.length > 0 && links.filter((link) => link.button_text && link.button_url).length > 0 ? (
-              links
-                .filter((link) => link.button_text && link.button_url)
-                .map((link, idx) => (
+            {/* Links */}
+            <div className="space-y-2 mb-4">
+              {links.length > 0 && links.filter((link) => link.button_text && link.button_url).length > 0 ? (
+                links
+                  .filter((link) => link.button_text && link.button_url)
+                  .map((link, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      style={getButtonStyle()}
+                      className="transition-opacity hover:opacity-90"
+                    >
+                      {link.button_text}
+                    </button>
+                  ))
+              ) : (
+                <>
                   <button
-                    key={idx}
                     type="button"
-                    style={getButtonStyle()}
-                    className="transition-opacity hover:opacity-90"
+                    style={{
+                      ...getButtonStyle(),
+                      opacity: 0.5,
+                    }}
+                    className="cursor-default"
+                    disabled
                   >
-                    {link.button_text}
+                    Button 1
                   </button>
-                ))
-            ) : (
-              <>
-                <button
-                  type="button"
-                  style={{
-                    ...getButtonStyle(),
-                    opacity: 0.5,
-                  }}
-                  className="cursor-default"
-                  disabled
-                >
-                  Button 1
-                </button>
-                <button
-                  type="button"
-                  style={{
-                    ...getButtonStyle(),
-                    opacity: 0.5,
-                  }}
-                  className="cursor-default"
-                  disabled
-                >
-                  Button 2
-                </button>
-              </>
+                  <button
+                    type="button"
+                    style={{
+                      ...getButtonStyle(),
+                      opacity: 0.5,
+                    }}
+                    className="cursor-default"
+                    disabled
+                  >
+                    Button 2
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Powered by QR Sensei */}
+            {design.show_branding !== false && (
+              <div className="mt-6 text-center text-xs text-gray-500">
+                Powered by{' '}
+                <span className="font-semibold">QR Sensei</span>
+              </div>
             )}
           </div>
         </div>
