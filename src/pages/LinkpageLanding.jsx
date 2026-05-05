@@ -9,7 +9,6 @@ const FONT_MAP = {
   roboto: "'Roboto', sans-serif"
 };
 
-
 const BUTTON_STYLES = {
   rounded: 'rounded-lg',
   square: 'rounded-none',
@@ -43,6 +42,15 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
           setLoading(false);
           return;
         }
+
+        // ==========================================
+        // SCENARIO B: Redirect to tracking link
+        // ==========================================
+        if (response.short_code) {
+          window.location.href = `/r?code=${response.short_code}`;
+          return; // Stop execution to allow redirect
+        }
+        // ==========================================
 
         setQrCodeId(response.id);
         setLinkpageData(response.linkpage);
