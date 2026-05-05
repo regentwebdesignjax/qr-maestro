@@ -68,7 +68,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       button_color: '#2f3f7f',
       button_text_color: '#ffffff'
     },
-    linkpage_name: '',
     custom_slug: '',
     browser_title: ''
   };

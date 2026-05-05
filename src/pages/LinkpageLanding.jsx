@@ -143,11 +143,13 @@ export default function LinkpageLanding() {
 
   const handleLinkClick = (url, index) => {
     // Log link click
-    base44.functions.invoke('trackLinkClick', {
-      short_code: shortCode,
-      link_index: index,
-      link_url: url
-    }).catch(err => console.error('Failed to track link click:', err));
+    if (qrCodeId) {
+      base44.functions.invoke('trackLinkClick', {
+        short_code: qrCodeId,
+        link_index: index,
+        link_url: url
+      }).catch(err => console.error('Failed to track link click:', err));
+    }
 
     // Navigate to URL
     window.location.href = url;

@@ -162,7 +162,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           button_color: '#2f3f7f',
           button_text_color: '#ffffff'
         },
-        linkpage_name: '',
         custom_slug: '',
         browser_title: ''
       }
@@ -413,7 +412,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     const isLinkpages = formData.content_type === 'linkpages';
     if (!formData.name || (!formData.content && !isBc && !isLinkpages)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
-    if (isLinkpages && (!linkpageData.title || !linkpageData.linkpage_name)) { alert('Please fill in Linkpage Title and Name'); return; }
+    if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
 
     const shortCode = formData.type === 'dynamic'
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
