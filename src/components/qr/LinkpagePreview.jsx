@@ -41,6 +41,7 @@ export default function LinkpagePreview({ data = {} }) {
   let buttonTextColor = design.button_text_color || '#ffffff';
 
   // Auto font color applies to all background types when enabled
+  // BUT ONLY FOR TITLE AND DESCRIPTION - not buttons
   if (design.auto_font_color) {
     let bgColorForBrightness = design.background_color || '#ffffff';
     let overlayOpacityForCheck = design.overlay_opacity || 0;
@@ -61,10 +62,7 @@ export default function LinkpagePreview({ data = {} }) {
     );
     titleColor = autoColor;
     descriptionColor = autoColor;
-    // Only override button text color if user hasn't customized it or if it matches the default
-    if (!design.button_text_color || design.button_text_color === '#ffffff') {
-      buttonTextColor = autoColor;
-    }
+    // Do NOT override button text color - it's fully under user control
   }
 
   const getButtonStyle = () => {
@@ -93,8 +91,6 @@ export default function LinkpagePreview({ data = {} }) {
   };
 
   const backgroundStyle = (() => {
-    const backgroundOpacity = design.background_opacity ?? 1;
-
     if (design.background_type === 'gradient') {
       return {
         background: `linear-gradient(135deg, ${design.gradient_start || '#2f3f7f'} 0%, ${design.gradient_end || '#ffffff'} 100%)`,
@@ -102,20 +98,37 @@ export default function LinkpagePreview({ data = {} }) {
     }
 
     if (design.background_type === 'image' && design.background_image && !backgroundError) {
-      const saturation = design.background_saturation ?? 100;
       return {
-        backgroundImage: `url(${design.background_image})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        opacity: backgroundOpacity,
-        // Only apply saturation filter to image backgrounds
-        filter: saturation !== 100 ? `saturate(${saturation / 100})` : undefined,
+        backgroundColor: design.background_color || '#ffffff',
       };
     }
 
     return {
       backgroundColor: design.background_color || '#ffffff',
     };
+  })();
+
+  // Separate background image layer with saturation filter
+  const backgroundImageStyle = (() => {
+    if (design.background_type === 'image' && design.background_image && !backgroundError) {
+      const saturation = design.background_saturation ?? 100;
+      const backgroundOpacity = design.background_opacity ?? 1;
+      return {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `url(${design.background_image})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: backgroundOpacity,
+        filter: saturation !== 100 ? `saturate(${saturation / 100})` : undefined,
+        pointerEvents: 'none',
+        zIndex: 0,
+      };
+    }
+    return null;
   })();
 
   const links = data.links || [];
@@ -148,6 +161,7 @@ export default function LinkpagePreview({ data = {} }) {
             fontFamily,
           }}
         >
+          {backgroundImageStyle && <div style={backgroundImageStyle}></div>}
           {overlayStyle && <div style={overlayStyle}></div>}
           <div className="relative z-10">
           {/* Profile Image */}

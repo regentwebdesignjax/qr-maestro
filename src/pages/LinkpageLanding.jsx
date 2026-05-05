@@ -154,7 +154,8 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   };
 
   let backgroundStyle = {
-    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
+    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans,
+    position: 'relative',
   };
 
   if (safeDesign.background_type === 'solid') {
@@ -163,19 +164,26 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     backgroundStyle.background = `linear-gradient(135deg, ${safeDesign.gradient_start || '#2f3f7f'} 0%, ${safeDesign.gradient_end || '#ffffff'} 100%)`;
   } else if (safeDesign.background_type === 'image') {
     backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
-    backgroundStyle.backgroundImage = safeDesign.background_image
-      ? `url(${safeDesign.background_image})`
-      : 'none';
-    backgroundStyle.backgroundSize = 'cover';
-    backgroundStyle.backgroundPosition = 'center';
-    backgroundStyle.backgroundAttachment = 'fixed';
-    backgroundStyle.opacity = safeDesign.background_opacity ?? 1;
-    const saturation = safeDesign.background_saturation ?? 100;
-    if (saturation !== 100) {
-      // CSS saturate filter uses 1.0 as 100%, so divide by 100
-      backgroundStyle.filter = `saturate(${saturation / 100})`;
-    }
   }
+
+  // Separate background image layer with saturation filter - only applied to the image, not content
+  const backgroundImageStyle = safeDesign.background_type === 'image' && safeDesign.background_image ? {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: `url(${safeDesign.background_image})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
+    opacity: safeDesign.background_opacity ?? 1,
+    filter: safeDesign.background_saturation && safeDesign.background_saturation !== 100
+      ? `saturate(${safeDesign.background_saturation / 100})`
+      : undefined,
+    pointerEvents: 'none',
+    zIndex: 0,
+  } : null;
 
   const hasImageBackground = safeDesign.background_type === 'image' && safeDesign.overlay_opacity > 0;
   const overlayStyle = hasImageBackground ? {
@@ -194,6 +202,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   let buttonTextColor = safeDesign.button_text_color || '#ffffff';
 
   // Auto font color applies to all background types when enabled
+  // BUT ONLY FOR TITLE AND DESCRIPTION - not buttons
   if (safeDesign.auto_font_color) {
     let bgColorForBrightness = safeDesign.background_color || '#ffffff';
     let overlayOpacityForCheck = safeDesign.overlay_opacity || 0;
@@ -214,10 +223,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     );
     titleColor = autoColor;
     descriptionColor = autoColor;
-    // Only override button text color if user hasn't customized it or if it matches the default
-    if (!safeDesign.button_text_color || safeDesign.button_text_color === '#ffffff') {
-      buttonTextColor = autoColor;
-    }
+    // Do NOT override button text color - it's fully under user control
   }
 
   const titleStyle = {
@@ -258,7 +264,8 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   };
 
   return (
-    <div style={backgroundStyle} className="min-h-screen p-4 sm:p-6 md:p-8 relative">
+    <div style={backgroundStyle} className="min-h-screen p-4 sm:p-6 md:p-8">
+      {backgroundImageStyle && <div style={backgroundImageStyle}></div>}
       {overlayStyle && <div style={overlayStyle}></div>}
       <div className="max-w-md mx-auto relative z-10">
         {/* Profile Image */}
