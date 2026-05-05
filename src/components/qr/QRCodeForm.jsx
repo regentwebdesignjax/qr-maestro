@@ -242,13 +242,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
   const initialParsed = parseInitialData();
   const [wifiData, setWifiData] = useState(initialParsed.wifi);
-
-  // Reset LinkpagesForm step when content type changes
-  useEffect(() => {
-    if (formData.content_type !== 'linkpages') {
-      setLinkpageFormStep(0);
-    }
-  }, [formData.content_type]);
   const [socialLinks, setSocialLinks] = useState(initialParsed.socialLinks);
   const [bcData, setBcData] = useState(initialParsed.bc);
   const [couponData, setCouponData] = useState(initialParsed.coupon);
@@ -274,6 +267,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       ...(initialData?.design_config || {}),
     }
   });
+
+  // Reset LinkpagesForm step when content type changes
+  useEffect(() => {
+    if (formData.content_type !== 'linkpages') {
+      setLinkpageFormStep(0);
+    }
+  }, [formData.content_type]);
 
   const isPro = user?.role === 'admin' || user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
 
