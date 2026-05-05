@@ -41,9 +41,14 @@ function ColorInput({ value, onChange }) {
   );
 }
 
-export default function LinkpagesForm({ data, onChange }) {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function LinkpagesForm({ data, onChange, currentStep, onStepChange }) {
   const [direction, setDirection] = useState(1);
+  const stepValue = currentStep !== undefined ? currentStep : 0;
+
+  const navigateStep = (newStep) => {
+    setDirection(newStep > stepValue ? 1 : -1);
+    onStepChange?.(newStep);
+  };
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [uploadingBackgroundImage, setUploadingBackgroundImage] = useState(false);
 
@@ -135,11 +140,6 @@ export default function LinkpagesForm({ data, onChange }) {
     }
   };
 
-  const navigateStep = (newStep) => {
-    setDirection(newStep > currentStep ? 1 : -1);
-    setCurrentStep(newStep);
-  };
-
   const steps = ['Content', 'Design', 'Setup'];
 
   return (
@@ -153,7 +153,7 @@ export default function LinkpagesForm({ data, onChange }) {
               onClick={() => navigateStep(i)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 i <= currentStep
-                  ? i === currentStep
+                  ? i === stepValue
                     ? 'bg-primary text-white'
                     : 'bg-primary/20 text-primary'
                   : 'bg-gray-100 text-gray-500'
@@ -162,7 +162,7 @@ export default function LinkpagesForm({ data, onChange }) {
               {step}
             </button>
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 ${i < currentStep ? 'bg-primary' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 mx-1 ${i < stepValue ? 'bg-primary' : 'bg-gray-200'}`} />
             )}
           </React.Fragment>
         ))}
@@ -173,7 +173,7 @@ export default function LinkpagesForm({ data, onChange }) {
         <AnimatePresence mode="wait" custom={direction}>
 
           {/* Step 0: Content */}
-          {currentStep === 0 && (
+          {stepValue === 0 && (
             <motion.div
               key="step0"
               custom={direction}
@@ -296,7 +296,7 @@ export default function LinkpagesForm({ data, onChange }) {
           )}
 
           {/* Step 1: Design */}
-          {currentStep === 1 && (
+          {stepValue === 1 && (
             <motion.div
               key="step1"
               custom={direction}
@@ -445,7 +445,7 @@ export default function LinkpagesForm({ data, onChange }) {
           )}
 
           {/* Step 2: Setup */}
-          {currentStep === 2 && (
+          {stepValue === 2 && (
             <motion.div
               key="step2"
               custom={direction}
@@ -491,25 +491,6 @@ export default function LinkpagesForm({ data, onChange }) {
           )}
 
         </AnimatePresence>
-      </div>
-
-      {/* Navigation buttons */}
-      <div className="flex gap-2 justify-between pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => navigateStep(Math.max(0, currentStep - 1))}
-          disabled={currentStep === 0}
-        >
-          Back
-        </Button>
-        <Button
-          type="button"
-          onClick={() => navigateStep(Math.min(steps.length - 1, currentStep + 1))}
-          disabled={currentStep === steps.length - 1}
-        >
-          Next
-        </Button>
       </div>
     </div>
   );
