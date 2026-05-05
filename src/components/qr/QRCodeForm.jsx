@@ -137,6 +137,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
+  const [linkpageFormStep, setLinkpageFormStep] = useState(0);
 
   // Parse initial data for editing mode
   const parseInitialData = () => {
@@ -241,6 +242,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
   const initialParsed = parseInitialData();
   const [wifiData, setWifiData] = useState(initialParsed.wifi);
+
+  // Reset LinkpagesForm step when content type changes
+  useEffect(() => {
+    if (formData.content_type !== 'linkpages') {
+      setLinkpageFormStep(0);
+    }
+  }, [formData.content_type]);
   const [socialLinks, setSocialLinks] = useState(initialParsed.socialLinks);
   const [bcData, setBcData] = useState(initialParsed.bc);
   const [couponData, setCouponData] = useState(initialParsed.coupon);
@@ -381,6 +389,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   };
 
   const goTo = (step) => {
+    // Handle LinkpagesForm internal steps
+    if (formData.content_type === 'linkpages' && currentStep === 1 && step === 2) {
+      if (linkpageFormStep < 2) {
+        setLinkpageFormStep(linkpageFormStep + 1);
+        return;
+      }
+    }
+    if (formData.content_type === 'linkpages' && currentStep === 1 && step === 0) {
+      if (linkpageFormStep > 0) {
+        setLinkpageFormStep(linkpageFormStep - 1);
+        return;
+      }
+    }
     setDirection(step > currentStep ? 1 : -1);
     setCurrentStep(step);
     onStepChange?.(step);
@@ -392,10 +413,24 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     const isLinkpages = formData.content_type === 'linkpages';
     if (!formData.name || (!formData.content && !isBc && !isLinkpages)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
-    if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
+    if (isLinkpages && (!linkpageData.title || !linkpageData.linkpage_name)) { alert('Please fill in Linkpage Title and Name'); return; }
+
     const shortCode = formData.type === 'dynamic'
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
+
+    // Debug logging for linkpages
+    if (isLinkpages) {
+      console.log('Saving Linkpage QR Code:', {
+        name: formData.name,
+        content_type: formData.content_type,
+        type: formData.type,
+        short_code: shortCode,
+        linkpageData: linkpageData,
+        serialized_content: formData.content
+      });
+    }
+
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
   };
 
@@ -570,6 +605,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     handleChange('content', serialized);
                     triggerPreview({ content: serialized });
                   }}
+                  currentStep={linkpageFormStep}
+                  onStepChange={setLinkpageFormStep}
                 />
               )}
 
