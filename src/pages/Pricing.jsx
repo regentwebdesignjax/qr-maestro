@@ -345,7 +345,19 @@ export default function Pricing() {
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Digital Business Cards</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Linkpages</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
               <span>Static & Dynamic QR code types</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Quick & Easy QR customization</span>
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
