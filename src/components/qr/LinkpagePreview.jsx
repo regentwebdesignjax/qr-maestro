@@ -40,15 +40,31 @@ export default function LinkpagePreview({ data = {} }) {
   let descriptionColor = design.description_color || '#666666';
   let buttonTextColor = design.button_text_color || '#ffffff';
 
-  if (design.auto_font_color && design.background_type === 'image') {
+  // Auto font color applies to all background types when enabled
+  if (design.auto_font_color) {
+    let bgColorForBrightness = design.background_color || '#ffffff';
+    let overlayOpacityForCheck = design.overlay_opacity || 0;
+
+    // For image backgrounds, consider the overlay if it's significant
+    if (design.background_type === 'image' && overlayOpacityForCheck > 0.5) {
+      bgColorForBrightness = design.overlay_color || '#000000';
+    }
+    // For gradient backgrounds, check the starting color
+    else if (design.background_type === 'gradient') {
+      bgColorForBrightness = design.gradient_start || '#2f3f7f';
+    }
+
     const autoColor = getAutoFontColor(
-      design.background_color || '#ffffff',
+      bgColorForBrightness,
       design.overlay_color || '#000000',
-      design.overlay_opacity || 0
+      overlayOpacityForCheck
     );
     titleColor = autoColor;
     descriptionColor = autoColor;
-    buttonTextColor = autoColor;
+    // Only override button text color if user hasn't customized it or if it matches the default
+    if (!design.button_text_color || design.button_text_color === '#ffffff') {
+      buttonTextColor = autoColor;
+    }
   }
 
   const getButtonStyle = () => {
@@ -77,23 +93,23 @@ export default function LinkpagePreview({ data = {} }) {
   };
 
   const backgroundStyle = (() => {
-    const saturation = design.background_saturation ?? 100;
     const backgroundOpacity = design.background_opacity ?? 1;
 
     if (design.background_type === 'gradient') {
       return {
         background: `linear-gradient(135deg, ${design.gradient_start || '#2f3f7f'} 0%, ${design.gradient_end || '#ffffff'} 100%)`,
-        filter: saturation !== 100 ? `saturate(${saturation}%)` : undefined,
       };
     }
 
     if (design.background_type === 'image' && design.background_image && !backgroundError) {
+      const saturation = design.background_saturation ?? 100;
       return {
         backgroundImage: `url(${design.background_image})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         opacity: backgroundOpacity,
-        filter: saturation !== 100 ? `saturate(${saturation}%)` : undefined,
+        // Only apply saturation filter to image backgrounds
+        filter: saturation !== 100 ? `saturate(${saturation / 100})` : undefined,
       };
     }
 

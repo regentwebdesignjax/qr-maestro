@@ -157,8 +157,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
-  const saturation = safeDesign.background_saturation ?? 100;
-
   if (safeDesign.background_type === 'solid') {
     backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
   } else if (safeDesign.background_type === 'gradient') {
@@ -172,8 +170,10 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     backgroundStyle.backgroundPosition = 'center';
     backgroundStyle.backgroundAttachment = 'fixed';
     backgroundStyle.opacity = safeDesign.background_opacity ?? 1;
+    const saturation = safeDesign.background_saturation ?? 100;
     if (saturation !== 100) {
-      backgroundStyle.filter = `saturate(${saturation}%)`;
+      // CSS saturate filter uses 1.0 as 100%, so divide by 100
+      backgroundStyle.filter = `saturate(${saturation / 100})`;
     }
   }
 
@@ -193,15 +193,31 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   let descriptionColor = safeDesign.description_color || '#666666';
   let buttonTextColor = safeDesign.button_text_color || '#ffffff';
 
-  if (safeDesign.auto_font_color && safeDesign.background_type === 'image') {
+  // Auto font color applies to all background types when enabled
+  if (safeDesign.auto_font_color) {
+    let bgColorForBrightness = safeDesign.background_color || '#ffffff';
+    let overlayOpacityForCheck = safeDesign.overlay_opacity || 0;
+
+    // For image backgrounds, consider the overlay if it's significant
+    if (safeDesign.background_type === 'image' && overlayOpacityForCheck > 0.5) {
+      bgColorForBrightness = safeDesign.overlay_color || '#000000';
+    }
+    // For gradient backgrounds, check the starting color
+    else if (safeDesign.background_type === 'gradient') {
+      bgColorForBrightness = safeDesign.gradient_start || '#2f3f7f';
+    }
+
     const autoColor = getAutoFontColor(
-      safeDesign.background_color || '#ffffff',
+      bgColorForBrightness,
       safeDesign.overlay_color || '#000000',
-      safeDesign.overlay_opacity || 0
+      overlayOpacityForCheck
     );
     titleColor = autoColor;
     descriptionColor = autoColor;
-    buttonTextColor = autoColor;
+    // Only override button text color if user hasn't customized it or if it matches the default
+    if (!safeDesign.button_text_color || safeDesign.button_text_color === '#ffffff') {
+      buttonTextColor = autoColor;
+    }
   }
 
   const titleStyle = {
