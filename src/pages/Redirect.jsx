@@ -6,6 +6,7 @@ import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, 
 import BrandedLayout from '@/components/qr/BrandedLayout';
 import BusinessCardDisplay from '@/components/qr/BusinessCardDisplay';
 import TicketCouponDisplay from '@/components/qr/TicketCouponDisplay';
+import LinkpageLanding from '@/pages/LinkpageLanding';
 
 function parseWifi(content) {
   // Standard QR WiFi format: WIFI:S:ssid;T:WPA;P:password;;
@@ -403,6 +404,17 @@ export default function Redirect() {
           data.bc.qr_code_id = data.id || '';
         }
 
+        // Parse linkpage JSON content
+        if (data.content_type === 'linkpages') {
+          try {
+            data.linkpage = JSON.parse(data.content);
+          } catch {
+            data.linkpage = {};
+          }
+          // Attach QR code ID for tracking
+          data.linkpage.qrCodeId = data.id || '';
+        }
+
         setState({ status: 'display', data });
       } catch (error) {
         console.error('Redirect error:', error);
@@ -455,6 +467,11 @@ export default function Redirect() {
   // Business card gets its own full-page display
   if (data.content_type === 'business_card') {
     return <BusinessCardDisplay data={{ ...data.bc, design_config: dc }} />;
+  }
+
+  // Linkpage gets its own full-page display
+  if (data.content_type === 'linkpages') {
+    return <LinkpageLanding initialData={data.linkpage} qrCodeId={data.id} shortCode={data.short_code} />;
   }
 
   return (
