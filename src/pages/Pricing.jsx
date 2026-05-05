@@ -332,7 +332,7 @@ export default function Pricing() {
         {/* FAQ or Additional Info */}
         <div className="mt-16 text-center max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            All plans include
+            All paid plans include:
           </h2>
           <div className="grid md:grid-cols-2 gap-4 text-left">
             <div className="flex items-start">
