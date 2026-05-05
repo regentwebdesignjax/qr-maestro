@@ -9,21 +9,6 @@ const FONT_MAP = {
   roboto: "'Roboto', sans-serif"
 };
 
-function getColorBrightness(hexColor) {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000;
-}
-
-function getAutoFontColor(bgColor, overlayColor, overlayOpacity) {
-  if (overlayOpacity > 0.5) {
-    const brightness = getColorBrightness(overlayColor);
-    return brightness > 128 ? '#000000' : '#ffffff';
-  }
-  const brightness = getColorBrightness(bgColor);
-  return brightness > 128 ? '#000000' : '#ffffff';
-}
 
 const BUTTON_STYLES = {
   rounded: 'rounded-lg',
@@ -143,7 +128,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     overlay_opacity: 0,
     background_opacity: 1,
     background_saturation: 100,
-    auto_font_color: false,
     font_family: 'open_sans',
     title_color: '#000000',
     description_color: '#666666',
@@ -197,34 +181,9 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     pointerEvents: 'none'
   } : null;
 
-  let titleColor = safeDesign.title_color || '#000000';
-  let descriptionColor = safeDesign.description_color || '#666666';
-  let buttonTextColor = safeDesign.button_text_color || '#ffffff';
-
-  // Auto font color applies to all background types when enabled
-  // BUT ONLY FOR TITLE AND DESCRIPTION - not buttons
-  if (safeDesign.auto_font_color) {
-    let bgColorForBrightness = safeDesign.background_color || '#ffffff';
-    let overlayOpacityForCheck = safeDesign.overlay_opacity || 0;
-
-    // For image backgrounds, consider the overlay if it's significant
-    if (safeDesign.background_type === 'image' && overlayOpacityForCheck > 0.5) {
-      bgColorForBrightness = safeDesign.overlay_color || '#000000';
-    }
-    // For gradient backgrounds, check the starting color
-    else if (safeDesign.background_type === 'gradient') {
-      bgColorForBrightness = safeDesign.gradient_start || '#2f3f7f';
-    }
-
-    const autoColor = getAutoFontColor(
-      bgColorForBrightness,
-      safeDesign.overlay_color || '#000000',
-      overlayOpacityForCheck
-    );
-    titleColor = autoColor;
-    descriptionColor = autoColor;
-    // Do NOT override button text color - it's fully under user control
-  }
+  const titleColor = safeDesign.title_color || '#000000';
+  const descriptionColor = safeDesign.description_color || '#666666';
+  const buttonTextColor = safeDesign.button_text_color || '#ffffff';
 
   const titleStyle = {
     color: titleColor,

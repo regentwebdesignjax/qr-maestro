@@ -67,7 +67,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       overlay_opacity: 0,
       background_opacity: 1,
       background_saturation: 100,
-      auto_font_color: true,
       font_family: 'open_sans',
       title_color: '#000000',
       description_color: '#666666',
@@ -449,15 +448,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                       <p className="text-xs text-gray-500 mt-1">{formData.design.background_saturation}%</p>
                     </div>
 
-                    <label className="flex items-center gap-2 mt-3">
-                      <input
-                        type="checkbox"
-                        checked={formData.design.auto_font_color}
-                        onChange={(e) => handleChange('design.auto_font_color', e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-sm text-gray-700">Auto-adjust text color for readability</span>
-                    </label>
                   </div>
                 )}
               </div>

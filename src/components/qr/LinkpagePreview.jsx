@@ -8,21 +8,6 @@ const FONT_FAMILIES = {
   roboto: "'Roboto', sans-serif",
 };
 
-function getColorBrightness(hexColor) {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000;
-}
-
-function getAutoFontColor(bgColor, overlayColor, overlayOpacity) {
-  if (overlayOpacity > 0.5) {
-    const brightness = getColorBrightness(overlayColor);
-    return brightness > 128 ? '#000000' : '#ffffff';
-  }
-  const brightness = getColorBrightness(bgColor);
-  return brightness > 128 ? '#000000' : '#ffffff';
-}
 
 export default function LinkpagePreview({ data = {} }) {
   const [profileError, setProfileError] = useState(false);
@@ -36,34 +21,9 @@ export default function LinkpagePreview({ data = {} }) {
   const design = data.design || {};
   const fontFamily = FONT_FAMILIES[design.font_family] || FONT_FAMILIES.open_sans;
 
-  let titleColor = design.title_color || '#000000';
-  let descriptionColor = design.description_color || '#666666';
-  let buttonTextColor = design.button_text_color || '#ffffff';
-
-  // Auto font color applies to all background types when enabled
-  // BUT ONLY FOR TITLE AND DESCRIPTION - not buttons
-  if (design.auto_font_color) {
-    let bgColorForBrightness = design.background_color || '#ffffff';
-    let overlayOpacityForCheck = design.overlay_opacity || 0;
-
-    // For image backgrounds, consider the overlay if it's significant
-    if (design.background_type === 'image' && overlayOpacityForCheck > 0.5) {
-      bgColorForBrightness = design.overlay_color || '#000000';
-    }
-    // For gradient backgrounds, check the starting color
-    else if (design.background_type === 'gradient') {
-      bgColorForBrightness = design.gradient_start || '#2f3f7f';
-    }
-
-    const autoColor = getAutoFontColor(
-      bgColorForBrightness,
-      design.overlay_color || '#000000',
-      overlayOpacityForCheck
-    );
-    titleColor = autoColor;
-    descriptionColor = autoColor;
-    // Do NOT override button text color - it's fully under user control
-  }
+  const titleColor = design.title_color || '#000000';
+  const descriptionColor = design.description_color || '#666666';
+  const buttonTextColor = design.button_text_color || '#ffffff';
 
   const getButtonStyle = () => {
     const baseStyle = {
