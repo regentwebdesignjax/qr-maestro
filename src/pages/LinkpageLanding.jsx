@@ -9,21 +9,6 @@ const FONT_MAP = {
   roboto: "'Roboto', sans-serif"
 };
 
-function getColorBrightness(hexColor) {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000;
-}
-
-function getAutoFontColor(bgColor, overlayColor, overlayOpacity) {
-  if (overlayOpacity > 0.5) {
-    const brightness = getColorBrightness(overlayColor);
-    return brightness > 128 ? '#000000' : '#ffffff';
-  }
-  const brightness = getColorBrightness(bgColor);
-  return brightness > 128 ? '#000000' : '#ffffff';
-}
 
 const BUTTON_STYLES = {
   rounded: 'rounded-lg',
@@ -48,53 +33,19 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
-        // Fetch all linkpage QR codes and find the one matching this slug
-        // Note: In a production app, this should be a dedicated backend function
-        const result = await base44.asServiceRole.entities.QRCode.filter({
-          content_type: 'linkpages'
-        }).catch(() => []);
+        // Use backend function to resolve slug to linkpage
+        const response = await base44.functions.invoke('resolveLinkpageSlug', {
+          slug
+        });
 
-        let qrData = null;
-        for (const qr of result) {
-          try {
-            const parsed = JSON.parse(qr.content);
-            if (parsed.custom_slug === slug) {
-              qrData = qr;
-              break;
-            }
-          } catch (e) {
-            // Skip entries that can't be parsed
-          }
-        }
-
-        if (!qrData) {
+        if (!response || !response.linkpage) {
           setError('Linkpage not found');
           setLoading(false);
           return;
         }
 
-        setQrCodeId(qrData.id);
-
-        // Parse linkpage content
-        try {
-          const parsed = JSON.parse(qrData.content);
-          setLinkpageData(parsed);
-        } catch (e) {
-          console.error('Failed to parse linkpage content:', e);
-          setError('Failed to load linkpage');
-        }
-
-        // Track scan
-        if (qrData.short_code) {
-          await base44.functions.invoke('trackScan', {
-            short_code: qrData.short_code,
-            location: searchParams.get('location'),
-            utm_source: searchParams.get('utm_source'),
-            utm_medium: searchParams.get('utm_medium'),
-            utm_campaign: searchParams.get('utm_campaign')
-          }).catch(err => console.error('Failed to track scan:', err));
-        }
-
+        setQrCodeId(response.id);
+        setLinkpageData(response.linkpage);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching linkpage:', err);
@@ -143,14 +94,12 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     overlay_opacity: 0,
     background_opacity: 1,
     background_saturation: 100,
-    auto_font_color: false,
     font_family: 'open_sans',
     title_color: '#000000',
     description_color: '#666666',
     button_style: 'rounded',
     button_color: '#2f3f7f',
-    button_text_color: '#ffffff',
-    show_branding: true
+    button_text_color: '#ffffff'
   };
 
   let backgroundStyle = {
@@ -197,34 +146,9 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     pointerEvents: 'none'
   } : null;
 
-  let titleColor = safeDesign.title_color || '#000000';
-  let descriptionColor = safeDesign.description_color || '#666666';
-  let buttonTextColor = safeDesign.button_text_color || '#ffffff';
-
-  // Auto font color applies to all background types when enabled
-  // BUT ONLY FOR TITLE AND DESCRIPTION - not buttons
-  if (safeDesign.auto_font_color) {
-    let bgColorForBrightness = safeDesign.background_color || '#ffffff';
-    let overlayOpacityForCheck = safeDesign.overlay_opacity || 0;
-
-    // For image backgrounds, consider the overlay if it's significant
-    if (safeDesign.background_type === 'image' && overlayOpacityForCheck > 0.5) {
-      bgColorForBrightness = safeDesign.overlay_color || '#000000';
-    }
-    // For gradient backgrounds, check the starting color
-    else if (safeDesign.background_type === 'gradient') {
-      bgColorForBrightness = safeDesign.gradient_start || '#2f3f7f';
-    }
-
-    const autoColor = getAutoFontColor(
-      bgColorForBrightness,
-      safeDesign.overlay_color || '#000000',
-      overlayOpacityForCheck
-    );
-    titleColor = autoColor;
-    descriptionColor = autoColor;
-    // Do NOT override button text color - it's fully under user control
-  }
+  const titleColor = safeDesign.title_color || '#000000';
+  const descriptionColor = safeDesign.description_color || '#666666';
+  const buttonTextColor = safeDesign.button_text_color || '#ffffff';
 
   const titleStyle = {
     color: titleColor,
@@ -320,17 +244,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
           </div>
         )}
 
-        {/* Powered by QR Sensei */}
-        {safeDesign.show_branding !== false && (
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
-              Powered by{' '}
-              <a href="/" className="font-semibold hover:underline">
-                QR Sensei
-              </a>
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

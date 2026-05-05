@@ -67,14 +67,12 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       overlay_opacity: 0,
       background_opacity: 1,
       background_saturation: 100,
-      auto_font_color: true,
       font_family: 'open_sans',
       title_color: '#000000',
       description_color: '#666666',
       button_style: 'rounded',
       button_color: '#2f3f7f',
-      button_text_color: '#ffffff',
-      show_branding: true
+      button_text_color: '#ffffff'
     },
     custom_slug: '',
     browser_title: ''
@@ -449,15 +447,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                       <p className="text-xs text-gray-500 mt-1">{formData.design.background_saturation}%</p>
                     </div>
 
-                    <label className="flex items-center gap-2 mt-3">
-                      <input
-                        type="checkbox"
-                        checked={formData.design.auto_font_color}
-                        onChange={(e) => handleChange('design.auto_font_color', e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-sm text-gray-700">Auto-adjust text color for readability</span>
-                    </label>
                   </div>
                 )}
               </div>
@@ -578,18 +567,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                 <p className="text-xs text-gray-500 mt-1">Shown in browser tab and search results</p>
               </div>
 
-              <div className="border rounded-lg p-4">
-                <Label className="font-medium mb-3 block">Branding</Label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.design.show_branding}
-                    onChange={(e) => handleChange('design.show_branding', e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Show "Powered by QR Sensei" footer</span>
-                </label>
-              </div>
             </motion.div>
           )}
 
