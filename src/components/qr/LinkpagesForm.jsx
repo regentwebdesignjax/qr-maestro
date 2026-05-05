@@ -61,12 +61,19 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       background_type: 'solid',
       background_color: '#ffffff',
       background_image: '',
+      gradient_start: '#2f3f7f',
+      gradient_end: '#ffffff',
+      overlay_color: '#000000',
+      overlay_opacity: 0,
+      background_opacity: 1,
+      auto_font_color: true,
       font_family: 'open_sans',
       title_color: '#000000',
       description_color: '#666666',
       button_style: 'rounded',
       button_color: '#2f3f7f',
-      button_text_color: '#ffffff'
+      button_text_color: '#ffffff',
+      show_branding: true
     },
     custom_slug: '',
     browser_title: ''
@@ -317,6 +324,7 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="solid">Solid Color</SelectItem>
+                      <SelectItem value="gradient">Gradient</SelectItem>
                       <SelectItem value="image">Image</SelectItem>
                     </SelectContent>
                   </Select>
@@ -332,42 +340,109 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                   </div>
                 )}
 
+                {formData.design.background_type === 'gradient' && (
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-600">Start Color</Label>
+                      <ColorInput
+                        value={formData.design.gradient_start}
+                        onChange={(v) => handleChange('design.gradient_start', v)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-600">End Color</Label>
+                      <ColorInput
+                        value={formData.design.gradient_end}
+                        onChange={(v) => handleChange('design.gradient_end', v)}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {formData.design.background_type === 'image' && (
-                  <div>
-                    {formData.design.background_image ? (
-                      <div className="flex items-center gap-2">
-                        <img src={formData.design.background_image} alt="Background" className="w-20 h-20 object-cover rounded border" />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleChange('design.background_image', '')}
-                        >
-                          <X className="w-4 h-4 mr-1" /> Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="background-image"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleBackgroundImageUpload}
-                          disabled={uploadingBackgroundImage}
-                          className="hidden"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => document.getElementById('background-image').click()}
-                          disabled={uploadingBackgroundImage}
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          {uploadingBackgroundImage ? 'Uploading...' : 'Upload Image'}
-                        </Button>
-                        <p className="text-xs text-gray-500">Max 5MB</p>
-                      </div>
-                    )}
+                  <div className="space-y-3">
+                    <div>
+                      {formData.design.background_image ? (
+                        <div className="flex items-center gap-2">
+                          <img src={formData.design.background_image} alt="Background" className="w-20 h-20 object-cover rounded border" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleChange('design.background_image', '')}
+                          >
+                            <X className="w-4 h-4 mr-1" /> Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            id="background-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBackgroundImageUpload}
+                            disabled={uploadingBackgroundImage}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('background-image').click()}
+                            disabled={uploadingBackgroundImage}
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            {uploadingBackgroundImage ? 'Uploading...' : 'Upload Image'}
+                          </Button>
+                          <p className="text-xs text-gray-500">Max 5MB</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-2 block">Background Opacity</Label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={formData.design.background_opacity}
+                        onChange={(e) => handleChange('design.background_opacity', parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{Math.round(formData.design.background_opacity * 100)}%</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-gray-600">Color Overlay</Label>
+                      <ColorInput
+                        value={formData.design.overlay_color}
+                        onChange={(v) => handleChange('design.overlay_color', v)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-2 block">Overlay Opacity</Label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={formData.design.overlay_opacity}
+                        onChange={(e) => handleChange('design.overlay_opacity', parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{Math.round(formData.design.overlay_opacity * 100)}%</p>
+                    </div>
+
+                    <label className="flex items-center gap-2 mt-3">
+                      <input
+                        type="checkbox"
+                        checked={formData.design.auto_font_color}
+                        onChange={(e) => handleChange('design.auto_font_color', e.target.checked)}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-gray-700">Auto-adjust text color for readability</span>
+                    </label>
                   </div>
                 )}
               </div>
@@ -486,6 +561,19 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                   onChange={(e) => handleChange('browser_title', e.target.value)}
                 />
                 <p className="text-xs text-gray-500 mt-1">Shown in browser tab and search results</p>
+              </div>
+
+              <div className="border rounded-lg p-4">
+                <Label className="font-medium mb-3 block">Branding</Label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.design.show_branding}
+                    onChange={(e) => handleChange('design.show_branding', e.target.checked)}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-gray-700">Show "Powered by QR Sensei" footer</span>
+                </label>
               </div>
             </motion.div>
           )}
