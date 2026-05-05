@@ -189,6 +189,10 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Linkpages (Static & Dynamic QRs)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Unlimited Static QR codes</span>
                 </li>
                 <li className="flex items-start">
@@ -279,6 +283,10 @@ export default function Pricing() {
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">{totalSeats} Digital Business Cards</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Linkpages (Static & Dynamic QRs)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
