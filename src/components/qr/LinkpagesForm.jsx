@@ -440,8 +440,8 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                       <input
                         type="range"
                         min="0"
-                        max="200"
-                        step="10"
+                        max="100"
+                        step="5"
                         value={formData.design.background_saturation}
                         onChange={(e) => handleChange('design.background_saturation', parseInt(e.target.value))}
                         className="w-full"
