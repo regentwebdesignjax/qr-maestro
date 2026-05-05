@@ -133,8 +133,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     description_color: '#666666',
     button_style: 'rounded',
     button_color: '#2f3f7f',
-    button_text_color: '#ffffff',
-    show_branding: true
+    button_text_color: '#ffffff'
   };
 
   let backgroundStyle = {
@@ -279,17 +278,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
           </div>
         )}
 
-        {/* Powered by QR Sensei */}
-        {safeDesign.show_branding !== false && (
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
-              Powered by{' '}
-              <a href="/" className="font-semibold hover:underline">
-                QR Sensei
-              </a>
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

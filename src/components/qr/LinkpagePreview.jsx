@@ -199,13 +199,6 @@ export default function LinkpagePreview({ data = {} }) {
               )}
             </div>
 
-            {/* Powered by QR Sensei */}
-            {design.show_branding !== false && (
-              <div className="mt-6 text-center text-xs text-gray-500">
-                Powered by{' '}
-                <span className="font-semibold">QR Sensei</span>
-              </div>
-            )}
           </div>
         </div>
 

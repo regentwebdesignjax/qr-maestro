@@ -72,8 +72,7 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       description_color: '#666666',
       button_style: 'rounded',
       button_color: '#2f3f7f',
-      button_text_color: '#ffffff',
-      show_branding: true
+      button_text_color: '#ffffff'
     },
     custom_slug: '',
     browser_title: ''
@@ -568,18 +567,6 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                 <p className="text-xs text-gray-500 mt-1">Shown in browser tab and search results</p>
               </div>
 
-              <div className="border rounded-lg p-4">
-                <Label className="font-medium mb-3 block">Branding</Label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.design.show_branding}
-                    onChange={(e) => handleChange('design.show_branding', e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Show "Powered by QR Sensei" footer</span>
-                </label>
-              </div>
             </motion.div>
           )}
 
