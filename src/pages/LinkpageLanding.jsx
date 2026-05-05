@@ -108,30 +108,44 @@ export default function LinkpageLanding() {
   }
 
   const { profile_image, title, description, links, design, browser_title } = linkpageData;
+
+  // Provide default design values if missing
+  const safeDesign = design || {
+    background_type: 'solid',
+    background_color: '#ffffff',
+    background_image: '',
+    font_family: 'open_sans',
+    title_color: '#000000',
+    description_color: '#666666',
+    button_style: 'rounded',
+    button_color: '#2f3f7f',
+    button_text_color: '#ffffff'
+  };
+
   const backgroundStyle = {
-    backgroundColor: design.background_color,
-    backgroundImage: design.background_type === 'image' && design.background_image
-      ? `url(${design.background_image})`
+    backgroundColor: safeDesign.background_color || '#ffffff',
+    backgroundImage: safeDesign.background_type === 'image' && safeDesign.background_image
+      ? `url(${safeDesign.background_image})`
       : 'none',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    fontFamily: FONT_MAP[design.font_family] || FONT_MAP.open_sans
+    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   const titleStyle = {
-    color: design.title_color,
-    fontFamily: FONT_MAP[design.font_family] || FONT_MAP.open_sans
+    color: safeDesign.title_color || '#000000',
+    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   const descriptionStyle = {
-    color: design.description_color,
-    fontFamily: FONT_MAP[design.font_family] || FONT_MAP.open_sans
+    color: safeDesign.description_color || '#666666',
+    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   const buttonStyle = {
-    backgroundColor: design.button_color,
-    color: design.button_text_color,
-    fontFamily: FONT_MAP[design.font_family] || FONT_MAP.open_sans
+    backgroundColor: safeDesign.button_color || '#2f3f7f',
+    color: safeDesign.button_text_color || '#ffffff',
+    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   // Update document title
@@ -165,7 +179,7 @@ export default function LinkpageLanding() {
               src={profile_image}
               alt="Profile"
               className="w-20 h-20 rounded-full object-cover border-4"
-              style={{ borderColor: design.title_color }}
+              style={{ borderColor: safeDesign.title_color || '#000000' }}
             />
           </div>
         )}
@@ -200,7 +214,7 @@ export default function LinkpageLanding() {
                   onClick={() => handleLinkClick(link.button_url, idx)}
                   style={buttonStyle}
                   className={`w-full px-6 py-3 font-semibold text-center transition-opacity hover:opacity-90 ${
-                    BUTTON_STYLES[design.button_style] || BUTTON_STYLES.rounded
+                    BUTTON_STYLES[safeDesign.button_style] || BUTTON_STYLES.rounded
                   }`}
                 >
                   {link.button_text}
