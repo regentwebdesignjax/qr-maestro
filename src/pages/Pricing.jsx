@@ -361,7 +361,11 @@ export default function Pricing() {
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>One monthly (or annual) price –– No hidden fees or charges</span>
+              <span>Real-time analytics & scan tracking</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>One monthly (or annual) price – No hidden fees or charges</span>
             </div>
           </div>
         </div>
