@@ -142,6 +142,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     overlay_color: '#000000',
     overlay_opacity: 0,
     background_opacity: 1,
+    background_saturation: 100,
     auto_font_color: false,
     font_family: 'open_sans',
     title_color: '#000000',
@@ -156,6 +157,8 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
+  const saturation = safeDesign.background_saturation ?? 100;
+
   if (safeDesign.background_type === 'solid') {
     backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
   } else if (safeDesign.background_type === 'gradient') {
@@ -169,6 +172,9 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     backgroundStyle.backgroundPosition = 'center';
     backgroundStyle.backgroundAttachment = 'fixed';
     backgroundStyle.opacity = safeDesign.background_opacity ?? 1;
+    if (saturation !== 100) {
+      backgroundStyle.filter = `saturate(${saturation}%)`;
+    }
   }
 
   const hasImageBackground = safeDesign.background_type === 'image' && safeDesign.overlay_opacity > 0;

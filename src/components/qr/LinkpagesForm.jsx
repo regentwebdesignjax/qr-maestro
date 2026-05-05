@@ -66,6 +66,7 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       overlay_color: '#000000',
       overlay_opacity: 0,
       background_opacity: 1,
+      background_saturation: 100,
       auto_font_color: true,
       font_family: 'open_sans',
       title_color: '#000000',
@@ -432,6 +433,20 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                         className="w-full"
                       />
                       <p className="text-xs text-gray-500 mt-1">{Math.round(formData.design.overlay_opacity * 100)}%</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-2 block">Image Saturation</Label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="200"
+                        step="10"
+                        value={formData.design.background_saturation}
+                        onChange={(e) => handleChange('design.background_saturation', parseInt(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{formData.design.background_saturation}%</p>
                     </div>
 
                     <label className="flex items-center gap-2 mt-3">
