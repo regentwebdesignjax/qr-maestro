@@ -459,12 +459,13 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
                 <Label htmlFor="custom-slug">Custom URL Slug (Optional)</Label>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">qr-sensei.com/linkpage/</span>
+                    <span className="text-sm text-gray-600 whitespace-nowrap">qr-sensei.com/linkpage/</span>
                     <Input
                       id="custom-slug"
                       placeholder="e.g., stark-industries"
                       value={formData.custom_slug}
                       onChange={(e) => handleChange('custom_slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                      className="max-w-xs"
                     />
                   </div>
                   <div className="p-2 bg-blue-50 rounded border border-blue-200">
