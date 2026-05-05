@@ -15,15 +15,20 @@ const BUTTON_STYLES = {
   pill: 'rounded-full'
 };
 
-export default function LinkpageLanding() {
+export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, shortCode: propShortCode }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
-  const [linkpageData, setLinkpageData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [linkpageData, setLinkpageData] = useState(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
-  const [qrCodeId, setQrCodeId] = useState(null);
+  const [qrCodeId, setQrCodeId] = useState(propQrCodeId || null);
 
   useEffect(() => {
+    // If data was provided as props (from Redirect.jsx), skip fetching
+    if (initialData) {
+      return;
+    }
+
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
@@ -82,8 +87,10 @@ export default function LinkpageLanding() {
       }
     };
 
-    fetchLinkpage();
-  }, [slug, searchParams]);
+    if (!initialData) {
+      fetchLinkpage();
+    }
+  }, [slug, searchParams, initialData]);
 
   if (loading) {
     return (
