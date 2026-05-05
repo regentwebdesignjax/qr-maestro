@@ -2,9 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
-    // Get slug from URL params
-    const url = new URL(req.url);
-    const slug = url.searchParams.get('slug');
+    // Get slug from request body
+    const body = await req.json();
+    const slug = body.slug;
 
     if (!slug) {
       return Response.json({ error: 'No slug provided' }, { status: 400 });
