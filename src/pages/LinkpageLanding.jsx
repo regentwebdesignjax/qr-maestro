@@ -9,6 +9,22 @@ const FONT_MAP = {
   roboto: "'Roboto', sans-serif"
 };
 
+function getColorBrightness(hexColor) {
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+function getAutoFontColor(bgColor, overlayColor, overlayOpacity) {
+  if (overlayOpacity > 0.5) {
+    const brightness = getColorBrightness(overlayColor);
+    return brightness > 128 ? '#000000' : '#ffffff';
+  }
+  const brightness = getColorBrightness(bgColor);
+  return brightness > 128 ? '#000000' : '#ffffff';
+}
+
 const BUTTON_STYLES = {
   rounded: 'rounded-lg',
   square: 'rounded-none',
@@ -121,37 +137,80 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     background_type: 'solid',
     background_color: '#ffffff',
     background_image: '',
+    gradient_start: '#2f3f7f',
+    gradient_end: '#ffffff',
+    overlay_color: '#000000',
+    overlay_opacity: 0,
+    background_opacity: 1,
+    auto_font_color: false,
     font_family: 'open_sans',
     title_color: '#000000',
     description_color: '#666666',
     button_style: 'rounded',
     button_color: '#2f3f7f',
-    button_text_color: '#ffffff'
+    button_text_color: '#ffffff',
+    show_branding: true
   };
 
-  const backgroundStyle = {
-    backgroundColor: safeDesign.background_color || '#ffffff',
-    backgroundImage: safeDesign.background_type === 'image' && safeDesign.background_image
-      ? `url(${safeDesign.background_image})`
-      : 'none',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+  let backgroundStyle = {
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
+  if (safeDesign.background_type === 'solid') {
+    backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
+  } else if (safeDesign.background_type === 'gradient') {
+    backgroundStyle.background = `linear-gradient(135deg, ${safeDesign.gradient_start || '#2f3f7f'} 0%, ${safeDesign.gradient_end || '#ffffff'} 100%)`;
+  } else if (safeDesign.background_type === 'image') {
+    backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
+    backgroundStyle.backgroundImage = safeDesign.background_image
+      ? `url(${safeDesign.background_image})`
+      : 'none';
+    backgroundStyle.backgroundSize = 'cover';
+    backgroundStyle.backgroundPosition = 'center';
+    backgroundStyle.backgroundAttachment = 'fixed';
+    backgroundStyle.opacity = safeDesign.background_opacity ?? 1;
+  }
+
+  const hasImageBackground = safeDesign.background_type === 'image' && safeDesign.overlay_opacity > 0;
+  const overlayStyle = hasImageBackground ? {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: safeDesign.overlay_color || '#000000',
+    opacity: safeDesign.overlay_opacity || 0,
+    pointerEvents: 'none'
+  } : null;
+
+  let titleColor = safeDesign.title_color || '#000000';
+  let descriptionColor = safeDesign.description_color || '#666666';
+  let buttonTextColor = safeDesign.button_text_color || '#ffffff';
+
+  if (safeDesign.auto_font_color && safeDesign.background_type === 'image') {
+    const autoColor = getAutoFontColor(
+      safeDesign.background_color || '#ffffff',
+      safeDesign.overlay_color || '#000000',
+      safeDesign.overlay_opacity || 0
+    );
+    titleColor = autoColor;
+    descriptionColor = autoColor;
+    buttonTextColor = autoColor;
+  }
+
   const titleStyle = {
-    color: safeDesign.title_color || '#000000',
+    color: titleColor,
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   const descriptionStyle = {
-    color: safeDesign.description_color || '#666666',
+    color: descriptionColor,
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
   const buttonStyle = {
     backgroundColor: safeDesign.button_color || '#2f3f7f',
-    color: safeDesign.button_text_color || '#ffffff',
+    color: buttonTextColor,
     fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
   };
 
@@ -177,8 +236,9 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   };
 
   return (
-    <div style={backgroundStyle} className="min-h-screen p-4 sm:p-6 md:p-8">
-      <div className="max-w-md mx-auto">
+    <div style={backgroundStyle} className="min-h-screen p-4 sm:p-6 md:p-8 relative">
+      {overlayStyle && <div style={overlayStyle}></div>}
+      <div className="max-w-md mx-auto relative z-10">
         {/* Profile Image */}
         {profile_image && (
           <div className="mb-6 flex justify-center">
@@ -231,15 +291,17 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
           </div>
         )}
 
-        {/* Powered by QR Maestro */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
-            Powered by{' '}
-            <a href="/" className="font-semibold hover:underline">
-              QR Maestro
-            </a>
-          </p>
-        </div>
+        {/* Powered by QR Sensei */}
+        {safeDesign.show_branding !== false && (
+          <div className="mt-8 text-center">
+            <p className="text-xs text-gray-500">
+              Powered by{' '}
+              <a href="/" className="font-semibold hover:underline">
+                QR Sensei
+              </a>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
