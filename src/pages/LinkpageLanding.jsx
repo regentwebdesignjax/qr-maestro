@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const FONT_MAP = {
@@ -18,6 +18,8 @@ const BUTTON_STYLES = {
 export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, shortCode: propShortCode }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate(); // Used for seamless client-side redirect
+  
   const [linkpageData, setLinkpageData] = useState(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
@@ -37,18 +39,29 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
           slug
         });
 
+        console.log("Backend response for slug:", slug, response);
+
+        // Explicitly handle inactive subscription states
+        if (response && response.content_type === 'inactive') {
+          setError(response.message || 'This Linkpage is inactive.');
+          setLoading(false);
+          return;
+        }
+
+        // Handle missing data (Backend could not find the slug)
         if (!response || !response.linkpage) {
-          setError('Linkpage not found');
+          setError(response?.error || 'Linkpage not found. Check database content_type and custom_slug.');
           setLoading(false);
           return;
         }
 
         // ==========================================
-        // SCENARIO B: Redirect to tracking link
+        // SCENARIO B: Redirect to tracking link seamlessly
         // ==========================================
         if (response.short_code) {
-          window.location.href = `/r?code=${response.short_code}`;
-          return; // Stop execution to allow redirect
+          // React Router navigate replaces the URL smoothly without a hard page reload
+          navigate(`/r?code=${response.short_code}`, { replace: true });
+          return; // Stop execution
         }
         // ==========================================
 
@@ -65,7 +78,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     if (!initialData) {
       fetchLinkpage();
     }
-  }, [slug, searchParams, initialData]);
+  }, [slug, searchParams, initialData, navigate]);
 
   if (loading) {
     return (
@@ -83,7 +96,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Linkpage Not Found</h1>
-          <p className="text-gray-600">{error || 'The linkpage you are looking for does not exist.'}</p>
+          <p className="text-gray-600 max-w-sm mx-auto">{error || 'The linkpage you are looking for does not exist.'}</p>
         </div>
       </div>
     );
@@ -123,7 +136,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
   }
 
-  // Separate background image layer with saturation filter - only applied to the image, not content
+  // Separate background image layer with saturation filter
   const backgroundImageStyle = safeDesign.background_type === 'image' && safeDesign.background_image ? {
     position: 'fixed',
     top: 0,
@@ -182,7 +195,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   }, [browser_title]);
 
   const handleLinkClick = (url, index) => {
-    // Log link click
     if (qrCodeId) {
       base44.functions.invoke('trackLinkClick', {
         short_code: qrCodeId,
@@ -190,8 +202,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         link_url: url
       }).catch(err => console.error('Failed to track link click:', err));
     }
-
-    // Navigate to URL
     window.location.href = url;
   };
 
@@ -251,7 +261,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
             ))}
           </div>
         )}
-
       </div>
     </div>
   );
