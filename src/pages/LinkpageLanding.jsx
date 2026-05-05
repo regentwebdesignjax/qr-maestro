@@ -33,53 +33,19 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
-        // Fetch all linkpage QR codes and find the one matching this slug
-        // Note: In a production app, this should be a dedicated backend function
-        const result = await base44.asServiceRole.entities.QRCode.filter({
-          content_type: 'linkpages'
-        }).catch(() => []);
+        // Use backend function to resolve slug to linkpage
+        const response = await base44.functions.invoke('resolveLinkpageSlug', {
+          slug
+        });
 
-        let qrData = null;
-        for (const qr of result) {
-          try {
-            const parsed = JSON.parse(qr.content);
-            if (parsed.custom_slug === slug) {
-              qrData = qr;
-              break;
-            }
-          } catch (e) {
-            // Skip entries that can't be parsed
-          }
-        }
-
-        if (!qrData) {
+        if (!response || !response.linkpage) {
           setError('Linkpage not found');
           setLoading(false);
           return;
         }
 
-        setQrCodeId(qrData.id);
-
-        // Parse linkpage content
-        try {
-          const parsed = JSON.parse(qrData.content);
-          setLinkpageData(parsed);
-        } catch (e) {
-          console.error('Failed to parse linkpage content:', e);
-          setError('Failed to load linkpage');
-        }
-
-        // Track scan
-        if (qrData.short_code) {
-          await base44.functions.invoke('trackScan', {
-            short_code: qrData.short_code,
-            location: searchParams.get('location'),
-            utm_source: searchParams.get('utm_source'),
-            utm_medium: searchParams.get('utm_medium'),
-            utm_campaign: searchParams.get('utm_campaign')
-          }).catch(err => console.error('Failed to track scan:', err));
-        }
-
+        setQrCodeId(response.id);
+        setLinkpageData(response.linkpage);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching linkpage:', err);
