@@ -33,7 +33,8 @@
         "mp3",
         "call",
         "sms",
-        "business_card"
+        "business_card",
+        "linkpages"
       ],
       "description": "Type of content encoded in the QR code"
     },
