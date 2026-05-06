@@ -46,6 +46,14 @@ Deno.serve(async (req) => {
     if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
       try {
         const linkpageData = JSON.parse(qrCodeData.content);
+        console.log('[createQRCode] Parsed linkpage data:', {
+          custom_slug: linkpageData.custom_slug,
+          browser_title: linkpageData.browser_title,
+          title: linkpageData.title,
+          has_links: !!linkpageData.links,
+          content_length: qrCodeData.content.length
+        });
+
         if (linkpageData.custom_slug) {
           const existingQRs = await base44.asServiceRole.entities.QRCode.filter({
             content_type: 'linkpages'
@@ -68,11 +76,23 @@ Deno.serve(async (req) => {
           }
         }
       } catch (err) {
-        console.error('Error checking slug uniqueness:', err);
+        console.error('[createQRCode] Error checking slug uniqueness:', err);
       }
     }
 
     const created = await base44.entities.QRCode.create(qrCodeData);
+
+    // Log the created QR code for linkpages
+    if (qrCodeData.content_type === 'linkpages') {
+      console.log('[createQRCode] Created linkpage QR code:', {
+        id: created.id,
+        name: created.name,
+        content_type: created.content_type,
+        has_content: !!created.content,
+        content_length: created.content?.length || 0,
+        owner_email: created.owner_email
+      });
+    }
 
     return Response.json({ qrCode: created });
   } catch (error) {
