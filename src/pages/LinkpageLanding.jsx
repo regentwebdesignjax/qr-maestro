@@ -33,43 +33,35 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         console.log(`[LinkpageLanding] Resolving slug: "${slug}"`);
         const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
         console.log(`[LinkpageLanding] Backend response:`, response);
-        console.log(`[LinkpageLanding] Response structure check:`, {
-          has_response: !!response,
-          response_keys: response ? Object.keys(response) : [],
-          has_linkpage: !!response?.linkpage,
-          linkpage_keys: response?.linkpage ? Object.keys(response.linkpage) : [],
-          linkpage_value: response?.linkpage,
-          has_short_code: !!response?.short_code,
-          short_code_value: response?.short_code,
-          content_type: response?.content_type,
-          id: response?.id,
-          response_stringified: JSON.stringify(response).substring(0, 200)
-        });
+
+        // Unwrap Axios response if needed
+        const resolvedData = response.data || response;
+        console.log(`[LinkpageLanding] Resolved data:`, resolvedData);
 
         // Handle inactive subscription
-        if (response && response.content_type === 'inactive') {
+        if (resolvedData && resolvedData.content_type === 'inactive') {
           console.log(`[LinkpageLanding] Linkpage is inactive`);
-          setError(response.message || 'This Linkpage is inactive.');
+          setError(resolvedData.message || 'This Linkpage is inactive.');
           setLoading(false);
           return;
         }
 
         // Handle missing data
-        if (!response || !response.linkpage) {
+        if (!resolvedData || !resolvedData.linkpage) {
           console.log(`[LinkpageLanding] No linkpage data in response`);
-          setError(response?.error || 'Linkpage not found');
+          setError(resolvedData?.error || 'Linkpage not found');
           setLoading(false);
           return;
         }
 
         // If a short_code exists, redirect seamlessly to the tracking link
-        if (response.short_code) {
-          navigate(`/r?code=${response.short_code}`, { replace: true });
+        if (resolvedData.short_code) {
+          navigate(`/r?code=${resolvedData.short_code}`, { replace: true });
           return;
         }
 
-        setQrCodeId(response.id);
-        setLinkpageData(response.linkpage);
+        setQrCodeId(resolvedData.id);
+        setLinkpageData(resolvedData.linkpage);
         setLoading(false);
       } catch (err) {
         console.error('Error resolving linkpage slug:', err);
