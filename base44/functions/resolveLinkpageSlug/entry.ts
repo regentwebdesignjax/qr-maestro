@@ -30,10 +30,19 @@ Deno.serve(async (req) => {
 
       try {
         const parsed = JSON.parse(qr.content || '{}');
-        console.log(`[resolveLinkpageSlug] QR ${qr.id}: custom_slug="${parsed.custom_slug}", active=${qr.is_active}`);
+        const parsedSlug = parsed.custom_slug;
+        const matches = parsedSlug === slug;
+
+        console.log(`[resolveLinkpageSlug] Checking QR ${qr.id}:`, {
+          stored_custom_slug: parsedSlug,
+          requested_slug: slug,
+          matches: matches,
+          is_active: qr.is_active,
+          content_preview: qr.content ? qr.content.substring(0, 150) : 'NO_CONTENT'
+        });
 
         // Only match if custom_slug exists and equals the requested slug
-        if (parsed.custom_slug && parsed.custom_slug === slug) {
+        if (parsedSlug && matches) {
           console.log(`[resolveLinkpageSlug] ✓ MATCH FOUND for slug "${slug}"`);
           matchingQR = qr;
           break;
