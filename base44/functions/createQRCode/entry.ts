@@ -15,21 +15,6 @@ Deno.serve(async (req) => {
 
     const qrCodeData = await req.json();
 
-    console.log('[createQRCode] Raw request body (req.json()):', {
-      keys: Object.keys(qrCodeData),
-      values: qrCodeData,
-      stringified: JSON.stringify(qrCodeData)
-    });
-      name: qrCodeData.name,
-      content_type: qrCodeData.content_type,
-      type: qrCodeData.type,
-      is_active: qrCodeData.is_active,
-      short_code: qrCodeData.short_code,
-      content_length: qrCodeData.content?.length || 0,
-      has_custom_slug: qrCodeData.content?.includes('custom_slug') || false,
-      keys: Object.keys(qrCodeData)
-    });
-
     // Determine if user is Pro
     const isPro = user.role === 'admin' ||
       (user.subscription_tier === 'pro' && user.subscription_status === 'active');
@@ -61,13 +46,6 @@ Deno.serve(async (req) => {
     if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
       try {
         const linkpageData = JSON.parse(qrCodeData.content);
-        console.log('[createQRCode] Parsed linkpage data:', {
-          custom_slug: linkpageData.custom_slug,
-          browser_title: linkpageData.browser_title,
-          title: linkpageData.title,
-          has_links: !!linkpageData.links,
-          content_length: qrCodeData.content.length
-        });
 
         if (linkpageData.custom_slug) {
           const existingQRs = await base44.asServiceRole.entities.QRCode.filter({
@@ -95,41 +73,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    let created;
-    try {
-      created = await base44.entities.QRCode.create(qrCodeData);
-      console.log('[createQRCode] Create call succeeded');
-    } catch (createErr) {
-      console.error('[createQRCode] Create call failed:', {
-        error: createErr.message,
-        code: createErr.code,
-        response: createErr.response?.data || 'NO_RESPONSE_DATA'
-      });
-      throw createErr;
-    }
-
-    console.log('[createQRCode] Response about to be sent:', {
-      has_created: !!created,
-      created_id: created?.id,
-      created_name: created?.name,
-      created_type: created?.type,
-      created_content_type: created?.content_type,
-      created_is_active: created?.is_active,
-      created_keys: created ? Object.keys(created) : [],
-      response_will_be: { qrCode: created }
-    });
-
-    // Log the created QR code for linkpages
-    if (qrCodeData.content_type === 'linkpages') {
-      console.log('[createQRCode] Created linkpage QR code:', {
-        id: created.id,
-        name: created.name,
-        content_type: created.content_type,
-        has_content: !!created.content,
-        content_length: created.content?.length || 0,
-        owner_email: created.owner_email
-      });
-    }
+    const created = await base44.entities.QRCode.create(qrCodeData);
 
     return Response.json({ qrCode: created });
   } catch (error) {

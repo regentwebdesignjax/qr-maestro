@@ -30,13 +30,10 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
-        console.log(`[LinkpageLanding] Resolving slug: "${slug}"`);
         const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
-        console.log(`[LinkpageLanding] Backend response:`, response);
 
         // Unwrap Axios response if needed
         const resolvedData = response.data || response;
-        console.log(`[LinkpageLanding] Resolved data:`, resolvedData);
 
         // Handle inactive subscription
         if (resolvedData && resolvedData.content_type === 'inactive') {

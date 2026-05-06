@@ -17,43 +17,27 @@ Deno.serve(async (req) => {
       content_type: 'linkpages'
     }).catch(() => []);
 
-    console.log(`[resolveLinkpageSlug] Looking for slug: "${slug}"`);
-    console.log(`[resolveLinkpageSlug] Found ${qrCodes.length} linkpage QR codes`);
-
     // Find the QR code with matching custom_slug
     let matchingQR = null;
     for (const qr of qrCodes) {
       if (!qr.is_active) {
-        console.log(`[resolveLinkpageSlug] Skipping inactive QR code: ${qr.id}`);
         continue;
       }
 
       try {
         const parsed = JSON.parse(qr.content || '{}');
-        const parsedSlug = parsed.custom_slug;
-        const matches = parsedSlug === slug;
-
-        console.log(`[resolveLinkpageSlug] Checking QR ${qr.id}:`, {
-          stored_custom_slug: parsedSlug,
-          requested_slug: slug,
-          matches: matches,
-          is_active: qr.is_active,
-          content_preview: qr.content ? qr.content.substring(0, 150) : 'NO_CONTENT'
-        });
 
         // Only match if custom_slug exists and equals the requested slug
-        if (parsedSlug && matches) {
-          console.log(`[resolveLinkpageSlug] ✓ MATCH FOUND for slug "${slug}"`);
+        if (parsed.custom_slug && parsed.custom_slug === slug) {
           matchingQR = qr;
           break;
         }
-      } catch (err) {
-        console.log(`[resolveLinkpageSlug] Failed to parse QR ${qr.id}: ${err.message}`);
+      } catch {
+        // Skip QR codes with invalid JSON content
       }
     }
 
     if (!matchingQR) {
-      console.log(`[resolveLinkpageSlug] ✗ NO MATCH - Linkpage not found for slug: "${slug}"`);
       return Response.json({ error: 'Linkpage not found' }, { status: 404 });
     }
 

@@ -418,56 +418,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
 
-    // Debug logging for linkpages
-    if (isLinkpages) {
-      console.log('[QRCodeForm] formData state object before modification:', {
-        keys: Object.keys(formData),
-        name: formData.name,
-        content_type: formData.content_type,
-        type: formData.type,
-        content_length: formData.content?.length || 0,
-        design_config: !!formData.design_config,
-        all_fields: formData
-      });
-
-      console.log('[QRCodeForm] Saving Linkpage QR Code:', {
-        name: formData.name,
-        content_type: formData.content_type,
-        type: formData.type,
-        short_code: shortCode,
-        custom_slug: linkpageData.custom_slug,
-        title: linkpageData.title,
-        linkpageData: linkpageData
-      });
-      try {
-        const parsedContent = JSON.parse(formData.content);
-        console.log('[QRCodeForm] Serialized content includes custom_slug:', parsedContent.custom_slug);
-      } catch (e) {
-        console.error('[QRCodeForm] Failed to parse serialized content');
-      }
-
-      // Log exact data being sent to backend
-      const dataToSend = { ...formData, short_code: shortCode, scan_count: 0, is_active: true };
-      console.log('[QRCodeForm] Exact data sent to backend:', {
-        name: dataToSend.name,
-        content_type: dataToSend.content_type,
-        type: dataToSend.type,
-        is_active: dataToSend.is_active,
-        short_code: dataToSend.short_code,
-        content_length: dataToSend.content?.length || 0,
-        content_first_100_chars: dataToSend.content?.substring(0, 100) || 'NO_CONTENT',
-        has_custom_slug_in_content: dataToSend.content?.includes('custom_slug') || false,
-        all_keys_in_dataToSend: Object.keys(dataToSend),
-        stringified_dataToSend: JSON.stringify(dataToSend)
-      });
-    }
-
-    const finalData = { ...formData, short_code: shortCode, scan_count: 0, is_active: true };
-    console.log('[QRCodeForm] About to call onSave with:', {
-      keys: Object.keys(finalData),
-      stringified: JSON.stringify(finalData)
-    });
-    onSave(finalData);
+    onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
   };
 
   const steps = ['QR Code Type', 'Name & Content', 'Design'];
