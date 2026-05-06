@@ -420,6 +420,16 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
     // Debug logging for linkpages
     if (isLinkpages) {
+      console.log('[QRCodeForm] formData state object before modification:', {
+        keys: Object.keys(formData),
+        name: formData.name,
+        content_type: formData.content_type,
+        type: formData.type,
+        content_length: formData.content?.length || 0,
+        design_config: !!formData.design_config,
+        all_fields: formData
+      });
+
       console.log('[QRCodeForm] Saving Linkpage QR Code:', {
         name: formData.name,
         content_type: formData.content_type,
@@ -446,11 +456,18 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
         short_code: dataToSend.short_code,
         content_length: dataToSend.content?.length || 0,
         content_first_100_chars: dataToSend.content?.substring(0, 100) || 'NO_CONTENT',
-        has_custom_slug_in_content: dataToSend.content?.includes('custom_slug') || false
+        has_custom_slug_in_content: dataToSend.content?.includes('custom_slug') || false,
+        all_keys_in_dataToSend: Object.keys(dataToSend),
+        stringified_dataToSend: JSON.stringify(dataToSend)
       });
     }
 
-    onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
+    const finalData = { ...formData, short_code: shortCode, scan_count: 0, is_active: true };
+    console.log('[QRCodeForm] About to call onSave with:', {
+      keys: Object.keys(finalData),
+      stringified: JSON.stringify(finalData)
+    });
+    onSave(finalData);
   };
 
   const steps = ['QR Code Type', 'Name & Content', 'Design'];
