@@ -189,6 +189,10 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Linkpages (Static & Dynamic QRs)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Unlimited Static QR codes</span>
                 </li>
                 <li className="flex items-start">
@@ -282,6 +286,10 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Linkpages (Static & Dynamic QRs)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Unlimited Static QR Codes</span>
                 </li>
                 <li className="flex items-start">
@@ -324,7 +332,7 @@ export default function Pricing() {
         {/* FAQ or Additional Info */}
         <div className="mt-16 text-center max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            All plans include
+            All paid plans include:
           </h2>
           <div className="grid md:grid-cols-2 gap-4 text-left">
             <div className="flex items-start">
@@ -337,11 +345,27 @@ export default function Pricing() {
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Digital Business Cards</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Linkpages</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
               <span>Static & Dynamic QR code types</span>
             </div>
             <div className="flex items-start">
               <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>One monthly (or annual) price –– No hidden fees or charges</span>
+              <span>Quick & Easy QR customization</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>Real-time analytics & scan tracking</span>
+            </div>
+            <div className="flex items-start">
+              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+              <span>One monthly (or annual) price – No hidden fees or charges</span>
             </div>
           </div>
         </div>

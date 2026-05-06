@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const FONT_MAP = {
@@ -9,7 +9,6 @@ const FONT_MAP = {
   roboto: "'Roboto', sans-serif"
 };
 
-
 const BUTTON_STYLES = {
   rounded: 'rounded-lg',
   square: 'rounded-none',
@@ -18,34 +17,44 @@ const BUTTON_STYLES = {
 
 export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, shortCode: propShortCode }) {
   const { slug } = useParams();
+  const navigate = useNavigate();
+
   const [linkpageData, setLinkpageData] = useState(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
   const [qrCodeId, setQrCodeId] = useState(propQrCodeId || null);
 
   useEffect(() => {
-    // If data was provided as props (from Redirect.jsx), we render directly
-    // Otherwise (direct /linkpage/:slug access), we redirect to the short-code pattern
-    if (initialData) {
-      return;
-    }
+    if (initialData) return;
 
-    const resolveAndRedirect = async () => {
+    const fetchLinkpage = async () => {
       try {
         setLoading(true);
-        // Use backend function to resolve slug to short_code
-        const response = await base44.functions.invoke('resolveLinkpageSlug', {
-          slug
-        });
+        const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
 
-        if (!response || !response.short_code) {
-          setError('Linkpage not found');
+        // Handle inactive subscription
+        if (response && response.content_type === 'inactive') {
+          setError(response.message || 'This Linkpage is inactive.');
           setLoading(false);
           return;
         }
 
-        // Redirect to short-code pattern for consistency
-        window.location.href = `/r?code=${response.short_code}`;
+        // Handle missing data
+        if (!response || !response.linkpage) {
+          setError(response?.error || 'Linkpage not found');
+          setLoading(false);
+          return;
+        }
+
+        // If a short_code exists, redirect seamlessly to the tracking link
+        if (response.short_code) {
+          navigate(`/r?code=${response.short_code}`, { replace: true });
+          return;
+        }
+
+        setQrCodeId(response.id);
+        setLinkpageData(response.linkpage);
+        setLoading(false);
       } catch (err) {
         console.error('Error resolving linkpage slug:', err);
         setError('Failed to load linkpage');
@@ -53,10 +62,8 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
       }
     };
 
-    if (!initialData) {
-      resolveAndRedirect();
-    }
-  }, [slug, initialData]);
+    fetchLinkpage();
+  }, [slug, initialData, navigate]);
 
   if (loading) {
     return (
@@ -74,15 +81,18 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Linkpage Not Found</h1>
-          <p className="text-gray-600">{error || 'The linkpage you are looking for does not exist.'}</p>
+          <p className="text-gray-600 max-w-sm mx-auto">{error || 'The linkpage you are looking for does not exist.'}</p>
         </div>
       </div>
     );
   }
 
-  const { profile_image, title, description, links, design, browser_title } = linkpageData;
+  const { profile_image, title, description, links, design, browser_title } = linkpageData || {};
 
-  // Provide default design values if missing
+  React.useEffect(() => {
+    if (browser_title) document.title = browser_title;
+  }, [browser_title]);
+
   const safeDesign = design || {
     background_type: 'solid',
     background_color: '#ffffff',
@@ -114,7 +124,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     backgroundStyle.backgroundColor = safeDesign.background_color || '#ffffff';
   }
 
-  // Separate background image layer with saturation filter - only applied to the image, not content
   const backgroundImageStyle = safeDesign.background_type === 'image' && safeDesign.background_image ? {
     position: 'fixed',
     top: 0,
@@ -145,35 +154,11 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     pointerEvents: 'none'
   } : null;
 
-  const titleColor = safeDesign.title_color || '#000000';
-  const descriptionColor = safeDesign.description_color || '#666666';
-  const buttonTextColor = safeDesign.button_text_color || '#ffffff';
-
-  const titleStyle = {
-    color: titleColor,
-    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
-  };
-
-  const descriptionStyle = {
-    color: descriptionColor,
-    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
-  };
-
-  const buttonStyle = {
-    backgroundColor: safeDesign.button_color || '#2f3f7f',
-    color: buttonTextColor,
-    fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans
-  };
-
-  // Update document title
-  React.useEffect(() => {
-    if (browser_title) {
-      document.title = browser_title;
-    }
-  }, [browser_title]);
+  const titleStyle = { color: safeDesign.title_color || '#000000', fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans };
+  const descriptionStyle = { color: safeDesign.description_color || '#666666', fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans };
+  const buttonStyle = { backgroundColor: safeDesign.button_color || '#2f3f7f', color: safeDesign.button_text_color || '#ffffff', fontFamily: FONT_MAP[safeDesign.font_family] || FONT_MAP.open_sans };
 
   const handleLinkClick = (url, index) => {
-    // Log link click
     if (qrCodeId) {
       base44.functions.invoke('trackLinkClick', {
         short_code: qrCodeId,
@@ -181,8 +166,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         link_url: url
       }).catch(err => console.error('Failed to track link click:', err));
     }
-
-    // Navigate to URL
     window.location.href = url;
   };
 
@@ -191,7 +174,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
       {backgroundImageStyle && <div style={backgroundImageStyle}></div>}
       {overlayStyle && <div style={overlayStyle}></div>}
       <div className="max-w-md mx-auto relative z-10">
-        {/* Profile Image */}
         {profile_image && (
           <div className="mb-6 flex justify-center">
             <img
@@ -202,28 +184,12 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
             />
           </div>
         )}
-
-        {/* Title */}
         {title && (
-          <h1
-            style={titleStyle}
-            className="text-2xl sm:text-3xl font-bold text-center mb-2"
-          >
-            {title}
-          </h1>
+          <h1 style={titleStyle} className="text-2xl sm:text-3xl font-bold text-center mb-2">{title}</h1>
         )}
-
-        {/* Description */}
         {description && (
-          <p
-            style={descriptionStyle}
-            className="text-center text-sm sm:text-base mb-6"
-          >
-            {description}
-          </p>
+          <p style={descriptionStyle} className="text-center text-sm sm:text-base mb-6">{description}</p>
         )}
-
-        {/* Links/Buttons */}
         {links && links.length > 0 && (
           <div className="space-y-3">
             {links.map((link, idx) => (
@@ -232,9 +198,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
                   key={idx}
                   onClick={() => handleLinkClick(link.button_url, idx)}
                   style={buttonStyle}
-                  className={`w-full px-6 py-3 font-semibold text-center transition-opacity hover:opacity-90 ${
-                    BUTTON_STYLES[safeDesign.button_style] || BUTTON_STYLES.rounded
-                  }`}
+                  className={`w-full px-6 py-3 font-semibold text-center transition-opacity hover:opacity-90 ${BUTTON_STYLES[safeDesign.button_style] || BUTTON_STYLES.rounded}`}
                 >
                   {link.button_text}
                 </button>
@@ -242,7 +206,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
             ))}
           </div>
         )}
-
       </div>
     </div>
   );
