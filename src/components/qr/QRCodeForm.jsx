@@ -414,31 +414,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
     if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
 
-    // Check slug uniqueness for linkpages
-    if (isLinkpages && linkpageData.custom_slug) {
-      try {
-        const existingQRs = await base44.asServiceRole.entities.QRCode.filter({
-          content_type: 'linkpages'
-        }).catch(() => []);
-
-        const slugExists = existingQRs.some(qr => {
-          try {
-            const parsed = JSON.parse(qr.content);
-            return parsed.custom_slug === linkpageData.custom_slug;
-          } catch {
-            return false;
-          }
-        });
-
-        if (slugExists) {
-          alert(`The slug "${linkpageData.custom_slug}" is already in use. Please choose a different slug.`);
-          return;
-        }
-      } catch (err) {
-        console.error('Error checking slug uniqueness:', err);
-      }
-    }
-
     const shortCode = formData.type === 'dynamic'
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
