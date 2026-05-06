@@ -25,39 +25,39 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
   const [qrCodeId, setQrCodeId] = useState(propQrCodeId || null);
 
   useEffect(() => {
-    // If data was provided as props (from Redirect.jsx), skip fetching
+    // If data was provided as props (from Redirect.jsx), we render directly
+    // Otherwise (direct /linkpage/:slug access), we redirect to the short-code pattern
     if (initialData) {
       return;
     }
 
-    const fetchLinkpage = async () => {
+    const resolveAndRedirect = async () => {
       try {
         setLoading(true);
-        // Use backend function to resolve slug to linkpage
+        // Use backend function to resolve slug to short_code
         const response = await base44.functions.invoke('resolveLinkpageSlug', {
           slug
         });
 
-        if (!response || !response.linkpage) {
+        if (!response || !response.short_code) {
           setError('Linkpage not found');
           setLoading(false);
           return;
         }
 
-        setQrCodeId(response.id);
-        setLinkpageData(response.linkpage);
-        setLoading(false);
+        // Redirect to short-code pattern for consistency
+        window.location.href = `/r?code=${response.short_code}`;
       } catch (err) {
-        console.error('Error fetching linkpage:', err);
+        console.error('Error resolving linkpage slug:', err);
         setError('Failed to load linkpage');
         setLoading(false);
       }
     };
 
     if (!initialData) {
-      fetchLinkpage();
+      resolveAndRedirect();
     }
-  }, [slug, searchParams, initialData]);
+  }, [slug, initialData]);
 
   if (loading) {
     return (
