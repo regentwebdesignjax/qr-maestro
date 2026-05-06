@@ -33,6 +33,18 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         console.log(`[LinkpageLanding] Resolving slug: "${slug}"`);
         const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
         console.log(`[LinkpageLanding] Backend response:`, response);
+        console.log(`[LinkpageLanding] Response structure check:`, {
+          has_response: !!response,
+          response_keys: response ? Object.keys(response) : [],
+          has_linkpage: !!response?.linkpage,
+          linkpage_keys: response?.linkpage ? Object.keys(response.linkpage) : [],
+          linkpage_value: response?.linkpage,
+          has_short_code: !!response?.short_code,
+          short_code_value: response?.short_code,
+          content_type: response?.content_type,
+          id: response?.id,
+          response_stringified: JSON.stringify(response).substring(0, 200)
+        });
 
         // Handle inactive subscription
         if (response && response.content_type === 'inactive') {
