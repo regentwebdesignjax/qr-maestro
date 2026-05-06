@@ -515,7 +515,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 <p className="text-gray-600 text-sm mb-2">What type of content will this QR code contain?</p>
                 <div className="grid grid-cols-2 gap-3">
                   {CONTENT_TYPES.map(({ value, label, icon: Icon, desc, proOnly }) => {
-                  const isStaticOnly = value !== 'url' && value !== 'business_card' && value !== 'linkpages';
+                  const isStaticOnly = value !== 'url' && value !== 'business_card';
                   const isStaticDisabled = formData.type === 'static' && isStaticOnly;
                   const isProDisabled = proOnly && !isPro;
                   const isDisabled = isStaticDisabled || isProDisabled;
