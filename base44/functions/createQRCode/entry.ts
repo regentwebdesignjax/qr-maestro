@@ -15,7 +15,11 @@ Deno.serve(async (req) => {
 
     const qrCodeData = await req.json();
 
-    console.log('[createQRCode] Received data from client:', {
+    console.log('[createQRCode] Raw request body (req.json()):', {
+      keys: Object.keys(qrCodeData),
+      values: qrCodeData,
+      stringified: JSON.stringify(qrCodeData)
+    });
       name: qrCodeData.name,
       content_type: qrCodeData.content_type,
       type: qrCodeData.type,
