@@ -30,10 +30,13 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
     const fetchLinkpage = async () => {
       try {
         setLoading(true);
+        console.log(`[LinkpageLanding] Resolving slug: "${slug}"`);
         const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
+        console.log(`[LinkpageLanding] Backend response:`, response);
 
         // Handle inactive subscription
         if (response && response.content_type === 'inactive') {
+          console.log(`[LinkpageLanding] Linkpage is inactive`);
           setError(response.message || 'This Linkpage is inactive.');
           setLoading(false);
           return;
@@ -41,6 +44,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
 
         // Handle missing data
         if (!response || !response.linkpage) {
+          console.log(`[LinkpageLanding] No linkpage data in response`);
           setError(response?.error || 'Linkpage not found');
           setLoading(false);
           return;

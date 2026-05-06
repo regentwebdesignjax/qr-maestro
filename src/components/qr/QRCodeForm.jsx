@@ -445,14 +445,21 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
     // Debug logging for linkpages
     if (isLinkpages) {
-      console.log('Saving Linkpage QR Code:', {
+      console.log('[QRCodeForm] Saving Linkpage QR Code:', {
         name: formData.name,
         content_type: formData.content_type,
         type: formData.type,
         short_code: shortCode,
-        linkpageData: linkpageData,
-        serialized_content: formData.content
+        custom_slug: linkpageData.custom_slug,
+        title: linkpageData.title,
+        linkpageData: linkpageData
       });
+      try {
+        const parsedContent = JSON.parse(formData.content);
+        console.log('[QRCodeForm] Serialized content includes custom_slug:', parsedContent.custom_slug);
+      } catch (e) {
+        console.error('[QRCodeForm] Failed to parse serialized content');
+      }
     }
 
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
