@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const FONT_MAP = {
@@ -17,9 +17,8 @@ const BUTTON_STYLES = {
 
 export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, shortCode: propShortCode }) {
   const { slug } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   const [linkpageData, setLinkpageData] = useState(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
@@ -33,8 +32,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         setLoading(true);
         const response = await base44.functions.invoke('resolveLinkpageSlug', { slug });
 
-        console.log("Backend response for slug:", slug, response);
-
         // Handle inactive subscription
         if (response && response.content_type === 'inactive') {
           setError(response.message || 'This Linkpage is inactive.');
@@ -44,7 +41,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
 
         // Handle missing data
         if (!response || !response.linkpage) {
-          setError(response?.error || 'Linkpage not found. Check database content_type and custom_slug.');
+          setError(response?.error || 'Linkpage not found');
           setLoading(false);
           return;
         }
@@ -59,14 +56,14 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, s
         setLinkpageData(response.linkpage);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching linkpage:', err);
+        console.error('Error resolving linkpage slug:', err);
         setError('Failed to load linkpage');
         setLoading(false);
       }
     };
 
     fetchLinkpage();
-  }, [slug, searchParams, initialData, navigate]);
+  }, [slug, initialData, navigate]);
 
   if (loading) {
     return (

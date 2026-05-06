@@ -24,7 +24,8 @@ Deno.serve(async (req) => {
 
       try {
         const parsed = JSON.parse(qr.content || '{}');
-        if (parsed.custom_slug === slug) {
+        // Only match if custom_slug exists and equals the requested slug
+        if (parsed.custom_slug && parsed.custom_slug === slug) {
           matchingQR = qr;
           break;
         }
