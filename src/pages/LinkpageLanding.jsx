@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const FONT_MAP = {
@@ -18,7 +18,6 @@ const BUTTON_STYLES = {
 
 export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId, shortCode: propShortCode }) {
   const { slug } = useParams();
-  const [searchParams] = useSearchParams();
   const [linkpageData, setLinkpageData] = useState(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
