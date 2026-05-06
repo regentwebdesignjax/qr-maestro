@@ -435,6 +435,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       } catch (e) {
         console.error('[QRCodeForm] Failed to parse serialized content');
       }
+
+      // Log exact data being sent to backend
+      const dataToSend = { ...formData, short_code: shortCode, scan_count: 0, is_active: true };
+      console.log('[QRCodeForm] Exact data sent to backend:', {
+        name: dataToSend.name,
+        content_type: dataToSend.content_type,
+        type: dataToSend.type,
+        is_active: dataToSend.is_active,
+        short_code: dataToSend.short_code,
+        content_length: dataToSend.content?.length || 0,
+        content_first_100_chars: dataToSend.content?.substring(0, 100) || 'NO_CONTENT',
+        has_custom_slug_in_content: dataToSend.content?.includes('custom_slug') || false
+      });
     }
 
     onSave({ ...formData, short_code: shortCode, scan_count: 0, is_active: true });
