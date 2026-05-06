@@ -35,33 +35,11 @@ export default function CreateQR() {
   const handleSave = async (qrCodeData) => {
     setSaving(true);
     try {
-      console.log('[CreateQR] Sending data to createQRCode:', {
-        name: qrCodeData.name,
-        content_type: qrCodeData.content_type,
-        type: qrCodeData.type,
-        is_active: qrCodeData.is_active,
-        short_code: qrCodeData.short_code,
-        content_length: qrCodeData.content?.length || 0,
-        content_first_100_chars: qrCodeData.content?.substring(0, 100) || 'NO_CONTENT',
-        has_custom_slug: qrCodeData.content?.includes('custom_slug') || false
-      });
-
-      const response = await base44.functions.invoke('createQRCode', qrCodeData);
-
-      console.log('[CreateQR] Response from createQRCode:', {
-        id: response.qrCode?.id,
-        name: response.qrCode?.name,
-        content_type: response.qrCode?.content_type,
-        is_active: response.qrCode?.is_active,
-        content_length: response.qrCode?.content?.length || 0,
-        content_preview: response.qrCode?.content?.substring(0, 150) || 'NO_CONTENT',
-        has_custom_slug_in_response: response.qrCode?.content?.includes('custom_slug') || false
-      });
-
+      await base44.functions.invoke('createQRCode', qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
     } catch (error) {
-      console.error('[CreateQR] Error saving QR code:', error);
+      console.error('Error saving QR code:', error);
       const msg = error?.response?.data?.error || error?.message || '';
       alert(msg || 'Failed to save QR code. Please try again.');
     } finally {
