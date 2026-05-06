@@ -17,24 +17,34 @@ Deno.serve(async (req) => {
       content_type: 'linkpages'
     }).catch(() => []);
 
+    console.log(`[resolveLinkpageSlug] Looking for slug: "${slug}"`);
+    console.log(`[resolveLinkpageSlug] Found ${qrCodes.length} linkpage QR codes`);
+
     // Find the QR code with matching custom_slug
     let matchingQR = null;
     for (const qr of qrCodes) {
-      if (!qr.is_active) continue; // Skip inactive QR codes
+      if (!qr.is_active) {
+        console.log(`[resolveLinkpageSlug] Skipping inactive QR code: ${qr.id}`);
+        continue;
+      }
 
       try {
         const parsed = JSON.parse(qr.content || '{}');
+        console.log(`[resolveLinkpageSlug] QR ${qr.id}: custom_slug="${parsed.custom_slug}", active=${qr.is_active}`);
+
         // Only match if custom_slug exists and equals the requested slug
         if (parsed.custom_slug && parsed.custom_slug === slug) {
+          console.log(`[resolveLinkpageSlug] ✓ MATCH FOUND for slug "${slug}"`);
           matchingQR = qr;
           break;
         }
-      } catch {
-        // Skip entries that can't be parsed
+      } catch (err) {
+        console.log(`[resolveLinkpageSlug] Failed to parse QR ${qr.id}: ${err.message}`);
       }
     }
 
     if (!matchingQR) {
+      console.log(`[resolveLinkpageSlug] ✗ NO MATCH - Linkpage not found for slug: "${slug}"`);
       return Response.json({ error: 'Linkpage not found' }, { status: 404 });
     }
 

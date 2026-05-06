@@ -42,6 +42,36 @@ Deno.serve(async (req) => {
     // Store owner email explicitly so public redirect lookups can find it without auth
     qrCodeData.owner_email = user.email;
 
+    // Check slug uniqueness for linkpages
+    if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
+      try {
+        const linkpageData = JSON.parse(qrCodeData.content);
+        if (linkpageData.custom_slug) {
+          const existingQRs = await base44.asServiceRole.entities.QRCode.filter({
+            content_type: 'linkpages'
+          }).catch(() => []);
+
+          const slugExists = existingQRs.some(qr => {
+            try {
+              const parsed = JSON.parse(qr.content);
+              return parsed.custom_slug === linkpageData.custom_slug;
+            } catch {
+              return false;
+            }
+          });
+
+          if (slugExists) {
+            return Response.json(
+              { error: `The slug "${linkpageData.custom_slug}" is already in use. Please choose a different slug.` },
+              { status: 409 }
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Error checking slug uniqueness:', err);
+      }
+    }
+
     const created = await base44.entities.QRCode.create(qrCodeData);
 
     return Response.json({ qrCode: created });
