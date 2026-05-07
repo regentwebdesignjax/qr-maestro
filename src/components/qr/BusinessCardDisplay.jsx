@@ -89,6 +89,7 @@ export default function BusinessCardDisplay({ data }) {
     e.preventDefault();
     setExchangeSubmitting(true);
     try {
+      console.log('Exchange form state at submission:', exchangeForm);
       const payload = {
         user_email: data.owner_email || '',
         qr_code_id: data.qr_code_id || '',
@@ -207,7 +208,10 @@ export default function BusinessCardDisplay({ data }) {
                   type="tel"
                   placeholder="Your phone (optional)"
                   value={exchangeForm.phone}
-                  onChange={(e) => setExchangeForm(p => ({ ...p, phone: e.target.value }))}
+                  onChange={(e) => {
+                    console.log('Phone input changed:', e.target.value);
+                    setExchangeForm(p => ({ ...p, phone: e.target.value }));
+                  }}
                 />
                 <textarea
                   placeholder="Notes (e.g. Met you at the Tech Expo, or I'd like to talk to Sales about...)"
