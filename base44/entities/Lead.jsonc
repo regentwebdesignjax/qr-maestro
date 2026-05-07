@@ -24,7 +24,8 @@
     },
     "lead_phone": {
       "type": "string",
-      "description": "Optional phone number provided by the lead"
+      "description": "Optional phone number provided by the lead",
+      "maxLength": 20
     },
     "lead_tag": {
       "type": "string",
