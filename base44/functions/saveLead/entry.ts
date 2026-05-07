@@ -19,15 +19,18 @@ Deno.serve(async (req) => {
       qr_code_name: qr_code_name || '',
       lead_name,
       lead_email,
-      lead_phone: lead_phone || '',
+      lead_phone: String(lead_phone || ''),
       lead_tag: lead_tag || '',
       notes: notes || '',
     };
     console.log('Creating lead with data:', JSON.stringify(leadData));
+    console.log('Lead phone value type:', typeof lead_phone, 'Value:', lead_phone);
+
     const result = await base44.asServiceRole.entities.Lead.create(leadData);
 
     console.log('Lead created successfully:', JSON.stringify(result));
     console.log('Lead phone field in result:', result?.lead_phone);
+    console.log('Full result object keys:', Object.keys(result || {}));
     return Response.json({ success: true, id: result?.id });
   } catch (error) {
     console.error('saveLead error:', error.message, error.stack);
