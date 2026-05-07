@@ -202,8 +202,12 @@ export default function Leads() {
 
   useEffect(() => {
     if (leads.length > 0) {
-      console.log('Leads data:', leads);
-      console.log('Sample lead with phone field:', leads[0]);
+      console.log('=== LEADS DATA DEBUG ===');
+      console.log('Total leads:', leads.length);
+      console.log('First lead object:', leads[0]);
+      console.log('First lead keys:', Object.keys(leads[0]));
+      console.log('First lead phone field:', leads[0]?.lead_phone);
+      console.log('All lead phone values:', leads.map(l => ({ name: l.lead_name, phone: l.lead_phone })));
     }
   }, [leads]);
 
