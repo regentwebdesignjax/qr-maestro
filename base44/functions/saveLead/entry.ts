@@ -13,7 +13,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: lead_name, lead_email, and user_email are required' }, { status: 400 });
     }
 
-    // Include phone in initial creation attempt
+    // Test: Store phone in notes field with special prefix to see if update works at all
+    let notesWithPhone = notes || '';
+    if (lead_phone) {
+      notesWithPhone = `[PHONE: ${lead_phone}] ${notesWithPhone}`.trim();
+    }
+
     const leadData = {
       user_email,
       qr_code_id: qr_code_id || '',
@@ -22,46 +27,25 @@ Deno.serve(async (req) => {
       lead_email,
       lead_phone: lead_phone ? String(lead_phone) : '',
       lead_tag: lead_tag || '',
-      notes: notes || '',
+      notes: notesWithPhone,
     };
+
     console.log('Creating lead with data:', JSON.stringify(leadData));
+    console.log('Lead phone included in payload:', lead_phone ? 'YES - ' + lead_phone : 'NO');
 
     const result = await base44.asServiceRole.entities.Lead.create(leadData);
 
-    console.log('Lead created successfully:', JSON.stringify(result));
-    console.log('Result keys:', Object.keys(result || {}));
-    console.log('Result lead_phone value:', result?.lead_phone);
-    console.log('Result full object:', JSON.stringify(result, null, 2));
+    console.log('Lead created successfully. ID:', result?.id);
+    console.log('Result has lead_phone field:', result?.lead_phone ? `YES - ${result.lead_phone}` : 'NO - field missing from result');
+    console.log('Result has notes:', result?.notes ? `YES - ${result.notes}` : 'NO');
 
-    // If phone field didn't persist, try alternative methods
-    if (lead_phone) {
-      if (!result?.lead_phone) {
-        console.warn('Phone field not in created record - attempting workarounds');
-
-        try {
-          // Workaround 1: Try direct field update
-          console.log('Attempting update with just phone field...');
-          const patched = await base44.asServiceRole.entities.Lead.update(result.id, {
-            lead_phone: String(lead_phone),
-          });
-          console.log('Direct update result:', JSON.stringify(patched));
-        } catch (err1) {
-          console.error('Direct update failed:', err1.message);
-
-          try {
-            // Workaround 2: Try update with all fields
-            console.log('Attempting update with full object...');
-            const fullUpdate = await base44.asServiceRole.entities.Lead.update(result.id, {
-              ...result,
-              lead_phone: String(lead_phone),
-            });
-            console.log('Full update result:', JSON.stringify(fullUpdate));
-          } catch (err2) {
-            console.error('Full update also failed:', err2.message);
-          }
-        }
-      }
+    // If lead_phone is in result, great! If not, Base44 database schema doesn't support it yet
+    if (!result?.lead_phone && lead_phone) {
+      console.warn('⚠️ WARNING: lead_phone field not returned by create operation');
+      console.warn('This suggests the Lead entity database schema does not include the lead_phone column yet');
+      console.warn('Phone data stored in notes field as fallback: ' + notesWithPhone);
     }
+
     return Response.json({ success: true, id: result?.id });
   } catch (error) {
     console.error('saveLead error:', error.message, error.stack);
