@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatPhone } from '@/lib/formatPhone';
 
 // Returns a map of email -> [all leads with that email] for emails with >1 entry
 function getDupeGroups(leads) {
@@ -361,7 +362,7 @@ export default function Leads() {
                           <td className="py-3 pr-4 text-gray-600">
                             {lead.lead_phone ? (
                               <a href={`tel:${lead.lead_phone}`} className="text-primary hover:underline">
-                                {lead.lead_phone}
+                                {formatPhone(lead.lead_phone)}
                               </a>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
@@ -412,7 +413,7 @@ export default function Leads() {
                       {lead.lead_phone && (
                         <a href={`tel:${lead.lead_phone}`} className="flex items-center gap-1.5 text-sm text-primary">
                           <Phone className="w-3.5 h-3.5" />
-                          {lead.lead_phone}
+                          {formatPhone(lead.lead_phone)}
                         </a>
                       )}
                       {lead.qr_code_name && (
