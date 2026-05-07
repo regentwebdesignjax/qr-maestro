@@ -55,7 +55,7 @@ function normalizeUrl(url, platform) {
 
 export default function BusinessCardDisplay({ data }) {
   const [showExchange, setShowExchange] = useState(false);
-  const [exchangeForm, setExchangeForm] = useState({ name: '', email: '', notes: '' });
+  const [exchangeForm, setExchangeForm] = useState({ name: '', email: '', phone: '', notes: '' });
   const [exchangeSent, setExchangeSent] = useState(false);
   const [exchangeSubmitting, setExchangeSubmitting] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
@@ -94,6 +94,7 @@ export default function BusinessCardDisplay({ data }) {
         qr_code_name: data.name || '',
         lead_name: exchangeForm.name,
         lead_email: exchangeForm.email,
+        lead_phone: exchangeForm.phone || '',
         lead_tag: data.design_config?.lead_tag || '',
         notes: exchangeForm.notes || '',
       };
@@ -200,6 +201,12 @@ export default function BusinessCardDisplay({ data }) {
                   value={exchangeForm.email}
                   onChange={(e) => setExchangeForm(p => ({ ...p, email: e.target.value }))}
                   required
+                />
+                <Input
+                  type="tel"
+                  placeholder="Your phone (optional)"
+                  value={exchangeForm.phone}
+                  onChange={(e) => setExchangeForm(p => ({ ...p, phone: e.target.value }))}
                 />
                 <textarea
                   placeholder="Notes (e.g. Met you at the Tech Expo, or I'd like to talk to Sales about...)"

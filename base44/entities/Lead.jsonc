@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Email provided by the lead"
     },
+    "lead_phone": {
+      "type": "string",
+      "description": "Optional phone number provided by the lead"
+    },
     "lead_tag": {
       "type": "string",
       "description": "Optional tag (e.g. Employee ID or Region Code) for routing leads after CSV export"
