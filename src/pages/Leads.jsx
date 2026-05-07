@@ -31,7 +31,6 @@ function getDupeGroups(leads) {
   });
   return Object.fromEntries(Object.entries(groups).filter(([, arr]) => arr.length > 1));
 }
-}
 
 function exportToCSV(leads) {
   const header = ['Name', 'Email', 'Phone', 'Source Card', 'Lead Tag', 'Notes', 'Date'];
