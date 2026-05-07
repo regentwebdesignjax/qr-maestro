@@ -19,6 +19,9 @@ function cleanNotes(notes) {
   if (!notes) return '';
   return notes.replace(/^\[PHONE:\s*\d+\]\s*/, '').trim();
 }
+
+// Returns a map of email -> [all leads with that email] for emails with >1 entry
+function getDupeGroups(leads) {
   const groups = {};
   leads.forEach(l => {
     const key = l.lead_email?.toLowerCase().trim();
@@ -27,6 +30,7 @@ function cleanNotes(notes) {
     groups[key].push(l);
   });
   return Object.fromEntries(Object.entries(groups).filter(([, arr]) => arr.length > 1));
+}
 }
 
 function exportToCSV(leads) {
