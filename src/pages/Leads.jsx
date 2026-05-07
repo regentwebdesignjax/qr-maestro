@@ -200,6 +200,13 @@ export default function Leads() {
     enabled: !!user,
   });
 
+  useEffect(() => {
+    if (leads.length > 0) {
+      console.log('Leads data:', leads);
+      console.log('Sample lead with phone field:', leads[0]);
+    }
+  }, [leads]);
+
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
   const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
   const dupeEmailCount = Object.keys(dupeGroups).length;
