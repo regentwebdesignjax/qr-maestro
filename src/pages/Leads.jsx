@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Users, Mail, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
+import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
 // Returns a map of email -> [all leads with that email] for emails with >1 entry
@@ -19,10 +19,11 @@ function getDupeGroups(leads) {
 }
 
 function exportToCSV(leads) {
-  const header = ['Name', 'Email', 'Source Card', 'Lead Tag', 'Notes', 'Date'];
+  const header = ['Name', 'Email', 'Phone', 'Source Card', 'Lead Tag', 'Notes', 'Date'];
   const rows = leads.map(l => [
     `"${(l.lead_name || '').replace(/"/g, '""')}"`,
     `"${(l.lead_email || '').replace(/"/g, '""')}"`,
+    `"${(l.lead_phone || '').replace(/"/g, '""')}"`,
     `"${(l.qr_code_name || '').replace(/"/g, '""')}"`,
     `"${(l.lead_tag || '').replace(/"/g, '""')}"`,
     `"${(l.notes || '').replace(/"/g, '""')}"`,
@@ -340,6 +341,7 @@ export default function Leads() {
                       <tr className="border-b text-left text-muted-foreground">
                         <th className="pb-3 pr-4 font-medium">Name</th>
                         <th className="pb-3 pr-4 font-medium">Email</th>
+                        <th className="pb-3 pr-4 font-medium">Phone</th>
                         <th className="pb-3 pr-4 font-medium">Source Card</th>
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
                         <th className="pb-3 pr-4 font-medium">Notes</th>
@@ -355,6 +357,13 @@ export default function Leads() {
                               <Mail className="w-3 h-3" />
                               {lead.lead_email}
                             </a>
+                          </td>
+                          <td className="py-3 pr-4 text-gray-600">
+                            {lead.lead_phone ? (
+                              <a href={`tel:${lead.lead_phone}`} className="text-primary hover:underline">
+                                {lead.lead_phone}
+                              </a>
+                            ) : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="py-3 pr-4 text-gray-600">{lead.qr_code_name || '—'}</td>
                           <td className="py-3 pr-4">
@@ -400,6 +409,12 @@ export default function Leads() {
                         <Mail className="w-3.5 h-3.5" />
                         {lead.lead_email}
                       </a>
+                      {lead.lead_phone && (
+                        <a href={`tel:${lead.lead_phone}`} className="flex items-center gap-1.5 text-sm text-primary">
+                          <Phone className="w-3.5 h-3.5" />
+                          {lead.lead_phone}
+                        </a>
+                      )}
                       {lead.qr_code_name && (
                         <p className="text-xs text-muted-foreground">Card: {lead.qr_code_name}</p>
                       )}
