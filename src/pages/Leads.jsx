@@ -7,8 +7,18 @@ import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle 
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
 
-// Returns a map of email -> [all leads with that email] for emails with >1 entry
-function getDupeGroups(leads) {
+// Helper function to extract phone from notes field
+function extractPhoneFromNotes(notes) {
+  if (!notes) return null;
+  const match = notes.match(/^\[PHONE:\s*(\d+)\]\s*/);
+  return match ? match[1] : null;
+}
+
+// Helper function to remove phone prefix from notes
+function cleanNotes(notes) {
+  if (!notes) return '';
+  return notes.replace(/^\[PHONE:\s*\d+\]\s*/, '').trim();
+}
   const groups = {};
   leads.forEach(l => {
     const key = l.lead_email?.toLowerCase().trim();
@@ -21,15 +31,20 @@ function getDupeGroups(leads) {
 
 function exportToCSV(leads) {
   const header = ['Name', 'Email', 'Phone', 'Source Card', 'Lead Tag', 'Notes', 'Date'];
-  const rows = leads.map(l => [
-    `"${(l.lead_name || '').replace(/"/g, '""')}"`,
-    `"${(l.lead_email || '').replace(/"/g, '""')}"`,
-    `"${(l.lead_phone || '').replace(/"/g, '""')}"`,
-    `"${(l.qr_code_name || '').replace(/"/g, '""')}"`,
-    `"${(l.lead_tag || '').replace(/"/g, '""')}"`,
-    `"${(l.notes || '').replace(/"/g, '""')}"`,
-    `"${l.created_date ? format(new Date(l.created_date), 'yyyy-MM-dd HH:mm') : ''}"`,
-  ]);
+  const rows = leads.map(l => {
+    const phoneFromNotes = extractPhoneFromNotes(l.notes);
+    const displayPhone = l.lead_phone || phoneFromNotes || '';
+    const cleanedNotes = cleanNotes(l.notes);
+    return [
+      `"${(l.lead_name || '').replace(/"/g, '""')}"`,
+      `"${(l.lead_email || '').replace(/"/g, '""')}"`,
+      `"${displayPhone.replace(/"/g, '""')}"`,
+      `"${(l.qr_code_name || '').replace(/"/g, '""')}"`,
+      `"${(l.lead_tag || '').replace(/"/g, '""')}"`,
+      `"${cleanedNotes.replace(/"/g, '""')}"`,
+      `"${l.created_date ? format(new Date(l.created_date), 'yyyy-MM-dd HH:mm') : ''}"`,
+    ];
+  });
   const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -361,7 +376,11 @@ export default function Leads() {
                       </tr>
                     </thead>
                     <tbody>
-                      {leads.map(lead => (
+                      {leads.map(lead => {
+                        const phoneFromNotes = extractPhoneFromNotes(lead.notes);
+                        const displayPhone = lead.lead_phone || phoneFromNotes;
+                        const cleanedNotes = cleanNotes(lead.notes);
+                        return (
                         <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
                           <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
                           <td className="py-3 pr-4">
@@ -371,9 +390,9 @@ export default function Leads() {
                             </a>
                           </td>
                           <td className="py-3 pr-4 text-gray-600">
-                            {lead.lead_phone ? (
-                              <a href={`tel:${lead.lead_phone}`} className="text-primary hover:underline">
-                                {formatPhone(lead.lead_phone)}
+                            {displayPhone ? (
+                              <a href={`tel:${displayPhone}`} className="text-primary hover:underline">
+                                {formatPhone(displayPhone)}
                               </a>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
@@ -386,8 +405,8 @@ export default function Leads() {
                             ) : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="py-3 pr-4 text-gray-600 max-w-[200px]">
-                            {lead.notes ? (
-                              <span className="text-xs line-clamp-2" title={lead.notes}>{lead.notes}</span>
+                            {cleanedNotes ? (
+                              <span className="text-xs line-clamp-2" title={cleanedNotes}>{cleanedNotes}</span>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="py-3 text-gray-400 flex items-center gap-1">
@@ -395,14 +414,19 @@ export default function Leads() {
                             {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile cards */}
                 <div className="md:hidden space-y-3">
-                  {leads.map(lead => (
+                  {leads.map(lead => {
+                    const phoneFromNotes = extractPhoneFromNotes(lead.notes);
+                    const displayPhone = lead.lead_phone || phoneFromNotes;
+                    const cleanedNotes = cleanNotes(lead.notes);
+                    return (
                     <div key={lead.id} className="rounded-xl border border-border bg-gray-50/50 p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -421,17 +445,21 @@ export default function Leads() {
                         <Mail className="w-3.5 h-3.5" />
                         {lead.lead_email}
                       </a>
-                      {lead.lead_phone && (
-                        <a href={`tel:${lead.lead_phone}`} className="flex items-center gap-1.5 text-sm text-primary">
+                      {displayPhone && (
+                        <a href={`tel:${displayPhone}`} className="flex items-center gap-1.5 text-sm text-primary">
                           <Phone className="w-3.5 h-3.5" />
-                          {formatPhone(lead.lead_phone)}
+                          {formatPhone(displayPhone)}
                         </a>
                       )}
                       {lead.qr_code_name && (
                         <p className="text-xs text-muted-foreground">Card: {lead.qr_code_name}</p>
                       )}
+                      {cleanedNotes && (
+                        <p className="text-xs text-muted-foreground">{cleanedNotes}</p>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}
