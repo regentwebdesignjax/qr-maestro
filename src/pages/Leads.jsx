@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatPhone } from '@/lib/formatPhone';
 
 // Returns a map of email -> [all leads with that email] for emails with >1 entry
 function getDupeGroups(leads) {
@@ -199,6 +200,17 @@ export default function Leads() {
     enabled: !!user,
   });
 
+  useEffect(() => {
+    if (leads.length > 0) {
+      console.log('=== LEADS DATA DEBUG ===');
+      console.log('Total leads:', leads.length);
+      console.log('First lead object:', leads[0]);
+      console.log('First lead keys:', Object.keys(leads[0]));
+      console.log('First lead phone field:', leads[0]?.lead_phone);
+      console.log('All lead phone values:', leads.map(l => ({ name: l.lead_name, phone: l.lead_phone })));
+    }
+  }, [leads]);
+
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
   const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
   const dupeEmailCount = Object.keys(dupeGroups).length;
@@ -361,7 +373,7 @@ export default function Leads() {
                           <td className="py-3 pr-4 text-gray-600">
                             {lead.lead_phone ? (
                               <a href={`tel:${lead.lead_phone}`} className="text-primary hover:underline">
-                                {lead.lead_phone}
+                                {formatPhone(lead.lead_phone)}
                               </a>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
@@ -412,7 +424,7 @@ export default function Leads() {
                       {lead.lead_phone && (
                         <a href={`tel:${lead.lead_phone}`} className="flex items-center gap-1.5 text-sm text-primary">
                           <Phone className="w-3.5 h-3.5" />
-                          {lead.lead_phone}
+                          {formatPhone(lead.lead_phone)}
                         </a>
                       )}
                       {lead.qr_code_name && (

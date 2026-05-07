@@ -3,6 +3,7 @@ import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, Us
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { maskUrl } from '@/lib/maskUrl';
+import { formatPhone } from '@/lib/formatPhone';
 
 function buildVCard(data) {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];

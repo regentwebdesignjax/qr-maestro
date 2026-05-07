@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: lead_name, lead_email, and user_email are required' }, { status: 400 });
     }
 
-    const result = await base44.asServiceRole.entities.Lead.create({
+    const leadData = {
       user_email,
       qr_code_id: qr_code_id || '',
       qr_code_name: qr_code_name || '',
@@ -22,9 +22,12 @@ Deno.serve(async (req) => {
       lead_phone: lead_phone || '',
       lead_tag: lead_tag || '',
       notes: notes || '',
-    });
+    };
+    console.log('Creating lead with data:', JSON.stringify(leadData));
+    const result = await base44.asServiceRole.entities.Lead.create(leadData);
 
     console.log('Lead created successfully:', JSON.stringify(result));
+    console.log('Lead phone field in result:', result?.lead_phone);
     return Response.json({ success: true, id: result?.id });
   } catch (error) {
     console.error('saveLead error:', error.message, error.stack);
