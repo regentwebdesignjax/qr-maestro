@@ -45,5 +45,8 @@
       "default": 0,
       "description": "Number of additional Digital Business Cards purchased beyond the base 10"
     }
-  }
+  },
+  "required": [
+    "stripe_customer_id"
+  ]
 }
