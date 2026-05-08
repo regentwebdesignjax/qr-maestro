@@ -34,7 +34,7 @@ export default function PathToMastery() {
     <section className="w-full py-24 px-[5vw] bg-background" ref={ref}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">THE QR METHOD</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">THE METHOD</p>
           <h2 className="text-4xl font-black text-foreground">The Path to Mastery</h2>
         </div>
 
