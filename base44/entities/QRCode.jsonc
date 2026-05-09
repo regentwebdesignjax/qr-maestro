@@ -149,6 +149,10 @@
       "type": "boolean",
       "default": true,
       "description": "Whether the QR code is active"
+    },
+    "redirect_base_url": {
+      "type": "string",
+      "description": "Base URL used in this QR code's redirect link (e.g. https://qr.mybrand.com). Null means default qrsensei.com/r?code= path is used."
     }
   },
   "required": [

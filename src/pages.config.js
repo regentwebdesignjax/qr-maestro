@@ -59,6 +59,7 @@ import Pricing from './pages/Pricing';
 import ViewQR from './pages/ViewQR';
 import WhyUs from './pages/WhyUs';
 import Leads from './pages/Leads';
+import CustomDomains from './pages/CustomDomains';
 import __Layout from './Layout.jsx';
 
 
@@ -66,6 +67,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Analytics": Analytics,
     "CreateQR": CreateQR,
+    "CustomDomains": CustomDomains,
     "Dashboard": Dashboard,
     "EditQR": EditQR,
     "FAQ": FAQ,

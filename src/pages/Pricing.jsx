@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Check, Zap, Users } from 'lucide-react';
+import { Check, Zap, Users, Globe } from 'lucide-react';
 
 export default function Pricing() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [totalSeats, setTotalSeats] = useState(10);
   const [inputSeats, setInputSeats] = useState('10');
+  const [includeCustomDomain, setIncludeCustomDomain] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -28,8 +29,10 @@ export default function Pricing() {
 
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
   const extraSeats = Math.max(0, totalSeats - 10);
-  const monthlyTotal = 29 + extraSeats * 3;
-  const annualTotal = 249 + extraSeats * 36;
+  const customDomainMonthly = includeCustomDomain ? 19 : 0;
+  const customDomainAnnual = includeCustomDomain ? 190 : 0;
+  const monthlyTotal = 29 + extraSeats * 3 + customDomainMonthly;
+  const annualTotal = 249 + extraSeats * 36 + customDomainAnnual;
 
   const handleUpgrade = async (period) => {
     if (!user) {
@@ -49,6 +52,7 @@ export default function Pricing() {
         user_id: user.id,
         email: user.email,
         total_seats: totalSeats,
+        include_custom_domain: includeCustomDomain,
       });
 
       if (response.data.url) {
@@ -182,6 +186,31 @@ export default function Pricing() {
                   </span>
                 </div>
               </div>
+              {/* Custom Domain Add-On */}
+              <div
+                className={`border rounded-lg p-3 cursor-pointer transition-colors ${includeCustomDomain ? 'bg-primary/5 border-primary/40' : 'bg-white border-gray-200 hover:border-primary/30'}`}
+                onClick={() => setIncludeCustomDomain(v => !v)}
+              >
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeCustomDomain}
+                    onChange={(e) => setIncludeCustomDomain(e.target.checked)}
+                    className="mt-1 accent-primary"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5 font-semibold text-sm text-gray-800">
+                      <Globe className="w-4 h-4 text-primary" />
+                      Custom Domain Add-On
+                      <span className="ml-auto text-primary font-bold">+$19/mo</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Brand your QR codes with your own domain (e.g. qr.yourbrand.com)
+                    </p>
+                  </div>
+                </label>
+              </div>
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -243,8 +272,10 @@ export default function Pricing() {
                 <span className="text-4xl font-bold">${annualTotal}</span>
                 <span className="text-gray-600">/year</span>
               </div>
-              {extraSeats > 0 ? (
-                <p className="text-xs text-gray-500 mt-1">$249 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $36</p>
+              {extraSeats > 0 || includeCustomDomain ? (
+                <p className="text-xs text-gray-500 mt-1">
+                  $249 base{extraSeats > 0 ? ` + ${extraSeats} DBC${extraSeats > 1 ? 's' : ''} × $36` : ''}{includeCustomDomain ? ' + $190 custom domain' : ''}
+                </p>
               ) : (
                 <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
               )}
@@ -278,6 +309,31 @@ export default function Pricing() {
                    {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
                   </span>
                 </div>
+              </div>
+              {/* Custom Domain Add-On */}
+              <div
+                className={`border rounded-lg p-3 cursor-pointer transition-colors ${includeCustomDomain ? 'bg-green-50 border-green-400' : 'bg-white border-gray-200 hover:border-green-300'}`}
+                onClick={() => setIncludeCustomDomain(v => !v)}
+              >
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeCustomDomain}
+                    onChange={(e) => setIncludeCustomDomain(e.target.checked)}
+                    className="mt-1 accent-green-600"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5 font-semibold text-sm text-gray-800">
+                      <Globe className="w-4 h-4 text-green-600" />
+                      Custom Domain Add-On
+                      <span className="ml-auto text-green-700 font-bold">+$190/yr</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Brand your QR codes with your own domain (e.g. qr.yourbrand.com)
+                    </p>
+                  </div>
+                </label>
               </div>
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">

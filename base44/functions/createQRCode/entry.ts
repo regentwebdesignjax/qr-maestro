@@ -42,6 +42,17 @@ Deno.serve(async (req) => {
     // Store owner email explicitly so public redirect lookups can find it without auth
     qrCodeData.owner_email = user.email;
 
+    // If the user has an active custom domain, embed it so all renders use that URL
+    if (qrCodeData.type === 'dynamic' && isPro && user.custom_domain_addon) {
+      const domains = await base44.asServiceRole.entities.CustomDomain.filter({
+        user_email: user.email,
+        status: 'active',
+      }).catch(() => []);
+      if (domains.length > 0) {
+        qrCodeData.redirect_base_url = `https://${domains[0].hostname}`;
+      }
+    }
+
     // Check slug uniqueness for linkpages
     if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
       try {

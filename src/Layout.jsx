@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, Users, Menu } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, Users, Menu, Globe } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -102,6 +102,12 @@ export default function Layout({ children, currentPageName }) {
                       Leads
                     </Link>
                   )}
+                  {user?.custom_domain_addon && (
+                    <Link to="/CustomDomains" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
+                      <Globe className="w-4 h-4" />
+                      Custom Domain
+                    </Link>
+                  )}
                   {user?.role === 'admin' && (
                     <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm">
                       <Shield className="w-4 h-4" />
@@ -156,6 +162,14 @@ export default function Layout({ children, currentPageName }) {
                           <CreditCard className="w-4 h-4 mr-2" />
                           Billing & Subscription
                         </DropdownMenuItem>
+                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') && (
+                          <DropdownMenuItem asChild>
+                            <Link to="/CustomDomains" className="flex items-center">
+                              <Globe className="w-4 h-4 mr-2" />
+                              Custom Domain
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                           <LogOut className="w-4 h-4 mr-2" />
@@ -201,6 +215,14 @@ export default function Layout({ children, currentPageName }) {
                           <CreditCard className="w-4 h-4 text-gray-400" />
                           Billing & Subscription
                         </button>
+                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') && (
+                          <Link to="/CustomDomains">
+                            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">
+                              <Globe className="w-4 h-4 text-gray-400" />
+                              Custom Domain
+                            </button>
+                          </Link>
+                        )}
                         {user.role === 'admin' && (
                           <Link to="/AdminDashboard">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary hover:bg-primary/5 transition-colors text-sm">
