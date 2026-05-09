@@ -93,6 +93,7 @@ export default function LinkpagePreview({ data = {} }) {
           backgroundColor: design.overlay_color || '#000000',
           opacity: design.overlay_opacity || 0,
           pointerEvents: 'none',
+          zIndex: 1,
         }
       : null;
 
