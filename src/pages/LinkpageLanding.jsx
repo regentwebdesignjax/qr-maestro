@@ -205,9 +205,12 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId })
   };
 
   return (
-    <div style={backgroundStyle} className="min-h-screen">
-      {backgroundImageStyle && <div style={backgroundImageStyle} />}
-      {overlayStyle && <div style={overlayStyle} />}
+    <div style={{ ...backgroundStyle, position: 'relative' }} className="min-h-screen">
+      {/* Background and overlay layers */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+        {backgroundImageStyle && <div style={backgroundImageStyle} />}
+        {overlayStyle && <div style={overlayStyle} />}
+      </div>
 
       <div className="relative z-10 max-w-md mx-auto px-5 pt-14 pb-12">
         {/* Profile section */}

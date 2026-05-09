@@ -122,8 +122,11 @@ export default function LinkpagePreview({ data = {} }) {
           className="overflow-y-auto max-h-[520px] px-5 pt-8 pb-6 relative"
           style={{ ...backgroundStyle, fontFamily }}
         >
-          {backgroundImageStyle && <div style={backgroundImageStyle} />}
-          {overlayStyle && <div style={overlayStyle} />}
+          {/* Background and overlay layers */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+            {backgroundImageStyle && <div style={backgroundImageStyle} />}
+            {overlayStyle && <div style={overlayStyle} />}
+          </div>
 
           <div className="relative z-10">
             {/* Profile image */}
