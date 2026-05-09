@@ -263,32 +263,6 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId })
             )}
           </div>
         )}
-
-        {/* Branded footer */}
-        <div className="mt-12 text-center">
-          <a
-            href="https://qr-sensei.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontFamily,
-              fontSize: '11px',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              color: darkBg ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)',
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-          >
-            Powered by{' '}
-            <strong style={{ color: darkBg ? 'rgba(255,255,255,0.6)' : '#BB3F27' }}>
-              QR Sensei
-            </strong>
-          </a>
-        </div>
       </div>
     </div>
   );

@@ -197,22 +197,6 @@ export default function LinkpagePreview({ data = {} }) {
                 </>
               )}
             </div>
-
-            {/* Branded footer */}
-            <div className="text-center mt-6">
-              <span
-                style={{
-                  fontFamily,
-                  fontSize: '10px',
-                  color: darkBg ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.28)',
-                }}
-              >
-                Powered by{' '}
-                <strong style={{ color: darkBg ? 'rgba(255,255,255,0.55)' : '#BB3F27' }}>
-                  QR Sensei
-                </strong>
-              </span>
-            </div>
           </div>
         </div>
 
