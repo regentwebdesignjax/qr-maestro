@@ -176,6 +176,7 @@ export default function LinkpageLanding({ initialData, qrCodeId: propQrCodeId })
           backgroundColor: safeDesign.overlay_color || '#000000',
           opacity: safeDesign.overlay_opacity,
           pointerEvents: 'none',
+          zIndex: 1,
         }
       : null;
 
