@@ -108,6 +108,12 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
   const handleProfileImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const maxMB = 2;
+    if (file.size > maxMB * 1024 * 1024) {
+      alert(`Profile image file too large. Maximum size is ${maxMB}MB.`);
+      e.target.value = '';
+      return;
+    }
     setUploadingProfilePic(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
@@ -119,7 +125,7 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Failed to upload image. Please ensure the file is under 2MB and is a valid image.');
+      alert('Failed to upload image. Please ensure the file is a valid PNG or JPG.');
     } finally {
       setUploadingProfilePic(false);
     }
@@ -128,6 +134,12 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
   const handleBackgroundImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const maxMB = 5;
+    if (file.size > maxMB * 1024 * 1024) {
+      alert(`Background image file too large. Maximum size is ${maxMB}MB.`);
+      e.target.value = '';
+      return;
+    }
     setUploadingBackgroundImage(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
@@ -139,7 +151,7 @@ export default function LinkpagesForm({ data, onChange, currentStep, onStepChang
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Failed to upload image. Please ensure the file is under 5MB and is a valid image.');
+      alert('Failed to upload image. Please ensure the file is a valid image.');
     } finally {
       setUploadingBackgroundImage(false);
     }

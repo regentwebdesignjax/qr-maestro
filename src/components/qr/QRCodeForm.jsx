@@ -323,6 +323,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const maxMB = 2;
+    if (file.size > maxMB * 1024 * 1024) {
+      alert(`Logo file too large. Maximum size is ${maxMB}MB.`);
+      e.target.value = '';
+      return;
+    }
     setUploadingLogo(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
@@ -334,7 +340,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       }
     } catch (err) {
       console.error('Logo upload error:', err);
-      alert('Failed to upload logo. Please ensure the file is under 2MB and is a valid image.');
+      alert('Failed to upload logo. Please ensure it is a valid image.');
     } finally {
       setUploadingLogo(false);
     }
@@ -343,6 +349,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const handleLandingImageUpload = async (e, field) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const maxMB = 5;
+    if (file.size > maxMB * 1024 * 1024) {
+      const label = field === 'landing_header_image' ? 'Header image' : 'Brand logo';
+      alert(`${label} file too large. Maximum size is ${maxMB}MB.`);
+      e.target.value = '';
+      return;
+    }
     if (field === 'landing_header_image') setUploadingHeaderImage(true);
     else setUploadingBrandLogo(true);
     try {
@@ -1076,29 +1089,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     </div>
                   </div>
 
-                  {/* Button Colors */}
-                  <div className="border rounded-xl p-4 space-y-3">
-                  <Label className="font-semibold">Landing Page Button Colors</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs text-gray-500">Button Background</Label>
-                      <ColorInput
-                        value={dc.cta_button_color || '#BB3F27'}
-                        onChange={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
-                        onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Button Text Color</Label>
-                      <ColorInput
-                        value={dc.cta_text_color || '#ffffff'}
-                        onChange={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
-                        onPreview={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
-                      />
-                    </div>
-                  </div>
-                  </div>
-
                   {/* Logo */}
                   <div>
                   <Label>Company Logo</Label>
@@ -1161,7 +1151,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                           <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-header').click()} disabled={uploadingHeaderImage}>
                             <Upload className="w-3 h-3 mr-1" />{uploadingHeaderImage ? 'Uploading...' : 'Upload Banner'}
                           </Button>
-                          <p className="text-xs text-gray-400 mt-1">Recommended: 1200×400px (3:1 ratio)</p>
+                          <p className="text-xs text-gray-400 mt-1">Recommended: 1200×400px (3:1 ratio) • Max 5MB</p>
                           </div>
                           )}
                           </div>
@@ -1182,7 +1172,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                           <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('lp-brand-logo').click()} disabled={uploadingBrandLogo}>
                             <Upload className="w-3 h-3 mr-1" />{uploadingBrandLogo ? 'Uploading...' : 'Upload Logo'}
                           </Button>
-                          <p className="text-xs text-gray-400 mt-1">Recommended: 400×400px (square)</p>
+                          <p className="text-xs text-gray-400 mt-1">Recommended: 400×400px (square) • Max 5MB</p>
                           </div>
                           )}
                           </div>
