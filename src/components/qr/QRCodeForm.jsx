@@ -1089,6 +1089,31 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     </div>
                   </div>
 
+                  {/* Button Colors — for non-URL, non-linkpages dynamic QRs */}
+                  {formData.content_type !== 'url' && formData.content_type !== 'linkpages' && formData.type === 'dynamic' && (
+                  <div className="border rounded-xl p-4 space-y-3">
+                  <Label className="font-semibold">Landing Page Button Colors</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Background</Label>
+                      <ColorInput
+                        value={dc.cta_button_color || '#BB3F27'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Text Color</Label>
+                      <ColorInput
+                        value={dc.cta_text_color || '#ffffff'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
+                      />
+                    </div>
+                  </div>
+                  </div>
+                  )}
+
                   {/* Logo */}
                   <div>
                   <Label>Company Logo</Label>
