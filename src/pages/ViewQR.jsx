@@ -148,6 +148,8 @@ export default function ViewQR() {
         }
 
         const qr = normalizeQRCode(qrCodes[0]);
+        console.log('[ViewQR] loaded QR code:', qr);
+        console.log('[ViewQR] redirect_base_url:', qr.redirect_base_url);
         setQrCode(qr);
 
         if (qr.type === 'dynamic') {
