@@ -10,7 +10,7 @@ import {
   Globe, CheckCircle2, Clock, AlertCircle, Copy, RefreshCw, Trash2, ArrowRight, Lock
 } from 'lucide-react';
 
-const CNAME_TARGET = 'customers.qrsensei.com';
+const CNAME_TARGET = 'customers.qr-sensei.com';
 
 function StatusBadge({ status }) {
   if (status === 'active') {
