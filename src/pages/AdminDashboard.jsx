@@ -90,6 +90,18 @@ export default function AdminDashboard() {
     },
   });
 
+  const updateDomainAddonMutation = useMutation({
+    mutationFn: async ({ userId, custom_domain_addon, custom_domain_addon_period }) => {
+      await base44.entities.User.update(userId, {
+        custom_domain_addon,
+        custom_domain_addon_period,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+    },
+  });
+
   const handleGrantPro = (userId) => {
     const trialEnd = new Date();
     trialEnd.setDate(trialEnd.getDate() + 30); // 30-day trial
@@ -299,6 +311,51 @@ export default function AdminDashboard() {
                                         Grant 30-Day Pro Trial
                                       </Button>
                                     )}
+                                  </div>
+                                </div>
+
+                                {/* Custom Domain Add-on */}
+                                <div>
+                                  <h4 className="font-semibold mb-2">Custom Domain Add-on</h4>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                      <span className="text-sm font-medium">Add-on Active</span>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          updateDomainAddonMutation.mutate({
+                                            userId: u.id,
+                                            custom_domain_addon: !u.custom_domain_addon,
+                                            custom_domain_addon_period: !u.custom_domain_addon ? (u.custom_domain_addon_period || 'monthly') : 'none',
+                                          })
+                                        }
+                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${u.custom_domain_addon ? 'bg-primary' : 'bg-gray-200'}`}
+                                      >
+                                        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${u.custom_domain_addon ? 'translate-x-5' : 'translate-x-0'}`} />
+                                      </button>
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-500 mb-1 block">Billing Period</label>
+                                      <Select
+                                        value={u.custom_domain_addon_period || 'none'}
+                                        onValueChange={(val) =>
+                                          updateDomainAddonMutation.mutate({
+                                            userId: u.id,
+                                            custom_domain_addon: u.custom_domain_addon || false,
+                                            custom_domain_addon_period: val,
+                                          })
+                                        }
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="none">None</SelectItem>
+                                          <SelectItem value="monthly">Monthly</SelectItem>
+                                          <SelectItem value="annual">Annual</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                   </div>
                                 </div>
 

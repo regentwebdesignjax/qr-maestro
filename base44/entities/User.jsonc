@@ -21,29 +21,29 @@
     "subscription_status": {
       "type": "string",
       "enum": [
-        "none",
         "active",
+        "inactive",
+        "trialing",
         "past_due",
         "canceled"
       ],
-      "default": "none"
+      "default": "inactive"
     },
-    "subscription_period": {
+    "trial_end_date": {
       "type": "string",
-      "enum": [
-        "none",
-        "monthly",
-        "annual"
-      ],
-      "default": "none"
+      "description": "ISO date string when the trial ends"
     },
     "stripe_customer_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Stripe customer ID for billing"
     },
-    "purchased_extra_dbcs": {
-      "type": "integer",
-      "default": 0,
-      "description": "Number of additional Digital Business Cards purchased beyond the base 10"
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    },
+    "custom_domain": {
+      "type": "string",
+      "description": "Custom domain configured by the user"
     },
     "custom_domain_addon": {
       "type": "boolean",
@@ -52,12 +52,13 @@
     },
     "custom_domain_addon_period": {
       "type": "string",
-      "enum": ["none", "monthly", "annual"],
+      "enum": [
+        "none",
+        "monthly",
+        "annual"
+      ],
       "default": "none",
       "description": "Billing period for the Custom Domain add-on"
     }
-  },
-  "required": [
-    "stripe_customer_id"
-  ]
+  }
 }
