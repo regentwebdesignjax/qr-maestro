@@ -41,13 +41,18 @@ Deno.serve(async (req) => {
     }
 
     // Enforce uniqueness across all accounts
-    const existing = await base44.asServiceRole.entities.CustomDomain.filter({ hostname: normalized });
+    let existing = [];
+    try {
+      existing = await base44.asServiceRole.entities.CustomDomain.filter({ hostname: normalized });
+    } catch (e) {
+      return Response.json({ error: `CustomDomain entity not found in Base44 — ensure it has been created in the dashboard. Details: ${e.message}` }, { status: 500 });
+    }
+
     if (existing.length > 0) {
       const ownedByCaller = existing[0].user_email === user.email;
       if (!ownedByCaller) {
         return Response.json({ error: 'This domain is already in use by another account' }, { status: 409 });
       }
-      // Already registered by this user — return the existing record
       return Response.json({ customDomain: existing[0] });
     }
 
@@ -55,7 +60,7 @@ Deno.serve(async (req) => {
     const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
 
     if (!apiToken || !zoneId) {
-      return Response.json({ error: 'Cloudflare credentials not configured' }, { status: 500 });
+      return Response.json({ error: 'Cloudflare credentials not configured — add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to Base44 environment secrets' }, { status: 500 });
     }
 
     // Register the hostname with Cloudflare for SaaS
@@ -75,19 +80,24 @@ Deno.serve(async (req) => {
 
     if (!cfRes.ok || !cfData.success) {
       const msg = cfData.errors?.[0]?.message || 'Cloudflare API error';
-      return Response.json({ error: msg }, { status: 502 });
+      return Response.json({ error: `Cloudflare error: ${msg}` }, { status: 502 });
     }
 
     const cfHostname = cfData.result;
 
-    const customDomain = await base44.asServiceRole.entities.CustomDomain.create({
-      user_email: user.email,
-      hostname: normalized,
-      cf_custom_hostname_id: cfHostname.id,
-      status: 'pending',
-      ssl_status: cfHostname.ssl?.status || 'pending_validation',
-      ownership_status: cfHostname.ownership_verification_http ? 'pending' : cfHostname.status,
-    });
+    let customDomain;
+    try {
+      customDomain = await base44.asServiceRole.entities.CustomDomain.create({
+        user_email: user.email,
+        hostname: normalized,
+        cf_custom_hostname_id: cfHostname.id,
+        status: 'pending',
+        ssl_status: cfHostname.ssl?.status || 'pending_validation',
+        ownership_status: cfHostname.ownership_verification_http ? 'pending' : cfHostname.status,
+      });
+    } catch (e) {
+      return Response.json({ error: `Cloudflare registration succeeded but failed to save record: ${e.message}` }, { status: 500 });
+    }
 
     return Response.json({ customDomain });
   } catch (error) {
