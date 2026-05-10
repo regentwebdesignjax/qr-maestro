@@ -46,6 +46,10 @@
       "type": "string",
       "description": "Unique short code for dynamic QR redirects"
     },
+    "redirect_base_url": {
+      "type": "string",
+      "description": "Base URL used in this QR code's redirect link (e.g. https://qr.mybrand.com). Null means the default qr-sensei.com/r?code= path is used."
+    },
     "design_config": {
       "type": "object",
       "description": "Design configuration (colors, logo, styles, landing page branding)",
@@ -149,10 +153,6 @@
       "type": "boolean",
       "default": true,
       "description": "Whether the QR code is active"
-    },
-    "redirect_base_url": {
-      "type": "string",
-      "description": "Base URL used in this QR code's redirect link (e.g. https://qr.mybrand.com). Null means default qr-sensei.com/r?code= path is used."
     }
   },
   "required": [
