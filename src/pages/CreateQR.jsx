@@ -14,6 +14,7 @@ export default function CreateQR() {
   const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [customDomainBase, setCustomDomainBase] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -21,6 +22,13 @@ export default function CreateQR() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+
+        // Fetch active custom domain so the live preview uses the correct URL
+        const res = await base44.functions.invoke('checkDomainStatus', {}).catch(() => null);
+        const domain = res?.data?.customDomain;
+        if (domain?.status === 'active' && domain?.hostname) {
+          setCustomDomainBase(`https://${domain.hostname}`);
+        }
       } catch (error) {
         base44.auth.redirectToLogin('/CreateQR');
       }
@@ -29,7 +37,12 @@ export default function CreateQR() {
   }, []);
 
   const handleGenerate = (data) => {
-    setQrData(data);
+    // Inject redirect_base_url into the preview data so the live QR renders the correct URL
+    if (customDomainBase && data.type === 'dynamic') {
+      setQrData({ ...data, redirect_base_url: customDomainBase });
+    } else {
+      setQrData(data);
+    }
   };
 
   const handleSave = async (qrCodeData) => {
@@ -97,8 +110,8 @@ export default function CreateQR() {
               <CardTitle>QR Code Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodeForm 
-                user={user} 
+              <QRCodeForm
+                user={user}
                 onGenerate={handleGenerate}
                 onSave={handleSave}
                 saving={saving}
