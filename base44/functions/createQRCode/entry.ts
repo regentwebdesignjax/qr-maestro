@@ -45,15 +45,23 @@ Deno.serve(async (req) => {
     // If the user has an active custom domain, embed it so all renders use that URL.
     // Check the CustomDomain entity directly rather than relying on the user flag,
     // so admins and users whose flag hasn't synced yet are handled correctly.
+    console.log('[createQRCode] redirect_base_url from frontend:', qrCodeData.redirect_base_url);
     if (qrCodeData.type === 'dynamic' && isPro) {
+      console.log('[createQRCode] looking up custom domain for user:', user.email);
       const domains = await base44.asServiceRole.entities.CustomDomain.filter({
         user_email: user.email,
         status: 'active',
-      }).catch(() => []);
+      }).catch((err) => {
+        console.error('[createQRCode] CustomDomain filter error:', err);
+        return [];
+      });
+      console.log('[createQRCode] found domains:', domains);
       if (domains.length > 0) {
         qrCodeData.redirect_base_url = `https://${domains[0].hostname}`;
+        console.log('[createQRCode] set redirect_base_url to:', qrCodeData.redirect_base_url);
       }
     }
+    console.log('[createQRCode] final redirect_base_url before save:', qrCodeData.redirect_base_url);
 
     // Check slug uniqueness for linkpages
     if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
