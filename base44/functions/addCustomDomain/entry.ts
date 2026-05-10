@@ -11,12 +11,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.subscription_tier !== 'pro' || user.subscription_status !== 'active') {
-      return Response.json({ error: 'Pro subscription required' }, { status: 403 });
-    }
+    const isAdmin = user.role === 'admin';
 
-    if (!user.custom_domain_addon) {
-      return Response.json({ error: 'Custom Domain add-on not active on this account' }, { status: 403 });
+    if (!isAdmin) {
+      if (user.subscription_tier !== 'pro' || user.subscription_status !== 'active') {
+        return Response.json({ error: 'Pro subscription required' }, { status: 403 });
+      }
+
+      if (!user.custom_domain_addon) {
+        return Response.json({ error: 'Custom Domain add-on not active on this account' }, { status: 403 });
+      }
     }
 
     const { hostname } = await req.json();
