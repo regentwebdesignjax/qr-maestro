@@ -67,7 +67,8 @@ export default function CreateQR() {
         qrCodeData.redirect_base_url = customDomainBase;
         console.log('[CreateQR] handleSave - injected redirect_base_url:', qrCodeData.redirect_base_url);
       }
-      console.log('[CreateQR] handleSave - final qrCodeData:', qrCodeData);
+      console.log('[CreateQR] handleSave - final qrCodeData.redirect_base_url:', qrCodeData.redirect_base_url);
+      console.log('[CreateQR] handleSave - full payload:', JSON.stringify(qrCodeData, null, 2));
       await base44.functions.invoke('createQRCode', qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
