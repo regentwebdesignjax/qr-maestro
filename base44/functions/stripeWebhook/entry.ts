@@ -3,11 +3,37 @@ import Stripe from 'npm:stripe@17.4.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+
 const DBC_PRICE_IDS = new Set(['price_1TNv2cQJqdSd3DGEgvCK2CZ2', 'price_1TNvFWQJqdSd3DGEGflRsrcM']);
+const CUSTOM_DOMAIN_PRICE_IDS = new Set(['price_1TVEhkQJqdSd3DGEtdZwvKpe', 'price_1TVEi3QJqdSd3DGEpemwH33m']);
+
+const CF_API = 'https://api.cloudflare.com/client/v4';
 
 function getExtraDbcs(lineItems) {
   const item = lineItems?.data?.find(i => DBC_PRICE_IDS.has(i.price?.id));
   return item ? (item.quantity || 0) : 0;
+}
+
+function hasCustomDomainAddon(lineItems) {
+  return lineItems?.data?.some(i => CUSTOM_DOMAIN_PRICE_IDS.has(i.price?.id)) ?? false;
+}
+
+async function deactivateCustomDomain(base44ServiceRole: any, userEmail: string) {
+  const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
+  const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
+
+  const domains = await base44ServiceRole.entities.CustomDomain.filter({ user_email: userEmail });
+  for (const domain of domains) {
+    if (domain.status === 'deactivated') continue;
+    if (domain.cf_custom_hostname_id && apiToken && zoneId) {
+      await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${apiToken}` },
+      }).catch((e) => console.error('CF delete error:', e.message));
+    }
+    await base44ServiceRole.entities.CustomDomain.update(domain.id, { status: 'deactivated' })
+      .catch((e) => console.error('Domain deactivate error:', e.message));
+  }
 }
 
 Deno.serve(async (req) => {
@@ -34,6 +60,7 @@ Deno.serve(async (req) => {
         const userId = session.metadata.user_id;
         const period = session.metadata.period;
         const amountTotal = session.amount_total ? session.amount_total / 100 : null;
+        const includesCustomDomain = session.metadata.include_custom_domain === 'true';
 
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { expand: ['data.price'] });
         const extraDbcs = getExtraDbcs(lineItems);
@@ -45,6 +72,10 @@ Deno.serve(async (req) => {
             subscription_status: 'active',
             subscription_period: period,
             purchased_extra_dbcs: extraDbcs,
+            ...(includesCustomDomain && {
+              custom_domain_addon: true,
+              custom_domain_addon_period: period,
+            }),
           });
         }
 
@@ -70,11 +101,21 @@ Deno.serve(async (req) => {
           const status = subscription.status === 'active' ? 'active' :
                         subscription.status === 'past_due' ? 'past_due' : 'canceled';
           const extraDbcs = getExtraDbcs(subscription.items);
+          const addonActive = hasCustomDomainAddon(subscription.items);
+
+          const wasAddonActive = user.custom_domain_addon === true;
+          const addonJustRemoved = wasAddonActive && !addonActive;
 
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_status: status,
             purchased_extra_dbcs: extraDbcs,
+            custom_domain_addon: addonActive,
+            ...(!addonActive && { custom_domain_addon_period: 'none' }),
           });
+
+          if (addonJustRemoved) {
+            await deactivateCustomDomain(base44.asServiceRole, user.email);
+          }
         }
         break;
       }
@@ -85,12 +126,16 @@ Deno.serve(async (req) => {
 
         const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: customerId });
         if (users.length > 0) {
-          await base44.asServiceRole.entities.User.update(users[0].id, {
+          const user = users[0];
+          await base44.asServiceRole.entities.User.update(user.id, {
             subscription_tier: 'free',
             subscription_status: 'none',
             subscription_period: 'none',
             purchased_extra_dbcs: 0,
+            custom_domain_addon: false,
+            custom_domain_addon_period: 'none',
           });
+          await deactivateCustomDomain(base44.asServiceRole, user.email);
         }
         break;
       }

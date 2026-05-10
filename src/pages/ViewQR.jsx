@@ -255,17 +255,26 @@ export default function ViewQR() {
                 <div className="py-3">
                   <p className="text-xs text-muted-foreground mb-1">Scan Link</p>
                   <div className="flex items-center gap-2">
-                    <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 flex-1 truncate">
-                      {window.location.origin}/r?code={qrCode.short_code}
-                    </code>
-                    <a
-                      href={`${window.location.origin}/r?code=${qrCode.short_code}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary shrink-0"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                    {(() => {
+                      const scanUrl = qrCode.redirect_base_url
+                        ? `${qrCode.redirect_base_url}/${qrCode.short_code}`
+                        : `${window.location.origin}/r?code=${qrCode.short_code}`;
+                      return (
+                        <>
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 flex-1 truncate">
+                            {scanUrl}
+                          </code>
+                          <a
+                            href={scanUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-primary shrink-0"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

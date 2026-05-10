@@ -44,6 +44,17 @@
       "type": "integer",
       "default": 0,
       "description": "Number of additional Digital Business Cards purchased beyond the base 10"
+    },
+    "custom_domain_addon": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has an active Custom Domain add-on subscription"
+    },
+    "custom_domain_addon_period": {
+      "type": "string",
+      "enum": ["none", "monthly", "annual"],
+      "default": "none",
+      "description": "Billing period for the Custom Domain add-on"
     }
   },
   "required": [

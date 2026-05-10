@@ -106,6 +106,10 @@ function roundedRectSvgPath(x, y, w, h, r) {
 function getQRContent(qr) {
   // For dynamic QR codes and linkpages, use short_code redirect (proven pattern)
   if ((qr.type === 'dynamic' || qr.content_type === 'linkpages') && qr.short_code) {
+    // Use custom domain if one was stored at creation time
+    if (qr.redirect_base_url) {
+      return `${qr.redirect_base_url}/${qr.short_code}`;
+    }
     return `${window.location.origin}/r?code=${qr.short_code}`;
   }
 
