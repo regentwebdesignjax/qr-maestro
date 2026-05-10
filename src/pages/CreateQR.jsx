@@ -24,10 +24,19 @@ export default function CreateQR() {
         setUser(currentUser);
 
         // Fetch active custom domain so the live preview uses the correct URL
-        const res = await base44.functions.invoke('checkDomainStatus', {}).catch(() => null);
+        const res = await base44.functions.invoke('checkDomainStatus', {}).catch((err) => {
+          console.error('[CreateQR] checkDomainStatus error:', err);
+          return null;
+        });
+        console.log('[CreateQR] checkDomainStatus response:', res);
         const domain = res?.data?.customDomain;
+        console.log('[CreateQR] extracted domain:', domain);
         if (domain?.status === 'active' && domain?.hostname) {
-          setCustomDomainBase(`https://${domain.hostname}`);
+          const baseUrl = `https://${domain.hostname}`;
+          console.log('[CreateQR] setting customDomainBase to:', baseUrl);
+          setCustomDomainBase(baseUrl);
+        } else {
+          console.log('[CreateQR] domain not active or missing hostname - status:', domain?.status, 'hostname:', domain?.hostname);
         }
       } catch (error) {
         base44.auth.redirectToLogin('/CreateQR');
@@ -38,9 +47,13 @@ export default function CreateQR() {
 
   const handleGenerate = (data) => {
     // Inject redirect_base_url into the preview data so the live QR renders the correct URL
+    console.log('[CreateQR] handleGenerate - customDomainBase:', customDomainBase, 'data.type:', data.type);
     if (customDomainBase && data.type === 'dynamic') {
-      setQrData({ ...data, redirect_base_url: customDomainBase });
+      const previewData = { ...data, redirect_base_url: customDomainBase };
+      console.log('[CreateQR] handleGenerate - injecting redirect_base_url into preview:', previewData);
+      setQrData(previewData);
     } else {
+      console.log('[CreateQR] handleGenerate - no custom domain or not dynamic, using default');
       setQrData(data);
     }
   };
@@ -49,9 +62,12 @@ export default function CreateQR() {
     setSaving(true);
     try {
       // Inject redirect_base_url from state if user has an active custom domain
+      console.log('[CreateQR] handleSave - customDomainBase:', customDomainBase, 'type:', qrCodeData.type);
       if (customDomainBase && qrCodeData.type === 'dynamic') {
         qrCodeData.redirect_base_url = customDomainBase;
+        console.log('[CreateQR] handleSave - injected redirect_base_url:', qrCodeData.redirect_base_url);
       }
+      console.log('[CreateQR] handleSave - final qrCodeData:', qrCodeData);
       await base44.functions.invoke('createQRCode', qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
