@@ -42,8 +42,10 @@ Deno.serve(async (req) => {
     // Store owner email explicitly so public redirect lookups can find it without auth
     qrCodeData.owner_email = user.email;
 
-    // If the user has an active custom domain, embed it so all renders use that URL
-    if (qrCodeData.type === 'dynamic' && isPro && user.custom_domain_addon) {
+    // If the user has an active custom domain, embed it so all renders use that URL.
+    // Check the CustomDomain entity directly rather than relying on the user flag,
+    // so admins and users whose flag hasn't synced yet are handled correctly.
+    if (qrCodeData.type === 'dynamic' && isPro) {
       const domains = await base44.asServiceRole.entities.CustomDomain.filter({
         user_email: user.email,
         status: 'active',
