@@ -48,6 +48,10 @@ export default function CreateQR() {
   const handleSave = async (qrCodeData) => {
     setSaving(true);
     try {
+      // Inject redirect_base_url from state if user has an active custom domain
+      if (customDomainBase && qrCodeData.type === 'dynamic') {
+        qrCodeData.redirect_base_url = customDomainBase;
+      }
       await base44.functions.invoke('createQRCode', qrCodeData);
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
