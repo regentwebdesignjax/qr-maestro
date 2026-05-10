@@ -108,11 +108,16 @@ function getQRContent(qr) {
   if ((qr.type === 'dynamic' || qr.content_type === 'linkpages') && qr.short_code) {
     // Use custom domain if one was stored at creation time
     if (qr.redirect_base_url) {
-      return `${qr.redirect_base_url}/${qr.short_code}`;
+      const url = `${qr.redirect_base_url}/${qr.short_code}`;
+      console.log('[getQRContent] using custom domain:', url);
+      return url;
     }
-    return `${window.location.origin}/r?code=${qr.short_code}`;
+    const url = `${window.location.origin}/r?code=${qr.short_code}`;
+    console.log('[getQRContent] using default URL:', url, 'redirect_base_url was:', qr.redirect_base_url);
+    return url;
   }
 
+  console.log('[getQRContent] returning content:', qr.content);
   return qr.content;
 }
 
