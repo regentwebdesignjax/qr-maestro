@@ -16,6 +16,7 @@ export default function EditQR() {
   const [previewData, setPreviewData] = useState(null);
   const [currentStep, setCurrentStep] = useState(2);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [customDomainBase, setCustomDomainBase] = useState(null);
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -25,6 +26,14 @@ export default function EditQR() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+
+        // Fetch active custom domain so the preview encodes the branded URL
+        const domainRes = await base44.functions.invoke('checkDomainStatus', {}).catch(() => null);
+        const activeDomain = domainRes?.data?.customDomain;
+        if (activeDomain?.status === 'active' && activeDomain?.hostname) {
+          setCustomDomainBase(`https://${activeDomain.hostname}`);
+        }
+
         const qrCodes = await base44.entities.QRCode.filter({ id, created_by: currentUser.email });
         if (qrCodes.length === 0 || qrCodes[0].type !== 'dynamic') { window.location.href = '/Dashboard'; return; }
         const qr = qrCodes[0];
@@ -160,7 +169,7 @@ export default function EditQR() {
               <CardTitle className="text-base">Live Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodePreview qrData={previewData} currentStep={currentStep} />
+              <QRCodePreview qrData={previewData} currentStep={currentStep} customDomainBase={customDomainBase} />
             </CardContent>
           </Card>
         )}
@@ -195,7 +204,7 @@ export default function EditQR() {
             <Card>
               <CardHeader><CardTitle>Live Preview</CardTitle></CardHeader>
               <CardContent>
-                <QRCodePreview qrData={previewData} currentStep={currentStep} />
+                <QRCodePreview qrData={previewData} currentStep={currentStep} customDomainBase={customDomainBase} />
               </CardContent>
             </Card>
           </div>

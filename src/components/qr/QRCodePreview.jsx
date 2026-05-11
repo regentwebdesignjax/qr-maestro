@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Info, Smartphone, QrCode, FileImage, FileCode2, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -42,41 +42,57 @@ function PreviewToggle({ active, onChange }) {
   );
 }
 
+// Inject the user's custom domain into a dynamic QR's render data when the saved
+// record doesn't already have one. This guarantees the encoded URL (and therefore
+// the yellow camera badge) reflects the user's branded subdomain at render time,
+// independent of whatever order the parent page set its state.
+function withCustomDomain(qrData, customDomainBase) {
+  if (!customDomainBase || !qrData) return qrData;
+  if (qrData.type !== 'dynamic') return qrData;
+  if (qrData.redirect_base_url) return qrData;
+  return { ...qrData, redirect_base_url: customDomainBase };
+}
+
 // ─── QR Canvas sub-component ──────────────────────────────────────────────────
 
-function QRCanvasView({ qrData }) {
+function QRCanvasView({ qrData, customDomainBase }) {
   const canvasRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const effectiveQrData = useMemo(
+    () => withCustomDomain(qrData, customDomainBase),
+    [qrData, customDomainBase]
+  );
 
   useEffect(() => {
-    if (!qrData?.content) return;
+    if (!effectiveQrData?.content) return;
     console.log('[QRCanvasView] rendering with qrData:', {
-      type: qrData.type,
-      content_type: qrData.content_type,
-      short_code: qrData.short_code,
-      redirect_base_url: qrData.redirect_base_url,
-      name: qrData.name
+      type: effectiveQrData.type,
+      content_type: effectiveQrData.content_type,
+      short_code: effectiveQrData.short_code,
+      redirect_base_url: effectiveQrData.redirect_base_url,
+      customDomainBase,
+      name: effectiveQrData.name
     });
     const canvas = canvasRef.current;
     if (!canvas) return;
-    renderQR(canvas, qrData)
+    renderQR(canvas, effectiveQrData)
       .then(url => setQrCodeUrl(url))
       .catch(err => console.error('QR render error:', err));
-  }, [qrData]);
+  }, [effectiveQrData]);
 
-  const dc = qrData.design_config || {};
+  const dc = effectiveQrData.design_config || {};
   const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
 
   const handleDownloadPNG = async () => {
     console.log(`Background layer detected and removed: ${transparent}`);
-    const hiCanvas = await renderQRToCanvas(qrData, 1024);
+    const hiCanvas = await renderQRToCanvas(effectiveQrData, 1024);
     const link = document.createElement('a');
-    link.download = `${qrData.name || 'qrcode'}.png`;
+    link.download = `${effectiveQrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
   };
 
-  const handleDownloadSVG = () => downloadQRSvg(qrData);
+  const handleDownloadSVG = () => downloadQRSvg(effectiveQrData);
 
   return (
     <div className="space-y-4">
@@ -134,64 +150,77 @@ function DownloadMenu({ name, onPNG, onSVG, disabled }) {
 
 // ─── main component ───────────────────────────────────────────────────────────
 
-export default function QRCodePreview({ qrData, currentStep }) {
+export default function QRCodePreview({ qrData, currentStep, customDomainBase }) {
   const canvasRef = useRef(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [bcTab, setBcTab] = useState('landing');
   const [couponTab, setCouponTab] = useState('landing');
   const [linkpageTab, setLinkpageTab] = useState('landing');
 
+  // Inject custom domain at render time so timing of parent state updates can't
+  // strip out the branded URL between renders.
+  const effectiveQrData = useMemo(
+    () => withCustomDomain(qrData, customDomainBase),
+    [qrData, customDomainBase]
+  );
+
   // Auto-switch tab based on step
   useEffect(() => {
-    if (qrData?.content_type === 'business_card') {
+    if (effectiveQrData?.content_type === 'business_card') {
       if (currentStep === 2) {
         setBcTab('qr');
       } else {
         setBcTab('landing');
       }
-    } else if (qrData?.content_type === 'coupon') {
+    } else if (effectiveQrData?.content_type === 'coupon') {
       if (currentStep === 2) {
         setCouponTab('qr');
       } else {
         setCouponTab('landing');
       }
-    } else if (qrData?.content_type === 'linkpages') {
+    } else if (effectiveQrData?.content_type === 'linkpages') {
       if (currentStep === 2) {
         setLinkpageTab('qr');
       } else {
         setLinkpageTab('landing');
       }
     }
-  }, [currentStep, qrData?.content_type]);
+  }, [currentStep, effectiveQrData?.content_type]);
 
   useEffect(() => {
-    const isDynamic = qrData?.type === 'dynamic' && qrData?.short_code;
-    const hasContent = !!qrData?.content;
+    const isDynamic = effectiveQrData?.type === 'dynamic' && effectiveQrData?.short_code;
+    const hasContent = !!effectiveQrData?.content;
     if (!isDynamic && !hasContent) return;
-    if (qrData.content_type === 'business_card' || qrData.content_type === 'linkpages') return; // handled separately
+    if (effectiveQrData.content_type === 'business_card' || effectiveQrData.content_type === 'linkpages') return; // handled separately
     const canvas = canvasRef.current;
     if (!canvas) return;
-    renderQR(canvas, qrData)
+    console.log('[QRCodePreview] rendering with effectiveQrData:', {
+      type: effectiveQrData.type,
+      short_code: effectiveQrData.short_code,
+      redirect_base_url: effectiveQrData.redirect_base_url,
+      customDomainBase
+    });
+    renderQR(canvas, effectiveQrData)
       .then(url => setQrCodeUrl(url))
       .catch(err => console.error('QR render error:', err));
-  }, [qrData]);
+  }, [effectiveQrData]);
 
-  // dc must be declared before handlers (qrData may be null; handlers guard via early return above)
-  const dc = qrData?.design_config || {};
+  // dc must be declared before handlers (effectiveQrData may be null; handlers guard via early return above)
+  const dc = effectiveQrData?.design_config || {};
 
   const handleDownloadPNG = async () => {
     const transparent = dc.transparent_background === true || dc.transparent_background === 'true';
     console.log(`Background layer detected and removed: ${transparent}`);
-    const hiCanvas = await renderQRToCanvas(qrData, 1024);
+    const hiCanvas = await renderQRToCanvas(effectiveQrData, 1024);
     const link = document.createElement('a');
-    link.download = `${qrData.name || 'qrcode'}.png`;
+    link.download = `${effectiveQrData.name || 'qrcode'}.png`;
     link.href = hiCanvas.toDataURL('image/png');
     link.click();
   };
 
-  const handleDownloadSVG = () => downloadQRSvg(qrData);
+  const handleDownloadSVG = () => downloadQRSvg(effectiveQrData);
 
-  if (!qrData) {
+  if (!effectiveQrData) {
     return (
       <div className="flex items-center justify-center h-[400px] bg-gray-50 rounded-lg">
         <div className="text-center text-gray-500">
@@ -203,53 +232,53 @@ export default function QRCodePreview({ qrData, currentStep }) {
   }
 
   // ── Business Card: tabbed view ──
-  if (qrData.content_type === 'business_card') {
+  if (effectiveQrData.content_type === 'business_card') {
     let bcData = {};
-    try { bcData = JSON.parse(qrData.content || '{}'); } catch {}
+    try { bcData = JSON.parse(effectiveQrData.content || '{}'); } catch {}
     return (
       <div>
         <PreviewToggle active={bcTab} onChange={setBcTab} />
         {bcTab === 'landing' ? (
-          <BusinessCardPreview data={{ ...bcData, design_config: qrData.design_config }} />
+          <BusinessCardPreview data={{ ...bcData, design_config: effectiveQrData.design_config }} />
         ) : (
-          <QRCanvasView qrData={qrData} />
+          <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
         )}
       </div>
     );
   }
 
   // ── Linkpage: tabbed view ──
-  if (qrData.content_type === 'linkpages') {
+  if (effectiveQrData.content_type === 'linkpages') {
     let linkpageData = {};
-    try { linkpageData = JSON.parse(qrData.content || '{}'); } catch {}
+    try { linkpageData = JSON.parse(effectiveQrData.content || '{}'); } catch {}
     return (
       <div>
         <PreviewToggle active={linkpageTab} onChange={setLinkpageTab} />
         {linkpageTab === 'landing' ? (
           <LinkpagePreview data={linkpageData} />
         ) : (
-          <QRCanvasView qrData={qrData} />
+          <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
         )}
       </div>
     );
   }
 
   // ── Coupon: tabbed view ──
-  if (qrData.content_type === 'coupon') {
+  if (effectiveQrData.content_type === 'coupon') {
     let couponData = {};
     try {
-      couponData = JSON.parse(qrData.content || '{}');
+      couponData = JSON.parse(effectiveQrData.content || '{}');
     } catch {
       // Legacy format: just the coupon code
-      couponData = typeof qrData.content === 'string' ? { code: qrData.content } : {};
+      couponData = typeof effectiveQrData.content === 'string' ? { code: effectiveQrData.content } : {};
     }
     return (
       <div>
         <PreviewToggle active={couponTab} onChange={setCouponTab} />
         {couponTab === 'landing' ? (
-          <TicketCouponDisplay couponData={couponData} design_config={qrData.design_config} />
+          <TicketCouponDisplay couponData={couponData} design_config={effectiveQrData.design_config} />
         ) : (
-          <QRCanvasView qrData={qrData} />
+          <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
         )}
       </div>
     );
@@ -279,7 +308,7 @@ export default function QRCodePreview({ qrData, currentStep }) {
 
   return (
     <div className="space-y-4">
-      {qrData.type === 'dynamic' && (
+      {effectiveQrData.type === 'dynamic' && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
@@ -298,12 +327,12 @@ export default function QRCodePreview({ qrData, currentStep }) {
       </div>
 
       <div className="space-y-1 text-sm text-gray-600">
-        <p><strong>Name:</strong> {qrData.name}</p>
-        <p><strong>Type:</strong> {qrData.type === 'static' ? 'Static' : 'Dynamic'}</p>
-        <p><strong>Content Type:</strong> {qrData.content_type}</p>
+        <p><strong>Name:</strong> {effectiveQrData.name}</p>
+        <p><strong>Type:</strong> {effectiveQrData.type === 'static' ? 'Static' : 'Dynamic'}</p>
+        <p><strong>Content Type:</strong> {effectiveQrData.content_type}</p>
       </div>
 
-      <DownloadMenu name={qrData.name} onPNG={handleDownloadPNG} onSVG={handleDownloadSVG} disabled={!qrCodeUrl} />
+      <DownloadMenu name={effectiveQrData.name} onPNG={handleDownloadPNG} onSVG={handleDownloadSVG} disabled={!qrCodeUrl} />
     </div>
   );
 }

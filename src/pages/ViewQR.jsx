@@ -129,6 +129,7 @@ export default function ViewQR() {
   const [qrCode, setQrCode] = useState(null);
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [customDomainBase, setCustomDomainBase] = useState(null);
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -158,24 +159,20 @@ export default function ViewQR() {
           ? `https://${activeDomain.hostname}`
           : null;
 
-        // For dynamic QRs without a stored custom domain URL, inject the active custom domain.
-        // This ensures the preview and download show the branded URL.
-        // NOTE: This does NOT change the yellow camera badge for OLD QRs created before the
-        // custom domain was added (their QR images are permanently encoded with qr-sensei.com).
-        // To update the badge, users would need to regenerate/refresh the QR code.
-        // The good news: even old QRs continue to work on both the old and new domains.
-        if (qr.type === 'dynamic' && !qr.redirect_base_url && customDomainUrl) {
-          console.log('[ViewQR] Injecting custom domain for old QR:', { id: qr.id, customDomainUrl });
-          qr = { ...qr, redirect_base_url: customDomainUrl };
+        if (customDomainUrl) {
+          setCustomDomainBase(customDomainUrl);
+        }
 
-          // For future consistency, update the database record if this is an old QR
-          // This ensures new preview renders and downloads always use the custom domain
+        // For dynamic QRs without a stored custom domain URL, persist the active custom domain
+        // back to the database so future renders and downloads always use the branded URL.
+        // The actual injection for rendering happens via the customDomainBase prop on QRCodePreview.
+        if (qr.type === 'dynamic' && !qr.redirect_base_url && customDomainUrl) {
+          console.log('[ViewQR] Persisting custom domain for old QR:', { id: qr.id, customDomainUrl });
+          qr = { ...qr, redirect_base_url: customDomainUrl };
           try {
             await base44.entities.QRCode.update(qr.id, { redirect_base_url: customDomainUrl });
-            console.log('[ViewQR] Updated QR record with custom domain');
           } catch (err) {
             console.warn('[ViewQR] Could not update QR record:', err);
-            // This is not critical — the injection above is enough for display
           }
         }
 
@@ -222,7 +219,7 @@ export default function ViewQR() {
               <CardTitle>QR Code</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodePreview qrData={qrCode} />
+              <QRCodePreview qrData={qrCode} customDomainBase={customDomainBase} />
             </CardContent>
           </Card>
 
