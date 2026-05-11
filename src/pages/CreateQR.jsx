@@ -45,17 +45,40 @@ export default function CreateQR() {
     fetchUser();
   }, []);
 
-  const handleGenerate = (data) => {
-    // Inject redirect_base_url into the preview data so the live QR renders the correct URL
-    console.log('[CreateQR] handleGenerate - customDomainBase:', customDomainBase, 'data.type:', data.type);
-    if (customDomainBase && data.type === 'dynamic') {
-      const previewData = { ...data, redirect_base_url: customDomainBase };
-      console.log('[CreateQR] handleGenerate - injecting redirect_base_url into preview:', previewData);
-      setQrData(previewData);
-    } else {
-      console.log('[CreateQR] handleGenerate - no custom domain or not dynamic, using default');
-      setQrData(data);
+  // When customDomainBase becomes available, regenerate the preview if we have qrData
+  // This ensures the QR encodes the custom domain even if customDomainBase loads after form interaction
+  useEffect(() => {
+    if (customDomainBase && qrData) {
+      console.log('[CreateQR] customDomainBase changed, re-triggering preview with custom domain');
+      handleGenerate(qrData);
     }
+  }, [customDomainBase]);
+
+  const handleGenerate = (data) => {
+    console.log('[CreateQR] handleGenerate called', {
+      isDynamic: data.type === 'dynamic',
+      hasCustomDomain: !!customDomainBase,
+      customDomainBase,
+      dataType: data.type,
+      shortCode: data.short_code
+    });
+
+    // For dynamic QRs with an active custom domain, inject the domain into preview
+    // This ensures the QR image encodes the custom domain URL in the yellow camera badge
+    const previewData = { ...data };
+    if (customDomainBase && data.type === 'dynamic') {
+      previewData.redirect_base_url = customDomainBase;
+      console.log('[CreateQR] handleGenerate - INJECTED custom domain into preview:', {
+        url: `${customDomainBase}/${data.short_code}`,
+        redirect_base_url: customDomainBase
+      });
+    } else {
+      console.log('[CreateQR] handleGenerate - NOT injecting:', {
+        reason: customDomainBase ? 'not dynamic' : 'no custom domain',
+        isDynamic: data.type === 'dynamic'
+      });
+    }
+    setQrData(previewData);
   };
 
   const handleSave = async (qrCodeData) => {

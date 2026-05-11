@@ -26,14 +26,44 @@ export default function MyQRCodes() {
         const domainRes = await base44.functions.invoke('checkDomainStatus', {}).catch(() => null);
         const domain = domainRes?.data?.customDomain;
         if (domain?.status === 'active' && domain?.hostname) {
-          setCustomDomainBase(`https://${domain.hostname}`);
+          const customDomainBase = `https://${domain.hostname}`;
+          setCustomDomainBase(customDomainBase);
+
+          // Auto-update any old dynamic QRs that don't have redirect_base_url set.
+          // This ensures old QRs created before custom domain support get the domain injected
+          // for proper rendering and downloads. Note: their yellow camera badges will still
+          // show qr-sensei.com (encoding from creation time), but downloads/previews will be correct.
+          try {
+            // Find all user's dynamic QRs without redirect_base_url
+            const qrCodes = await base44.entities.QRCode.filter({ created_by: currentUser.email });
+            const oldQRs = qrCodes.filter(
+              qr => qr.type === 'dynamic' && !qr.redirect_base_url
+            );
+
+            if (oldQRs.length > 0) {
+              console.log(`[MyQRCodes] Found ${oldQRs.length} old QRs without custom domain, updating them`);
+              // Update all old QRs with the custom domain
+              await Promise.all(
+                oldQRs.map(qr =>
+                  base44.entities.QRCode.update(qr.id, { redirect_base_url: customDomainBase })
+                    .catch(err => console.warn(`[MyQRCodes] Failed to update QR ${qr.id}:`, err))
+                )
+              );
+              console.log(`[MyQRCodes] Updated ${oldQRs.length} old QRs with custom domain`);
+              // Trigger a refetch of QR codes to reflect the updates
+              queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
+            }
+          } catch (err) {
+            console.warn('[MyQRCodes] Error auto-updating old QRs:', err);
+            // This is not critical — the injection in components handles the display
+          }
         }
       } catch {
         base44.auth.redirectToLogin('/MyQRCodes');
       }
     };
     fetchUser();
-  }, []);
+  }, [queryClient]);
 
   const { data: qrCodes = [], isLoading } = useQuery({
     queryKey: ['qr-codes'],
