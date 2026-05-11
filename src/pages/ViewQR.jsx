@@ -141,15 +141,26 @@ export default function ViewQR() {
       }
 
       try {
-        const qrCodes = await base44.entities.QRCode.filter({ id });
+        // Fetch QR code and active custom domain in parallel
+        const [qrCodes, domainRes] = await Promise.all([
+          base44.entities.QRCode.filter({ id }),
+          base44.functions.invoke('checkDomainStatus', {}).catch(() => null),
+        ]);
+
         if (qrCodes.length === 0) {
           window.location.href = '/Dashboard';
           return;
         }
 
-        const qr = normalizeQRCode(qrCodes[0]);
-        console.log('[ViewQR] loaded QR code:', qr);
-        console.log('[ViewQR] redirect_base_url:', qr.redirect_base_url);
+        let qr = normalizeQRCode(qrCodes[0]);
+
+        // If this dynamic QR has no custom domain URL stored, inject the active one so the
+        // QR image encodes the correct branded URL (affects the yellow camera badge)
+        const activeDomain = domainRes?.data?.customDomain;
+        if (qr.type === 'dynamic' && !qr.redirect_base_url && activeDomain?.status === 'active' && activeDomain?.hostname) {
+          qr = { ...qr, redirect_base_url: `https://${activeDomain.hostname}` };
+        }
+
         setQrCode(qr);
 
         if (qr.type === 'dynamic') {
