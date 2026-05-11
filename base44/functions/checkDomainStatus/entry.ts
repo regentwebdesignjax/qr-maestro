@@ -27,6 +27,7 @@ Deno.serve(async (req) => {
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
     const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
+    const workerDomain = Deno.env.get('CLOUDFLARE_WORKER_DOMAIN');
 
     if (!apiToken || !zoneId || !domain.cf_custom_hostname_id) {
       return Response.json({ customDomain: domain });
@@ -50,6 +51,23 @@ Deno.serve(async (req) => {
     const cfHostname = cfData.result;
     const sslStatus = cfHostname.ssl?.status || '';
     const ownershipStatus = cfHostname.status || '';
+
+    // If CLOUDFLARE_WORKER_DOMAIN is set and this hostname doesn't already have
+    // custom_origin_server pointing to the Worker, patch it now.
+    // This fixes hostnames that were registered before custom_origin_server was added.
+    if (workerDomain && cfHostname.custom_origin_server !== workerDomain) {
+      await fetch(
+        `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ custom_origin_server: workerDomain }),
+        }
+      ).catch((e) => console.error('[checkDomainStatus] PATCH custom_origin_server failed:', e));
+    }
 
     // active when both SSL cert is valid and ownership is verified
     const isActive = sslStatus === 'active' && ownershipStatus === 'active';

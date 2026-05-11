@@ -58,22 +58,31 @@ Deno.serve(async (req) => {
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
     const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
+    // e.g. qr-redirect.regent-media-group-account.workers.dev
+    const workerDomain = Deno.env.get('CLOUDFLARE_WORKER_DOMAIN');
 
     if (!apiToken || !zoneId) {
       return Response.json({ error: 'Cloudflare credentials not configured — add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to Base44 environment secrets' }, { status: 500 });
     }
 
-    // Register the hostname with Cloudflare for SaaS
+    // Register the hostname with Cloudflare for SaaS.
+    // custom_origin_server routes traffic directly to the Worker (workers.dev URL),
+    // bypassing the fallback origin chain which doesn't trigger Workers.
+    const cfBody: Record<string, unknown> = {
+      hostname: normalized,
+      ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
+    };
+    if (workerDomain) {
+      cfBody.custom_origin_server = workerDomain;
+    }
+
     const cfRes = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        hostname: normalized,
-        ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
-      }),
+      body: JSON.stringify(cfBody),
     });
 
     const cfData = await cfRes.json();
