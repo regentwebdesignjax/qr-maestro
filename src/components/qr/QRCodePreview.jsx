@@ -50,9 +50,13 @@ function QRCanvasView({ qrData }) {
 
   useEffect(() => {
     if (!qrData?.content) return;
-    console.log('[QRCodePreview] rendering with qrData:', qrData);
-    console.log('[QRCodePreview] redirect_base_url:', qrData.redirect_base_url);
-    console.log('[QRCodePreview] short_code:', qrData.short_code);
+    console.log('[QRCanvasView] rendering with qrData:', {
+      type: qrData.type,
+      content_type: qrData.content_type,
+      short_code: qrData.short_code,
+      redirect_base_url: qrData.redirect_base_url,
+      name: qrData.name
+    });
     const canvas = canvasRef.current;
     if (!canvas) return;
     renderQR(canvas, qrData)

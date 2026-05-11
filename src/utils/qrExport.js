@@ -104,20 +104,22 @@ function roundedRectSvgPath(x, y, w, h, r) {
 }
 
 function getQRContent(qr) {
+  console.log('[getQRContent] called with:', { type: qr.type, content_type: qr.content_type, short_code: qr.short_code, redirect_base_url: qr.redirect_base_url });
+
   // For dynamic QR codes and linkpages, use short_code redirect (proven pattern)
   if ((qr.type === 'dynamic' || qr.content_type === 'linkpages') && qr.short_code) {
     // Use custom domain if one was stored at creation time
     if (qr.redirect_base_url) {
       const url = `${qr.redirect_base_url}/${qr.short_code}`;
-      console.log('[getQRContent] using custom domain:', url);
+      console.log('[getQRContent] ✓ using custom domain:', url);
       return url;
     }
     const url = `${window.location.origin}/r?code=${qr.short_code}`;
-    console.log('[getQRContent] using default URL:', url, 'redirect_base_url was:', qr.redirect_base_url);
+    console.log('[getQRContent] ✗ using default URL (no custom domain):', url, 'redirect_base_url was:', qr.redirect_base_url);
     return url;
   }
 
-  console.log('[getQRContent] returning content:', qr.content);
+  console.log('[getQRContent] ✗ not dynamic, returning content:', qr.content);
   return qr.content;
 }
 
@@ -129,6 +131,8 @@ function getQRContent(qr) {
  * eye shapes, eye color, logo, and transparent background.
  */
 export async function renderQR(canvas, qrData, canvasPx = 300) {
+  console.log('[renderQR] called with qrData:', { type: qrData.type, content_type: qrData.content_type, short_code: qrData.short_code, redirect_base_url: qrData.redirect_base_url });
+
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
   const transparentBg = dc.transparent_background === true || dc.transparent_background === 'true';
@@ -141,6 +145,7 @@ export async function renderQR(canvas, qrData, canvasPx = 300) {
   const eyeColor = dc.eye_color || fgColor;
 
   const content = getQRContent(qrData);
+  console.log('[renderQR] content to encode in QR:', content);
 
   const qrMatrix = QRCode.create(content, { errorCorrectionLevel: 'H' });
   const modules = qrMatrix.modules;
