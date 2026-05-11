@@ -32,12 +32,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Always generate a fresh short_code server-side for dynamic codes
+    // For dynamic codes, use client-provided short_code or generate one if missing
     if (qrCodeData.type === 'dynamic') {
-      qrCodeData.short_code = generateShortCode();
+      if (!qrCodeData.short_code) {
+        qrCodeData.short_code = generateShortCode();
+        console.log('[createQRCode] Generated new short_code:', qrCodeData.short_code);
+      } else {
+        console.log('[createQRCode] Using client-provided short_code:', qrCodeData.short_code);
+      }
     } else {
       qrCodeData.short_code = null;
     }
+
+    console.log('[createQRCode] is_active from frontend:', qrCodeData.is_active);
 
     // Store owner email explicitly so public redirect lookups can find it without auth
     qrCodeData.owner_email = user.email;
@@ -62,6 +69,8 @@ Deno.serve(async (req) => {
       }
     }
     console.log('[createQRCode] final redirect_base_url before save:', qrCodeData.redirect_base_url);
+    console.log('[createQRCode] final is_active before save:', qrCodeData.is_active);
+    console.log('[createQRCode] final short_code before save:', qrCodeData.short_code);
 
     // Check slug uniqueness for linkpages
     if (qrCodeData.content_type === 'linkpages' && qrCodeData.content) {
