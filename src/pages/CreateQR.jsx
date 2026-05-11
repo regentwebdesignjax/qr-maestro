@@ -149,7 +149,7 @@ export default function CreateQR() {
               <CardTitle className="text-base">Live Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              <QRCodePreview qrData={qrData} currentStep={currentStep} />
+              <QRCodePreview qrData={qrData} currentStep={currentStep} customDomainBase={customDomainBase} />
             </CardContent>
           </Card>
         )}
@@ -178,7 +178,7 @@ export default function CreateQR() {
                 <CardTitle>Live Preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <QRCodePreview qrData={qrData} currentStep={currentStep} />
+                <QRCodePreview qrData={qrData} currentStep={currentStep} customDomainBase={customDomainBase} />
               </CardContent>
             </Card>
           </div>
