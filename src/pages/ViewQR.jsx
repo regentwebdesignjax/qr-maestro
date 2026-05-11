@@ -153,12 +153,30 @@ export default function ViewQR() {
         }
 
         let qr = normalizeQRCode(qrCodes[0]);
-
-        // If this dynamic QR has no custom domain URL stored, inject the active one so the
-        // QR image encodes the correct branded URL (affects the yellow camera badge)
         const activeDomain = domainRes?.data?.customDomain;
-        if (qr.type === 'dynamic' && !qr.redirect_base_url && activeDomain?.status === 'active' && activeDomain?.hostname) {
-          qr = { ...qr, redirect_base_url: `https://${activeDomain.hostname}` };
+        const customDomainUrl = activeDomain?.status === 'active' && activeDomain?.hostname
+          ? `https://${activeDomain.hostname}`
+          : null;
+
+        // For dynamic QRs without a stored custom domain URL, inject the active custom domain.
+        // This ensures the preview and download show the branded URL.
+        // NOTE: This does NOT change the yellow camera badge for OLD QRs created before the
+        // custom domain was added (their QR images are permanently encoded with qr-sensei.com).
+        // To update the badge, users would need to regenerate/refresh the QR code.
+        // The good news: even old QRs continue to work on both the old and new domains.
+        if (qr.type === 'dynamic' && !qr.redirect_base_url && customDomainUrl) {
+          console.log('[ViewQR] Injecting custom domain for old QR:', { id: qr.id, customDomainUrl });
+          qr = { ...qr, redirect_base_url: customDomainUrl };
+
+          // For future consistency, update the database record if this is an old QR
+          // This ensures new preview renders and downloads always use the custom domain
+          try {
+            await base44.entities.QRCode.update(qr.id, { redirect_base_url: customDomainUrl });
+            console.log('[ViewQR] Updated QR record with custom domain');
+          } catch (err) {
+            console.warn('[ViewQR] Could not update QR record:', err);
+            // This is not critical — the injection above is enough for display
+          }
         }
 
         setQrCode(qr);
