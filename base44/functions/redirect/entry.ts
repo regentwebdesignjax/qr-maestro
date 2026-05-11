@@ -16,11 +16,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
-    // Look up the QR code by short_code
+    // Look up the QR code by short_code only (avoid boolean filter quirks)
     console.log('[redirect] Querying QRCode entity with short_code:', code);
     const qrCodes = await base44.asServiceRole.entities.QRCode.filter({
       short_code: code,
-      is_active: true,
     }).catch((err) => {
       console.error('[redirect] Filter error:', err);
       return [];
@@ -29,23 +28,18 @@ Deno.serve(async (req) => {
     console.log('[redirect] Query returned', qrCodes.length, 'results');
 
     if (qrCodes.length === 0) {
-      console.log('[redirect] QR code not found or inactive');
-      console.log('[redirect] Searched for: { short_code: "' + code + '", is_active: true }');
-
-      // Debug: try searching without is_active filter to see what's in the database
-      const allCodes = await base44.asServiceRole.entities.QRCode.filter({
-        short_code: code,
-      }).catch(() => []);
-      console.log('[redirect] Debug - found', allCodes.length, 'QR codes with short_code:', code);
-      if (allCodes.length > 0) {
-        console.log('[redirect] Debug - first match has is_active:', allCodes[0].is_active);
-      }
-
-      return Response.json({ content_type: 'inactive', error: 'QR code not found or inactive' }, { status: 404 });
+      console.log('[redirect] QR code not found for short_code:', code);
+      return Response.json({ content_type: 'inactive', error: 'QR code not found' }, { status: 404 });
     }
 
     const qrCode = qrCodes[0];
     console.log('[redirect] Found QR code:', qrCode.id, 'type:', qrCode.content_type, 'is_active:', qrCode.is_active);
+
+    // Check is_active in code rather than relying on the filter
+    if (qrCode.is_active === false) {
+      console.log('[redirect] QR code is inactive');
+      return Response.json({ content_type: 'inactive', error: 'QR code is inactive' }, { status: 404 });
+    }
 
     // Increment scan count
     try {
