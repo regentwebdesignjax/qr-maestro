@@ -69,11 +69,19 @@ Deno.serve(async (req) => {
     }
 
     // Extract request metadata for scan analytics
+    // The Cloudflare Worker forwards geo data via X-Geo-* headers (sourced from request.cf,
+    // which is available on all Cloudflare plans, unlike the CF-IP* headers).
     const ua = req.headers.get('User-Agent') || req.headers.get('user-agent') || '';
     const { device_type, os, browser } = parseUserAgent(ua);
-    const country = req.headers.get('CF-IPCountry') || req.headers.get('cf-ipcountry') || '';
-    const city = req.headers.get('CF-IPCity') || req.headers.get('cf-ipcity') || '';
+    const country = req.headers.get('X-Geo-Country') || req.headers.get('CF-IPCountry') || '';
+    const city = req.headers.get('X-Geo-City') || req.headers.get('CF-IPCity') || '';
+    const state = req.headers.get('X-Geo-Region') || '';
+    const latStr = req.headers.get('X-Geo-Latitude') || req.headers.get('CF-IPLatitude') || '';
+    const lngStr = req.headers.get('X-Geo-Longitude') || req.headers.get('CF-IPLongitude') || '';
+    const lat = latStr ? parseFloat(latStr) : undefined;
+    const lng = lngStr ? parseFloat(lngStr) : undefined;
     const referrer = req.headers.get('Referer') || req.headers.get('referer') || '';
+    console.log('[redirect] Geo data:', { country, city, state, lat, lng });
 
     // Record analytics scan + increment count (fire-and-forget, don't block redirect)
     Promise.all([
@@ -84,6 +92,9 @@ Deno.serve(async (req) => {
         browser,
         country: country || undefined,
         city: city || undefined,
+        state: state || undefined,
+        lat,
+        lng,
         referrer: referrer || undefined,
       }),
       base44.asServiceRole.entities.QRCode.update(qrCode.id, {
