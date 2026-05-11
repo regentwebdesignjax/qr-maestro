@@ -105,6 +105,14 @@ Deno.serve(async (req) => {
 
     const created = await base44.entities.QRCode.create(qrCodeData);
 
+    console.log('[createQRCode] Successfully created QR code:', {
+      id: created.id,
+      short_code: created.short_code,
+      is_active: created.is_active,
+      redirect_base_url: created.redirect_base_url,
+      type: created.type,
+    });
+
     return Response.json({ qrCode: created });
   } catch (error) {
     console.error('Error in createQRCode:', error);

@@ -30,11 +30,22 @@ Deno.serve(async (req) => {
 
     if (qrCodes.length === 0) {
       console.log('[redirect] QR code not found or inactive');
+      console.log('[redirect] Searched for: { short_code: "' + code + '", is_active: true }');
+
+      // Debug: try searching without is_active filter to see what's in the database
+      const allCodes = await base44.asServiceRole.entities.QRCode.filter({
+        short_code: code,
+      }).catch(() => []);
+      console.log('[redirect] Debug - found', allCodes.length, 'QR codes with short_code:', code);
+      if (allCodes.length > 0) {
+        console.log('[redirect] Debug - first match has is_active:', allCodes[0].is_active);
+      }
+
       return Response.json({ content_type: 'inactive', error: 'QR code not found or inactive' }, { status: 404 });
     }
 
     const qrCode = qrCodes[0];
-    console.log('[redirect] Found QR code:', qrCode.id, 'type:', qrCode.content_type);
+    console.log('[redirect] Found QR code:', qrCode.id, 'type:', qrCode.content_type, 'is_active:', qrCode.is_active);
 
     // Increment scan count
     try {

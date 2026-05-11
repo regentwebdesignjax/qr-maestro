@@ -69,7 +69,14 @@ export default function CreateQR() {
       }
       console.log('[CreateQR] handleSave - final qrCodeData.redirect_base_url:', qrCodeData.redirect_base_url);
       console.log('[CreateQR] handleSave - full payload:', JSON.stringify(qrCodeData, null, 2));
-      await base44.functions.invoke('createQRCode', qrCodeData);
+      const response = await base44.functions.invoke('createQRCode', qrCodeData);
+      console.log('[CreateQR] handleSave - response from createQRCode:', response);
+      console.log('[CreateQR] handleSave - saved QR code details:', {
+        id: response?.data?.qrCode?.id,
+        short_code: response?.data?.qrCode?.short_code,
+        is_active: response?.data?.qrCode?.is_active,
+        redirect_base_url: response?.data?.qrCode?.redirect_base_url,
+      });
       queryClient.invalidateQueries({ queryKey: ['qr-codes'] });
       window.location.href = '/Dashboard';
     } catch (error) {
