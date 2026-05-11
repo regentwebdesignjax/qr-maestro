@@ -1,23 +1,52 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+function parseUserAgent(ua: string): { device_type: string; os: string; browser: string } {
+  const uaLow = (ua || '').toLowerCase();
+  let device_type = 'desktop';
+  if (/mobile|android(?!.*tablet)|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) {
+    device_type = 'mobile';
+  } else if (/tablet|ipad|playbook|silk/i.test(ua)) {
+    device_type = 'tablet';
+  }
+  let os = 'unknown';
+  if (uaLow.includes('iphone') || uaLow.includes('ipad') || uaLow.includes('ipod')) os = 'iOS';
+  else if (uaLow.includes('android')) os = 'Android';
+  else if (uaLow.includes('windows')) os = 'Windows';
+  else if (uaLow.includes('mac')) os = 'macOS';
+  else if (uaLow.includes('linux')) os = 'Linux';
+  let browser = 'unknown';
+  if (uaLow.includes('crios')) browser = 'Chrome';
+  else if (uaLow.includes('fxios')) browser = 'Firefox';
+  else if (uaLow.includes('edg/') || uaLow.includes('edgios')) browser = 'Edge';
+  else if (uaLow.includes('chrome') && !uaLow.includes('chromium')) browser = 'Chrome';
+  else if (uaLow.includes('firefox')) browser = 'Firefox';
+  else if (uaLow.includes('safari') && !uaLow.includes('chrome')) browser = 'Safari';
+  else if (uaLow.includes('opr') || uaLow.includes('opera')) browser = 'Opera';
+  return { device_type, os, browser };
+}
+
 Deno.serve(async (req) => {
   try {
     console.log('[redirect] Incoming request:', req.url);
 
     const base44 = createClientFromRequest(req);
-    console.log('[redirect] Base44 client created');
 
     const url = new URL(req.url);
-    const code = url.searchParams.get('code');
+    // Support code in query param (GET) or in POST body
+    let code = url.searchParams.get('code');
+    if (!code && req.method === 'POST') {
+      try {
+        const body = await req.clone().json();
+        code = body.code || null;
+      } catch (_) {}
+    }
     console.log('[redirect] Looking up code:', code);
 
     if (!code) {
-      console.log('[redirect] No code parameter provided');
       return Response.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
     // Look up the QR code by short_code only (avoid boolean filter quirks)
-    console.log('[redirect] Querying QRCode entity with short_code:', code);
     const qrCodes = await base44.asServiceRole.entities.QRCode.filter({
       short_code: code,
     }).catch((err) => {
@@ -33,35 +62,41 @@ Deno.serve(async (req) => {
     }
 
     const qrCode = qrCodes[0];
-    console.log('[redirect] Found QR code:', qrCode.id, 'type:', qrCode.content_type, 'is_active:', qrCode.is_active);
+    console.log('[redirect] Found QR code:', qrCode.id, 'is_active:', qrCode.is_active);
 
-    // Check is_active in code rather than relying on the filter
     if (qrCode.is_active === false) {
-      console.log('[redirect] QR code is inactive');
       return Response.json({ content_type: 'inactive', error: 'QR code is inactive' }, { status: 404 });
     }
 
-    // Increment scan count
-    try {
-      await base44.asServiceRole.entities.QRCode.update(qrCode.id, {
+    // Extract request metadata for scan analytics
+    const ua = req.headers.get('User-Agent') || req.headers.get('user-agent') || '';
+    const { device_type, os, browser } = parseUserAgent(ua);
+    const country = req.headers.get('CF-IPCountry') || req.headers.get('cf-ipcountry') || '';
+    const city = req.headers.get('CF-IPCity') || req.headers.get('cf-ipcity') || '';
+    const referrer = req.headers.get('Referer') || req.headers.get('referer') || '';
+
+    // Record analytics scan + increment count (fire-and-forget, don't block redirect)
+    Promise.all([
+      base44.asServiceRole.entities.Scan.create({
+        qr_code_id: qrCode.id,
+        device_type,
+        os,
+        browser,
+        country: country || undefined,
+        city: city || undefined,
+        referrer: referrer || undefined,
+      }),
+      base44.asServiceRole.entities.QRCode.update(qrCode.id, {
         scan_count: (qrCode.scan_count || 0) + 1,
-      });
-      console.log('[redirect] Scan count incremented');
-    } catch (e) {
-      console.error('[redirect] Failed to increment scan count:', e);
-    }
+      }),
+    ]).catch((e) => console.error('[redirect] Analytics error:', e));
 
     // For URL content type, return the destination URL
     if (qrCode.content_type === 'url') {
-      console.log('[redirect] Returning URL redirect');
-      return Response.json({
-        content_type: 'url',
-        url: qrCode.content,
-      });
+      return Response.json({ content_type: 'url', url: qrCode.content });
     }
 
-    // For other content types, return the QR code info so the landing page can be rendered
-    console.log('[redirect] Returning content metadata');
+    // For other content types, return metadata so the Worker redirects to the landing page
     return Response.json({
       content_type: qrCode.content_type,
       short_code: qrCode.short_code,

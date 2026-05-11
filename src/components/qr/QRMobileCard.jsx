@@ -20,23 +20,27 @@ const CONTENT_TYPE_LABELS = {
   sms: 'SMS',
 };
 
-function MiniQR({ qr }) {
+function MiniQR({ qr, customDomainBase }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    renderQR(canvas, qr, 200).catch(() => {});
-  }, [qr]);
+    // Inject active custom domain into old dynamic QR codes that don't already have it
+    const effectiveQr = (customDomainBase && qr.type === 'dynamic' && !qr.redirect_base_url)
+      ? { ...qr, redirect_base_url: customDomainBase }
+      : qr;
+    renderQR(canvas, effectiveQr, 200).catch(() => {});
+  }, [qr, customDomainBase]);
 
   return <canvas ref={canvasRef} className="rounded border" style={{ width: 64, height: 64 }} />;
 }
 
-export default function QRMobileCard({ qr, isPro, onDelete }) {
+export default function QRMobileCard({ qr, isPro, onDelete, customDomainBase }) {
   return (
     <div className="bg-white rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-start gap-3">
-        <MiniQR qr={qr} />
+        <MiniQR qr={qr} customDomainBase={customDomainBase} />
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 truncate">{qr.name}</p>
           <div className="flex flex-wrap gap-1.5 mt-1">

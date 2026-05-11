@@ -14,6 +14,7 @@ export default function MyQRCodes() {
   const [user, setUser] = useState(null);
   const [activeFolder, setActiveFolder] = useState('all');
   const [showFolders, setShowFolders] = useState(false);
+  const [customDomainBase, setCustomDomainBase] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -21,6 +22,12 @@ export default function MyQRCodes() {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
+        // Fetch active custom domain so QR thumbnails encode the branded URL
+        const domainRes = await base44.functions.invoke('checkDomainStatus', {}).catch(() => null);
+        const domain = domainRes?.data?.customDomain;
+        if (domain?.status === 'active' && domain?.hostname) {
+          setCustomDomainBase(`https://${domain.hostname}`);
+        }
       } catch {
         base44.auth.redirectToLogin('/MyQRCodes');
       }
@@ -310,6 +317,7 @@ export default function MyQRCodes() {
                     qr={qr}
                     isPro={isPro}
                     onDelete={(id) => deleteQRMutation.mutate(id)}
+                    customDomainBase={customDomainBase}
                   />
                 ))
               )}
