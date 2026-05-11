@@ -71,8 +71,12 @@ Deno.serve(async (req) => {
     // Extract request metadata for scan analytics
     const ua = req.headers.get('User-Agent') || req.headers.get('user-agent') || '';
     const { device_type, os, browser } = parseUserAgent(ua);
-    const country = req.headers.get('CF-IPCountry') || req.headers.get('cf-ipcountry') || '';
-    const city = req.headers.get('CF-IPCity') || req.headers.get('cf-ipcity') || '';
+    const country = req.headers.get('CF-IPCountry') || '';
+    const city = req.headers.get('CF-IPCity') || '';
+    const latStr = req.headers.get('CF-IPLatitude') || '';
+    const lngStr = req.headers.get('CF-IPLongitude') || '';
+    const lat = latStr ? parseFloat(latStr) : undefined;
+    const lng = lngStr ? parseFloat(lngStr) : undefined;
     const referrer = req.headers.get('Referer') || req.headers.get('referer') || '';
 
     // Record analytics scan + increment count (fire-and-forget, don't block redirect)
@@ -84,6 +88,8 @@ Deno.serve(async (req) => {
         browser,
         country: country || undefined,
         city: city || undefined,
+        lat,
+        lng,
         referrer: referrer || undefined,
       }),
       base44.asServiceRole.entities.QRCode.update(qrCode.id, {
