@@ -57,14 +57,17 @@ Deno.serve(async (req) => {
     const sslStatus = cfHostname.ssl?.status || '';
     const ownershipStatus = cfHostname.status || '';
 
-    // Heal hostnames that are missing custom_origin_server — required for Workers routing.
-    // Use case-insensitive trim comparison to handle minor CF normalisation differences.
+    // Routing is configured when either:
+    // 1. A Worker is directly attached (Workers Paid) — preferred, handles request at the edge
+    // 2. custom_origin_server is set — fallback for non-Workers-Paid zones
+    const workerService = Deno.env.get('CLOUDFLARE_WORKER_SERVICE') || 'qr-redirect';
     const cfOrigin = (cfHostname.custom_origin_server || '').toLowerCase().trim();
-    let routingConfigured = !!cfOrigin && cfOrigin === fallbackOrigin.toLowerCase().trim();
+    const workerAttached = !!(cfHostname.worker?.service);
+    let routingConfigured = workerAttached || (!!cfOrigin && cfOrigin === fallbackOrigin.toLowerCase().trim());
     let routingError: string | null = null;
 
     if (!routingConfigured) {
-      console.log('[checkDomainStatus] Patching custom_origin_server →', fallbackOrigin, '(was:', cfHostname.custom_origin_server || 'unset', ')');
+      console.log('[checkDomainStatus] Patching hostname to attach Worker and set custom_origin_server...');
       const patchRes = await fetch(
         `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
         {
@@ -73,9 +76,10 @@ Deno.serve(async (req) => {
             'Authorization': `Bearer ${apiToken}`,
             'Content-Type': 'application/json',
           },
-          // custom_origin_sni requires paid SSL for SaaS (CF error 1456) — omit it.
-          // custom_origin_server alone is sufficient for Worker routing.
+          // Attach Worker directly (Workers Paid) + keep custom_origin_server as fallback.
+          // custom_origin_sni omitted — requires paid SSL for SaaS (CF error 1456).
           body: JSON.stringify({
+            worker: { service: workerService },
             custom_origin_server: fallbackOrigin,
           }),
         }
@@ -85,7 +89,7 @@ Deno.serve(async (req) => {
         const patchData = await patchRes.json();
         if (patchData.success) {
           routingConfigured = true;
-          console.log('[checkDomainStatus] PATCH succeeded, custom_origin_server now:', patchData.result?.custom_origin_server);
+          console.log('[checkDomainStatus] PATCH succeeded, worker:', patchData.result?.worker?.service, 'origin:', patchData.result?.custom_origin_server);
         } else {
           routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
           console.error('[checkDomainStatus] PATCH CF error:', routingError);
