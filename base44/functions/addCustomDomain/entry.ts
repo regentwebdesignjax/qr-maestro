@@ -53,7 +53,11 @@ Deno.serve(async (req) => {
       if (!ownedByCaller) {
         return Response.json({ error: 'This domain is already in use by another account' }, { status: 409 });
       }
-      return Response.json({ customDomain: existing[0] });
+      // Active or pending — return the existing record as-is
+      if (existing[0].status !== 'deactivated') {
+        return Response.json({ customDomain: existing[0] });
+      }
+      // Deactivated — fall through to re-register; old record is cleaned up below
     }
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
@@ -61,6 +65,19 @@ Deno.serve(async (req) => {
 
     if (!apiToken || !zoneId) {
       return Response.json({ error: 'Cloudflare credentials not configured — add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to Base44 environment secrets' }, { status: 500 });
+    }
+
+    // Clean up a previously deactivated record for this hostname before re-registering
+    if (existing.length > 0 && existing[0].status === 'deactivated') {
+      const old = existing[0];
+      if (old.cf_custom_hostname_id) {
+        await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames/${old.cf_custom_hostname_id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${apiToken}` },
+        }).catch((e) => console.warn('[addCustomDomain] CF cleanup error:', e.message));
+      }
+      await base44.asServiceRole.entities.CustomDomain.delete(old.id)
+        .catch((e) => console.warn('[addCustomDomain] DB cleanup error:', e.message));
     }
 
     // Register the hostname with Cloudflare for SaaS.
