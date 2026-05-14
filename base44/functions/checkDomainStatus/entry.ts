@@ -20,13 +20,14 @@ Deno.serve(async (req) => {
 
     const domain = domains[0];
 
-    // If already active or deactivated, no need to poll Cloudflare
-    if (domain.status === 'active' || domain.status === 'deactivated') {
+    // Deactivated records don't need any polling
+    if (domain.status === 'deactivated') {
       return Response.json({ customDomain: domain });
     }
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
     const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
+    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN');
 
     if (!apiToken || !zoneId || !domain.cf_custom_hostname_id) {
       return Response.json({ customDomain: domain });
@@ -50,6 +51,25 @@ Deno.serve(async (req) => {
     const cfHostname = cfData.result;
     const sslStatus = cfHostname.ssl?.status || '';
     const ownershipStatus = cfHostname.status || '';
+
+    // Heal hostnames that are missing custom_origin_server — required for Workers routing.
+    // Existing hostnames registered before this field was set will time out (522) without it.
+    if (fallbackOrigin && cfHostname.custom_origin_server !== fallbackOrigin) {
+      await fetch(
+        `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            custom_origin_server: fallbackOrigin,
+            custom_origin_sni: fallbackOrigin,
+          }),
+        }
+      ).catch((e) => console.warn('[checkDomainStatus] PATCH custom_origin_server failed:', e.message));
+    }
 
     // active when both SSL cert is valid and ownership is verified
     const isActive = sslStatus === 'active' && ownershipStatus === 'active';
