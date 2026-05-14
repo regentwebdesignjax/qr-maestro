@@ -81,64 +81,24 @@ Deno.serve(async (req) => {
     }
 
     // Register the hostname with Cloudflare for SaaS.
-    // Attach the qr-redirect Worker directly to the custom hostname (requires Workers Paid).
-    // When a Worker is attached, CF for SaaS runs it at the edge for all requests to this
-    // hostname — no TCP origin connection is made, eliminating 522 errors entirely.
-    // custom_origin_server is kept as a fallback for zones not yet on Workers Paid.
+    // Routing is handled by a Worker Route (*/* on qr-sensei.com zone) — no worker field needed.
+    // custom_origin_server must be set to the fallback origin so CF for SaaS has a target;
+    // the Worker Route intercepts before TCP connection, so the origin is never actually called.
     const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN') || 'customers.qr-sensei.com';
-    const workerService = Deno.env.get('CLOUDFLARE_WORKER_SERVICE') || 'qr-redirect';
 
-    const postHostname = async (includeWorker: boolean, includeOrigin: boolean) => {
-      const body: Record<string, unknown> = {
+    const cfRes = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         hostname: normalized,
         ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
-      };
-      if (includeWorker) {
-        // Attach Worker directly — requires Workers Paid. Worker handles the request at the
-        // edge so no origin TCP connection is needed (avoids 522 on CF for SaaS free tier).
-        body.worker = { service: workerService };
-      }
-      if (includeOrigin) {
-        body.custom_origin_server = fallbackOrigin;
-      }
-      const res = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      return { res, data };
-    };
-
-    // First attempt: attach Worker + custom_origin_server (Workers Paid required for worker field).
-    let { res: cfRes, data: cfData } = await postHostname(true, true);
-
-    // If CF rejected the worker field (e.g. not on Workers Paid yet), retry without it.
-    if (!cfRes.ok || !cfData.success) {
-      const cfMsg = cfData.errors?.[0]?.message || '';
-      const cfCode = cfData.errors?.[0]?.code;
-      console.warn('[addCustomDomain] First attempt failed:', cfCode, cfMsg);
-
-      if (cfMsg.toLowerCase().includes('worker') || cfMsg.toLowerCase().includes('dispatch') || cfMsg.toLowerCase().includes('namespace')) {
-        console.log('[addCustomDomain] Retrying without worker field (upgrade to Workers Paid to enable)...');
-        ({ res: cfRes, data: cfData } = await postHostname(false, true));
-      }
-    }
-
-    // If custom_origin_server was also rejected, retry with neither.
-    if (!cfRes.ok || !cfData.success) {
-      const cfMsg = cfData.errors?.[0]?.message || '';
-      const cfCode = cfData.errors?.[0]?.code;
-      console.warn('[addCustomDomain] Second attempt failed:', cfCode, cfMsg);
-
-      if (cfMsg.toLowerCase().includes('origin') || cfMsg.toLowerCase().includes('custom_origin')) {
-        console.log('[addCustomDomain] Retrying without custom_origin_server...');
-        ({ res: cfRes, data: cfData } = await postHostname(false, false));
-      }
-    }
+        custom_origin_server: fallbackOrigin,
+      }),
+    });
+    const cfData = await cfRes.json();
 
     if (!cfRes.ok || !cfData.success) {
       const msg = cfData.errors?.[0]?.message || 'Cloudflare API error';
