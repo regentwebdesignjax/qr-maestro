@@ -95,9 +95,14 @@ Deno.serve(async (req) => {
             routingConfigured = true;
             console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
           } else {
-            // CF accepted the PATCH but silently ignored the worker field — zone is likely not on Workers Paid
-            routingError = `Worker field was not accepted by Cloudflare (zone may not be on Workers Paid plan). Upgrade at dash.cloudflare.com → Workers & Pages → Plans.`;
-            console.error('[checkDomainStatus] PATCH succeeded but worker not set:', JSON.stringify(patchData.result));
+            // CF accepted the PATCH but silently ignored the worker field.
+            // Most common cause: CLOUDFLARE_API_TOKEN is missing the Account-level
+            // "Workers Scripts: Edit" permission. Zone-level tokens (DNS + SSL only) cannot
+            // attach Workers to custom hostnames — CF silently drops the field.
+            // Fix: dash.cloudflare.com → My Profile → API Tokens → edit the token →
+            //   add Account → Workers Scripts → Edit permission.
+            routingError = `Cloudflare ignored the Worker attachment (worker.service not returned). Most likely fix: edit CLOUDFLARE_API_TOKEN in the Cloudflare dashboard (My Profile → API Tokens) and add "Account → Workers Scripts → Edit" permission. Also verify the Worker is named exactly "${workerService}" in Workers & Pages.`;
+            console.error('[checkDomainStatus] PATCH succeeded but worker not attached. CF result:', JSON.stringify(patchData.result));
           }
         } else {
           routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
