@@ -27,7 +27,10 @@ Deno.serve(async (req) => {
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
     const zoneId = Deno.env.get('CLOUDFLARE_ZONE_ID');
-    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN');
+    // CLOUDFLARE_FALLBACK_ORIGIN must be an in-zone hostname (not workers.dev) that has a
+    // Worker route attached. Defaults to the canonical value so existing hostnames self-heal
+    // even when the env var is not explicitly set.
+    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN') || 'customers.qr-sensei.com';
 
     if (!apiToken || !zoneId || !domain.cf_custom_hostname_id) {
       return Response.json({ customDomain: domain });
