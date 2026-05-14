@@ -13,12 +13,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { userId, subscriptionTier, subscriptionStatus, trialEndDate } = await req.json();
+    const { userId, subscriptionTier, subscriptionStatus, subscriptionPeriod, customDomainAddon, customDomainAddonPeriod, trialEndDate } = await req.json();
 
     // Update user subscription using service role
     await base44.asServiceRole.entities.User.update(userId, {
       subscription_tier: subscriptionTier,
       subscription_status: subscriptionStatus,
+      ...(subscriptionPeriod !== undefined && { subscription_period: subscriptionPeriod }),
+      ...(customDomainAddon !== undefined && { custom_domain_addon: customDomainAddon }),
+      ...(customDomainAddonPeriod !== undefined && { custom_domain_addon_period: customDomainAddonPeriod }),
       trial_end_date: trialEndDate || null,
     });
 
