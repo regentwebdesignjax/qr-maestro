@@ -82,32 +82,55 @@ Deno.serve(async (req) => {
 
     // Register the hostname with Cloudflare for SaaS.
     // custom_origin_server / custom_origin_sni route traffic through the in-zone hostname
-    // that has a Worker route or Worker Custom Domain, so the Worker actually handles requests.
-    // Without this, Cloudflare for SaaS won't invoke Workers — traffic just times out (522).
-    // The value must be a hostname inside the zone; a workers.dev URL is rejected.
-    // Default ensures the field is always set even when the env var is not explicitly configured.
+    // that has a Worker route, so the Worker actually handles requests.
+    // Without this, CF for SaaS won't invoke Workers — traffic just times out (522).
+    // The value must be a hostname inside the zone with a standard DNS record (CNAME/A).
     const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN') || 'customers.qr-sensei.com';
-    const cfBody: Record<string, unknown> = {
-      hostname: normalized,
-      ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
-      custom_origin_server: fallbackOrigin,
-      custom_origin_sni: fallbackOrigin,
+
+    const postHostname = async (includeOrigin: boolean) => {
+      const body: Record<string, unknown> = {
+        hostname: normalized,
+        ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
+      };
+      if (includeOrigin) {
+        body.custom_origin_server = fallbackOrigin;
+        body.custom_origin_sni = fallbackOrigin;
+      }
+      const res = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      return { res, data };
     };
 
-    const cfRes = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cfBody),
-    });
+    // First attempt: with custom_origin_server so Workers routing works immediately.
+    let { res: cfRes, data: cfData } = await postHostname(true);
 
-    const cfData = await cfRes.json();
+    // If CF rejected because of custom_origin_server (e.g. the hostname is a Workers-managed
+    // record rather than a plain CNAME), fall back to registering without it. The PATCH in
+    // checkDomainStatus will retry once the infrastructure is updated to a standard CNAME.
+    if (!cfRes.ok || !cfData.success) {
+      const cfMsg = cfData.errors?.[0]?.message || '';
+      const cfCode = cfData.errors?.[0]?.code;
+      console.warn('[addCustomDomain] First attempt failed (with custom_origin_server):', cfCode, cfMsg);
+
+      if (cfMsg.toLowerCase().includes('origin') || cfMsg.toLowerCase().includes('custom_origin')) {
+        console.log('[addCustomDomain] Retrying without custom_origin_server...');
+        ({ res: cfRes, data: cfData } = await postHostname(false));
+      }
+    }
 
     if (!cfRes.ok || !cfData.success) {
       const msg = cfData.errors?.[0]?.message || 'Cloudflare API error';
-      return Response.json({ error: `Cloudflare error: ${msg}` }, { status: 502 });
+      const code = cfData.errors?.[0]?.code ?? '';
+      console.error('[addCustomDomain] CF registration failed:', code, msg);
+      // Return 200 so the SDK resolves (not throws) and the frontend can display the message.
+      return Response.json({ error: `Cloudflare error (${code}): ${msg}` });
     }
 
     const cfHostname = cfData.result;
