@@ -81,11 +81,19 @@ Deno.serve(async (req) => {
     }
 
     // Register the hostname with Cloudflare for SaaS.
-    // No custom_origin_server — traffic routes to the Fallback Origin configured in the zone.
+    // custom_origin_server / custom_origin_sni route traffic through the in-zone hostname
+    // that has a Worker route or Worker Custom Domain, so the Worker actually handles requests.
+    // Without this, Cloudflare for SaaS won't invoke Workers — traffic just times out (522).
+    // The value must be a hostname inside the zone; a workers.dev URL is rejected.
+    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN');
     const cfBody: Record<string, unknown> = {
       hostname: normalized,
       ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
     };
+    if (fallbackOrigin) {
+      cfBody.custom_origin_server = fallbackOrigin;
+      cfBody.custom_origin_sni = fallbackOrigin;
+    }
 
     const cfRes = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
       method: 'POST',
