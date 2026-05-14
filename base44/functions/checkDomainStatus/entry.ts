@@ -109,6 +109,14 @@ Deno.serve(async (req) => {
         console.error('[checkDomainStatus] Pre-flight failed:', routingError);
       } else {
         console.log('[checkDomainStatus] Worker not attached. Patching hostname to attach Worker and set custom_origin_server...');
+        // Include environment: 'production' — some newer service-style Workers require it
+        // to bind correctly. The custom_origin_server stays as a fallback for visibility.
+        const patchBody = {
+          worker: { service: workerService, environment: 'production' },
+          custom_origin_server: fallbackOrigin,
+        };
+        console.log('[checkDomainStatus] PATCH body:', JSON.stringify(patchBody));
+
         const patchRes = await fetch(
           `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
           {
@@ -117,17 +125,13 @@ Deno.serve(async (req) => {
               'Authorization': `Bearer ${apiToken}`,
               'Content-Type': 'application/json',
             },
-            // Attach Worker directly (Workers Paid) + keep custom_origin_server as fallback.
-            // custom_origin_sni omitted — requires paid SSL for SaaS (CF error 1456).
-            body: JSON.stringify({
-              worker: { service: workerService },
-              custom_origin_server: fallbackOrigin,
-            }),
+            body: JSON.stringify(patchBody),
           }
         );
 
         if (patchRes.ok) {
           const patchData = await patchRes.json();
+          console.log('[checkDomainStatus] PATCH full response:', JSON.stringify(patchData));
           if (patchData.success) {
             const attachedService = patchData.result?.worker?.service;
             if (attachedService) {
@@ -135,9 +139,9 @@ Deno.serve(async (req) => {
               console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
             } else {
               // Pre-flight passed (Worker exists, token can read it), but PATCH silently dropped
-              // the worker field. The token has Read but not Edit on Workers Scripts, OR the zone
-              // is not on Workers Paid, OR Workers for Platforms is required.
-              routingError = `Cloudflare accepted the request but did not attach the Worker. Most likely cause: CLOUDFLARE_API_TOKEN has "Workers Scripts: Read" but not "Workers Scripts: Edit". Add Edit permission at dash.cloudflare.com → My Profile → API Tokens. If Edit is already present, your zone may need Workers Paid plan ($5/mo at dash.cloudflare.com → Workers & Pages → Plans).`;
+              // the worker field. Surface CF's hint messages if any were included.
+              const cfMessages = (patchData.messages || []).map((m: { message?: string }) => m.message).filter(Boolean).join('; ');
+              routingError = `Cloudflare accepted the request but did not attach the Worker. Verify in dash.cloudflare.com → My Profile → API Tokens that your token has BOTH "Account → Workers Scripts → Read" AND "Account → Workers Scripts → Edit" (two separate rows). If both are present, verify Workers Paid is active on your ACCOUNT (not the zone) at dash.cloudflare.com → Workers & Pages → Plans.${cfMessages ? ' CF hints: ' + cfMessages : ''}`;
               console.error('[checkDomainStatus] PATCH succeeded but worker not attached. CF result:', JSON.stringify(patchData.result));
             }
           } else {
