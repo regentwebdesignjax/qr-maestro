@@ -57,9 +57,11 @@ Deno.serve(async (req) => {
     const sslStatus = cfHostname.ssl?.status || '';
     const ownershipStatus = cfHostname.status || '';
 
+    const cfOrigin = (cfHostname.custom_origin_server || '').toLowerCase().trim();
+
     // Routing is configured when either:
-    // 1. A Worker is directly attached (Workers Paid) — preferred, handles request at the edge
-    // 2. custom_origin_server is set — fallback for non-Workers-Paid zones
+    // 1. A Worker is directly attached (Workers for Platforms enterprise) — runs at edge, no TCP
+    // 2. custom_origin_server points to a working external server (non-CF, non-default)
     const workerService = Deno.env.get('CLOUDFLARE_WORKER_SERVICE') || 'qr-redirect';
     // routingConfigured requires the Worker to be ATTACHED to this custom hostname.
     // Having custom_origin_server set is not sufficient — CF for SaaS will still TCP-connect
@@ -138,11 +140,45 @@ Deno.serve(async (req) => {
               routingConfigured = true;
               console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
             } else {
-              // Pre-flight passed (Worker exists, token can read it), but PATCH silently dropped
-              // the worker field. Surface CF's hint messages if any were included.
-              const cfMessages = (patchData.messages || []).map((m: { message?: string }) => m.message).filter(Boolean).join('; ');
-              routingError = `Cloudflare accepted the request but did not attach the Worker. Verify in dash.cloudflare.com → My Profile → API Tokens that your token has BOTH "Account → Workers Scripts → Read" AND "Account → Workers Scripts → Edit" (two separate rows). If both are present, verify Workers Paid is active on your ACCOUNT (not the zone) at dash.cloudflare.com → Workers & Pages → Plans.${cfMessages ? ' CF hints: ' + cfMessages : ''}`;
-              console.error('[checkDomainStatus] PATCH succeeded but worker not attached. CF result:', JSON.stringify(patchData.result));
+              // CF silently dropped the worker field. This happens because the "worker" field
+              // on CF for SaaS custom hostnames requires Workers for Platforms (enterprise),
+              // NOT just Workers Paid ($5/month). No token permission fix will resolve this.
+              //
+              // Fallback strategy: use an external origin server (e.g. Fly.io).
+              // If CLOUDFLARE_FALLBACK_ORIGIN is set to something other than the default
+              // zone hostname (which causes CF loopback → 403/522), treat routing as
+              // configured via external origin and patch custom_origin_server to point to it.
+              console.error('[checkDomainStatus] PATCH succeeded but worker not attached — Workers for Platforms enterprise required. CF result:', JSON.stringify(patchData.result));
+              const DEFAULT_ORIGIN = 'customers.qr-sensei.com';
+              const isExternalOrigin = fallbackOrigin.toLowerCase() !== DEFAULT_ORIGIN;
+
+              if (isExternalOrigin) {
+                // Ensure custom_origin_server is pointing at the external origin
+                if (cfOrigin !== fallbackOrigin.toLowerCase().trim()) {
+                  console.log('[checkDomainStatus] Updating custom_origin_server to external origin:', fallbackOrigin);
+                  const originPatchRes = await fetch(
+                    `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
+                    {
+                      method: 'PATCH',
+                      headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ custom_origin_server: fallbackOrigin }),
+                    }
+                  );
+                  const originPatchData = await originPatchRes.json();
+                  if (originPatchData.success) {
+                    console.log('[checkDomainStatus] custom_origin_server updated to external origin:', fallbackOrigin);
+                  } else {
+                    const originErr = originPatchData.errors?.[0]?.message || 'unknown';
+                    console.error('[checkDomainStatus] Failed to update custom_origin_server:', originErr);
+                  }
+                }
+                routingConfigured = true;
+                console.log('[checkDomainStatus] Using external origin for routing:', fallbackOrigin);
+              } else {
+                // Default origin (customers.qr-sensei.com) causes CF loopback → 403/522.
+                // User must deploy an external redirect server and configure CLOUDFLARE_FALLBACK_ORIGIN.
+                routingError = `Worker attachment requires Cloudflare Workers for Platforms (enterprise — not included in Workers Paid). SOLUTION: Deploy the redirect server in fly-redirect-origin/ to Fly.io (free), then set CLOUDFLARE_FALLBACK_ORIGIN in Base44 environment secrets to your Fly.io app hostname (e.g. qr-sensei-redirect.fly.dev). See fly-redirect-origin/main.ts for instructions.`;
+              }
             }
           } else {
             routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
