@@ -1,44 +1,47 @@
 /**
  * QR Sensei — Cloudflare Worker: Custom Domain Redirect Handler
  *
- * Deploy to: Workers & Pages → qr-redirect → Edit Code → paste this file.
+ * Architecture: Worker as Fallback Origin (Workers Paid, no enterprise required)
  *
- * This Worker handles direct requests to customers.qr-sensei.com (e.g., for
- * testing). It is NOT responsible for routing custom-domain scans —
- * a Cloudflare Redirect Rule in the qr-sensei.com zone handles that path.
+ * How routing works:
+ *   1. customers.qr-sensei.com is the CF for SaaS fallback origin.
+ *      Its DNS record is AAAA 100:: (originless, proxied) — it is never
+ *      TCP-connected; the Worker Route intercepts before any connection is made.
+ *   2. Worker Route */* on the qr-sensei.com zone routes ALL zone traffic
+ *      here, including CF for SaaS custom hostname requests.
+ *   3. This Worker checks the Host header:
+ *      - qr-sensei.com / *.qr-sensei.com → pass through to normal origin (app)
+ *      - anything else (customer custom hostname) → 302 redirect
  *
- * Cloudflare Redirect Rule (create once in qr-sensei.com zone → Rules →
- * Redirect Rules):
- *   Name:       Custom Domain QR Redirect
- *   Expression: (not ends_with(http.host, "qr-sensei.com"))
- *   Type:       Dynamic redirect  •  Status: 302
- *   URL:        concat("https://qr-sensei.com/r?code=", substring(http.request.uri.path, 1))
- *   Preserve query string: off
+ * Cloudflare Dashboard setup (one-time):
+ *   1. Workers & Pages → qr-redirect → Settings → Domains & Routes
+ *      - Remove "customers.qr-sensei.com" from Custom Domains if present
+ *   2. DNS → delete any A/CNAME for "customers", add:
+ *        Type: AAAA  Name: customers  IPv6: 100::  Proxy: Proxied
+ *   3. Workers & Pages → qr-redirect → Settings → Domains & Routes → Add Route
+ *        Pattern: */*   Zone: qr-sensei.com
+ *   4. SSL/TLS → Custom Hostnames → Fallback Origin: customers.qr-sensei.com
  *
- * Why a Redirect Rule and not this Worker?
- * CF for SaaS routes custom hostname traffic (Host: customer.example.com) to
- * the custom_origin_server via a direct TCP connection. Worker Routes and Worker
- * Custom Domains match by Host header, so they never fire for custom hostname
- * traffic (host mismatch). Redirect Rules evaluate before any origin connection
- * and DO match CF for SaaS custom hostname requests, making them the correct
- * tool for this routing problem.
+ * Deploy: Workers & Pages → qr-redirect → Edit Code → paste this file → Deploy
  */
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const host = url.hostname;
 
-    // Extract short_code from path: /abc123 → abc123
+    // Pass through all qr-sensei.com zone traffic to the normal origin (React app)
+    if (host === 'qr-sensei.com' || host.endsWith('.qr-sensei.com')) {
+      return fetch(request);
+    }
+
+    // Custom hostname traffic (e.g. qrs.myenvelopepro.com) — extract short_code from path
     const shortCode = url.pathname.replace(/^\//, '').split('/')[0];
 
     if (!shortCode) {
       return Response.redirect('https://qr-sensei.com/', 302);
     }
 
-    // Redirect to the main app's public redirect route.
-    // The /r?code= route loads the React app which calls the redirect
-    // function and then navigates to the destination — handling all
-    // content types (URL, vCard, WiFi, business card, etc.) correctly.
     return Response.redirect(
       `https://qr-sensei.com/r?code=${encodeURIComponent(shortCode)}`,
       302
