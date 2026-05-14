@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-function parseUserAgent(ua: string): { device_type: string; os: string; browser: string } {
+function parseUserAgent(ua) {
   const uaLow = (ua || '').toLowerCase();
   let device_type = 'desktop';
   if (/mobile|android(?!.*tablet)|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) {
@@ -25,6 +25,31 @@ function parseUserAgent(ua: string): { device_type: string; os: string; browser:
   return { device_type, os, browser };
 }
 
+async function geoFromIp(ip) {
+  // Skip private/loopback IPs
+  if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('10.') || ip.startsWith('192.168.')) {
+    return {};
+  }
+  try {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,lat,lon`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      return {
+        country: data.countryCode || data.country || undefined,
+        city: data.city || undefined,
+        state: data.regionName || undefined,
+        lat: data.lat || undefined,
+        lng: data.lon || undefined,
+      };
+    }
+  } catch (e) {
+    console.warn('[redirect] ip-api lookup failed:', e.message);
+  }
+  return {};
+}
+
 Deno.serve(async (req) => {
   try {
     console.log('[redirect] Incoming request:', req.url);
@@ -46,7 +71,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing code parameter' }, { status: 400 });
     }
 
-    // Look up the QR code by short_code only (avoid boolean filter quirks)
+    // Look up the QR code by short_code
     const qrCodes = await base44.asServiceRole.entities.QRCode.filter({
       short_code: code,
     }).catch((err) => {
@@ -69,18 +94,39 @@ Deno.serve(async (req) => {
     }
 
     // Extract request metadata for scan analytics
-    // The Cloudflare Worker forwards geo data via X-Geo-* headers (sourced from request.cf,
-    // which is available on all Cloudflare plans, unlike the CF-IP* headers).
     const ua = req.headers.get('User-Agent') || req.headers.get('user-agent') || '';
     const { device_type, os, browser } = parseUserAgent(ua);
-    const country = req.headers.get('X-Geo-Country') || req.headers.get('CF-IPCountry') || '';
-    const city = req.headers.get('X-Geo-City') || req.headers.get('CF-IPCity') || '';
-    const state = req.headers.get('X-Geo-Region') || '';
-    const latStr = req.headers.get('X-Geo-Latitude') || req.headers.get('CF-IPLatitude') || '';
-    const lngStr = req.headers.get('X-Geo-Longitude') || req.headers.get('CF-IPLongitude') || '';
-    const lat = latStr ? parseFloat(latStr) : undefined;
-    const lng = lngStr ? parseFloat(lngStr) : undefined;
+
+    // Try Cloudflare headers first
+    const cfCountry = req.headers.get('X-Geo-Country') || req.headers.get('CF-IPCountry') || '';
+    const cfCity = req.headers.get('X-Geo-City') || req.headers.get('CF-IPCity') || '';
+    const cfState = req.headers.get('X-Geo-Region') || '';
+    const cfLatStr = req.headers.get('X-Geo-Latitude') || req.headers.get('CF-IPLatitude') || '';
+    const cfLngStr = req.headers.get('X-Geo-Longitude') || req.headers.get('CF-IPLongitude') || '';
     const referrer = req.headers.get('Referer') || req.headers.get('referer') || '';
+
+    let country = cfCountry;
+    let city = cfCity;
+    let state = cfState;
+    let lat = cfLatStr ? parseFloat(cfLatStr) : undefined;
+    let lng = cfLngStr ? parseFloat(cfLngStr) : undefined;
+
+    // If lat/lng missing, fall back to ip-api.com (free, no key needed)
+    if (!lat || !lng) {
+      const clientIp =
+        req.headers.get('CF-Connecting-IP') ||
+        req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
+        req.headers.get('X-Real-IP') ||
+        '';
+      console.log('[redirect] No CF lat/lng, trying ip-api for IP:', clientIp);
+      const geoData = await geoFromIp(clientIp);
+      if (geoData.lat) lat = geoData.lat;
+      if (geoData.lng) lng = geoData.lng;
+      if (!country && geoData.country) country = geoData.country;
+      if (!city && geoData.city) city = geoData.city;
+      if (!state && geoData.state) state = geoData.state;
+    }
+
     console.log('[redirect] Geo data:', { country, city, state, lat, lng });
 
     // Record analytics scan + increment count (fire-and-forget, don't block redirect)
@@ -107,7 +153,7 @@ Deno.serve(async (req) => {
       return Response.json({ content_type: 'url', url: qrCode.content });
     }
 
-    // For other content types, return metadata so the Worker redirects to the landing page
+    // For other content types, return metadata so the client renders the landing page
     return Response.json({
       content_type: qrCode.content_type,
       short_code: qrCode.short_code,
