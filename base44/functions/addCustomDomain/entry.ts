@@ -85,15 +85,14 @@ Deno.serve(async (req) => {
     // that has a Worker route or Worker Custom Domain, so the Worker actually handles requests.
     // Without this, Cloudflare for SaaS won't invoke Workers — traffic just times out (522).
     // The value must be a hostname inside the zone; a workers.dev URL is rejected.
-    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN');
+    // Default ensures the field is always set even when the env var is not explicitly configured.
+    const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN') || 'customers.qr-sensei.com';
     const cfBody: Record<string, unknown> = {
       hostname: normalized,
       ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
+      custom_origin_server: fallbackOrigin,
+      custom_origin_sni: fallbackOrigin,
     };
-    if (fallbackOrigin) {
-      cfBody.custom_origin_server = fallbackOrigin;
-      cfBody.custom_origin_sni = fallbackOrigin;
-    }
 
     const cfRes = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
       method: 'POST',
