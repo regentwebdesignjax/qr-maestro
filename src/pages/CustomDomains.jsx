@@ -35,6 +35,7 @@ export default function CustomDomains() {
   const [hostname, setHostname] = useState('');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [routingConfigured, setRoutingConfigured] = useState(true);
 
   const fetchStatus = useCallback(async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -42,8 +43,10 @@ export default function CustomDomains() {
       const res = await base44.functions.invoke('checkDomainStatus', {});
       if (res.data?.customDomain) {
         setCustomDomain(res.data.customDomain);
+        setRoutingConfigured(res.data.routingConfigured !== false);
       } else {
         setCustomDomain(null);
+        setRoutingConfigured(true);
       }
     } catch (e) {
       console.error('checkDomainStatus error:', e);
@@ -308,7 +311,7 @@ export default function CustomDomains() {
             )}
 
             {/* Active confirmation */}
-            {customDomain.status === 'active' && (
+            {customDomain.status === 'active' && routingConfigured && (
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="pt-6 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
@@ -318,6 +321,24 @@ export default function CustomDomains() {
                       All new dynamic QR codes you create will use{' '}
                       <strong>https://{customDomain.hostname}/</strong> as their base URL.
                       Existing QR codes continue to work on their original URLs.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Routing not yet configured — worker origin patch pending */}
+            {customDomain.status === 'active' && !routingConfigured && (
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="pt-6 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 shrink-0" />
+                  <div className="space-y-2">
+                    <p className="font-medium text-orange-900">Routing not yet configured — QR scans will time out</p>
+                    <p className="text-sm text-orange-800">
+                      Your domain is verified but the Cloudflare routing patch has not been applied yet.
+                      Click the <strong>Refresh</strong> button above to apply it. If the warning
+                      persists after refreshing, remove this domain and re-add it to create a clean
+                      configuration.
                     </p>
                   </div>
                 </CardContent>
