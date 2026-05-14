@@ -300,6 +300,9 @@ export default function CustomDomains() {
                     After adding the record, click the refresh button above to check verification status.
                     DNS changes can take up to 30 minutes to propagate.
                   </p>
+                  <div className="rounded-md bg-yellow-100 border border-yellow-300 px-3 py-2 text-xs text-yellow-900">
+                    <strong>Using Cloudflare for your domain?</strong> Set the CNAME proxy status to <strong>DNS only (gray cloud)</strong> — not Proxied. Leaving it proxied causes a Cloudflare routing conflict (Error 1000) when scanning.
+                  </div>
                 </CardContent>
               </Card>
             )}
