@@ -4,30 +4,88 @@
   "properties": {
     "user_email": {
       "type": "string",
-      "description": "Email of the Pro user who owns this domain"
+      "description": "Email of the user who owns this custom domain"
     },
     "hostname": {
       "type": "string",
-      "description": "The full subdomain the user configured (e.g. qr.mybrand.com)"
+      "description": "The custom hostname (e.g. links.example.com)"
     },
     "cf_custom_hostname_id": {
       "type": "string",
-      "description": "Cloudflare custom hostname object ID returned by the Custom Hostnames API"
+      "description": "Cloudflare Custom Hostname ID for this domain"
     },
     "status": {
       "type": "string",
-      "enum": ["pending", "active", "deactivated", "error"],
+      "enum": [
+        "pending",
+        "active",
+        "deactivated",
+        "error"
+      ],
       "default": "pending",
-      "description": "pending = awaiting DNS/cert validation; active = verified and live; deactivated = add-on cancelled; error = Cloudflare reported a problem"
+      "description": "Current status of the custom domain"
     },
     "ssl_status": {
       "type": "string",
-      "description": "Raw SSL certificate status string from Cloudflare (e.g. pending_validation, active)"
+      "description": "SSL certificate status from Cloudflare"
     },
     "ownership_status": {
       "type": "string",
-      "description": "Raw hostname ownership status from Cloudflare (e.g. pending, active)"
+      "description": "Ownership verification status from Cloudflare"
     }
   },
-  "required": ["user_email", "hostname"]
+  "required": [
+    "user_email",
+    "hostname"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
