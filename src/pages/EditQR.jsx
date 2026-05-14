@@ -122,12 +122,17 @@ export default function EditQR() {
   const handleSaveQR = async (formData) => {
     setSaving(true);
     try {
-      await base44.entities.QRCode.update(qrCode.id, {
+      const updatePayload = {
         name: formData.name,
         content: formData.content,
         content_type: formData.content_type,
         design_config: formData.design_config,
-      });
+      };
+      // Persist the custom domain so the yellow badge shows the branded URL
+      if (customDomainBase && qrCode.type === 'dynamic') {
+        updatePayload.redirect_base_url = customDomainBase;
+      }
+      await base44.entities.QRCode.update(qrCode.id, updatePayload);
       window.location.href = '/ViewQR?id=' + qrCode.id;
     } catch (error) {
       console.error('Save error:', error);
