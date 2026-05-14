@@ -58,7 +58,9 @@ Deno.serve(async (req) => {
 
     // Heal hostnames that are missing custom_origin_server — required for Workers routing.
     // Existing hostnames registered before this field was set will time out (522) without it.
-    let routingConfigured = cfHostname.custom_origin_server === fallbackOrigin;
+    // Use case-insensitive trim comparison to handle minor CF normalisation differences.
+    const cfOrigin = (cfHostname.custom_origin_server || '').toLowerCase().trim();
+    let routingConfigured = !!cfOrigin && cfOrigin === fallbackOrigin.toLowerCase().trim();
 
     if (!routingConfigured) {
       console.log('[checkDomainStatus] Patching custom_origin_server →', fallbackOrigin, '(was:', cfHostname.custom_origin_server || 'unset', ')');
@@ -80,8 +82,10 @@ Deno.serve(async (req) => {
       if (patchRes.ok) {
         const patchData = await patchRes.json();
         if (patchData.success) {
-          routingConfigured = patchData.result?.custom_origin_server === fallbackOrigin;
-          console.log('[checkDomainStatus] PATCH succeeded, routingConfigured:', routingConfigured);
+          // Trust CF's success response rather than re-comparing the returned value,
+          // which may differ in casing or whitespace from what was sent.
+          routingConfigured = true;
+          console.log('[checkDomainStatus] PATCH succeeded, custom_origin_server now:', patchData.result?.custom_origin_server);
         } else {
           console.error('[checkDomainStatus] PATCH CF error:', JSON.stringify(patchData.errors));
         }
