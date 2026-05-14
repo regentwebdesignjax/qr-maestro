@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     const basePriceId = period === 'monthly'
       ? Deno.env.get('PRICE_ID_MONTHLY')
-      : 'price_1TNeLvQJqdSd3DGE1ugAgoxP';
+      : Deno.env.get('PRICE_ID_ANNUAL');
 
     const extraDbcPriceId = period === 'annual' ? DBC_PRICE_ANNUAL : DBC_PRICE_MONTHLY;
 
