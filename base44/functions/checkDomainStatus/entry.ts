@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
     );
 
     if (!cfRes.ok) {
-      console.error('[checkDomainStatus] CF GET failed:', cfRes.status, await cfRes.text().catch(() => ''));
+      const cfErrBody = await cfRes.text().catch(() => '');
+      console.error('[checkDomainStatus] CF GET failed:', cfRes.status, cfErrBody);
       return Response.json({ customDomain: domain, routingConfigured: false });
     }
 
@@ -57,10 +58,10 @@ Deno.serve(async (req) => {
     const ownershipStatus = cfHostname.status || '';
 
     // Heal hostnames that are missing custom_origin_server — required for Workers routing.
-    // Existing hostnames registered before this field was set will time out (522) without it.
     // Use case-insensitive trim comparison to handle minor CF normalisation differences.
     const cfOrigin = (cfHostname.custom_origin_server || '').toLowerCase().trim();
     let routingConfigured = !!cfOrigin && cfOrigin === fallbackOrigin.toLowerCase().trim();
+    let routingError: string | null = null;
 
     if (!routingConfigured) {
       console.log('[checkDomainStatus] Patching custom_origin_server →', fallbackOrigin, '(was:', cfHostname.custom_origin_server || 'unset', ')');
@@ -82,16 +83,16 @@ Deno.serve(async (req) => {
       if (patchRes.ok) {
         const patchData = await patchRes.json();
         if (patchData.success) {
-          // Trust CF's success response rather than re-comparing the returned value,
-          // which may differ in casing or whitespace from what was sent.
           routingConfigured = true;
           console.log('[checkDomainStatus] PATCH succeeded, custom_origin_server now:', patchData.result?.custom_origin_server);
         } else {
-          console.error('[checkDomainStatus] PATCH CF error:', JSON.stringify(patchData.errors));
+          routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
+          console.error('[checkDomainStatus] PATCH CF error:', routingError);
         }
       } else {
         const body = await patchRes.text().catch(() => '');
-        console.error('[checkDomainStatus] PATCH HTTP error:', patchRes.status, body);
+        routingError = `HTTP ${patchRes.status}: ${body}`;
+        console.error('[checkDomainStatus] PATCH HTTP error:', routingError);
       }
     }
 
@@ -105,7 +106,7 @@ Deno.serve(async (req) => {
       ownership_status: ownershipStatus,
     });
 
-    return Response.json({ customDomain: updated, routingConfigured });
+    return Response.json({ customDomain: updated, routingConfigured, routingError });
   } catch (error) {
     console.error('checkDomainStatus error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });

@@ -36,6 +36,7 @@ export default function CustomDomains() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [routingConfigured, setRoutingConfigured] = useState(true);
+  const [routingError, setRoutingError] = useState('');
 
   const fetchStatus = useCallback(async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -44,9 +45,11 @@ export default function CustomDomains() {
       if (res.data?.customDomain) {
         setCustomDomain(res.data.customDomain);
         setRoutingConfigured(res.data.routingConfigured !== false);
+        setRoutingError(res.data.routingError || '');
       } else {
         setCustomDomain(null);
         setRoutingConfigured(true);
+        setRoutingError('');
       }
     } catch (e) {
       console.error('checkDomainStatus error:', e);
@@ -335,11 +338,15 @@ export default function CustomDomains() {
                   <div className="space-y-2">
                     <p className="font-medium text-orange-900">Routing not yet configured — QR scans will time out</p>
                     <p className="text-sm text-orange-800">
-                      Your domain is verified but the Cloudflare routing patch has not been applied yet.
-                      Click the <strong>Refresh</strong> button above to apply it. If the warning
-                      persists after refreshing, remove this domain and re-add it to create a clean
-                      configuration.
+                      Your domain is verified but the Worker origin could not be set automatically.
+                      Click <strong>Refresh</strong> to retry. If this message persists, the Cloudflare
+                      API is rejecting the origin server value — see the error below for details.
                     </p>
+                    {routingError && (
+                      <div className="rounded bg-orange-100 border border-orange-300 px-3 py-2 text-xs font-mono text-orange-900 break-all">
+                        <strong>Cloudflare error:</strong> {routingError}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
