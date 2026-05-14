@@ -73,9 +73,10 @@ Deno.serve(async (req) => {
             'Authorization': `Bearer ${apiToken}`,
             'Content-Type': 'application/json',
           },
+          // custom_origin_sni requires paid SSL for SaaS (CF error 1456) — omit it.
+          // custom_origin_server alone is sufficient for Worker routing.
           body: JSON.stringify({
             custom_origin_server: fallbackOrigin,
-            custom_origin_sni: fallbackOrigin,
           }),
         }
       );

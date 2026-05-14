@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
         ssl: { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } },
       };
       if (includeOrigin) {
+        // custom_origin_sni requires paid SSL for SaaS (CF error 1456) — omit it.
         body.custom_origin_server = fallbackOrigin;
-        body.custom_origin_sni = fallbackOrigin;
       }
       const res = await fetch(`${CF_API}/zones/${zoneId}/custom_hostnames`, {
         method: 'POST',
