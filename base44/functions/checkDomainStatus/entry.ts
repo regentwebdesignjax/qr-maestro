@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
 
     // Deactivated records don't need any polling
     if (domain.status === 'deactivated') {
-      return Response.json({ customDomain: domain });
+      return Response.json({ customDomain: domain, routingConfigured: false });
     }
 
     const apiToken = Deno.env.get('CLOUDFLARE_API_TOKEN');
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     const fallbackOrigin = Deno.env.get('CLOUDFLARE_FALLBACK_ORIGIN') || 'customers.qr-sensei.com';
 
     if (!apiToken || !zoneId || !domain.cf_custom_hostname_id) {
-      return Response.json({ customDomain: domain });
+      return Response.json({ customDomain: domain, routingConfigured: false });
     }
 
     // Poll Cloudflare for the latest status
@@ -43,12 +43,13 @@ Deno.serve(async (req) => {
     );
 
     if (!cfRes.ok) {
-      return Response.json({ customDomain: domain });
+      console.error('[checkDomainStatus] CF GET failed:', cfRes.status, await cfRes.text().catch(() => ''));
+      return Response.json({ customDomain: domain, routingConfigured: false });
     }
 
     const cfData = await cfRes.json();
     if (!cfData.success) {
-      return Response.json({ customDomain: domain });
+      return Response.json({ customDomain: domain, routingConfigured: false });
     }
 
     const cfHostname = cfData.result;
@@ -57,8 +58,11 @@ Deno.serve(async (req) => {
 
     // Heal hostnames that are missing custom_origin_server — required for Workers routing.
     // Existing hostnames registered before this field was set will time out (522) without it.
-    if (fallbackOrigin && cfHostname.custom_origin_server !== fallbackOrigin) {
-      await fetch(
+    let routingConfigured = cfHostname.custom_origin_server === fallbackOrigin;
+
+    if (!routingConfigured) {
+      console.log('[checkDomainStatus] Patching custom_origin_server →', fallbackOrigin, '(was:', cfHostname.custom_origin_server || 'unset', ')');
+      const patchRes = await fetch(
         `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
         {
           method: 'PATCH',
@@ -71,7 +75,20 @@ Deno.serve(async (req) => {
             custom_origin_sni: fallbackOrigin,
           }),
         }
-      ).catch((e) => console.warn('[checkDomainStatus] PATCH custom_origin_server failed:', e.message));
+      );
+
+      if (patchRes.ok) {
+        const patchData = await patchRes.json();
+        if (patchData.success) {
+          routingConfigured = patchData.result?.custom_origin_server === fallbackOrigin;
+          console.log('[checkDomainStatus] PATCH succeeded, routingConfigured:', routingConfigured);
+        } else {
+          console.error('[checkDomainStatus] PATCH CF error:', JSON.stringify(patchData.errors));
+        }
+      } else {
+        const body = await patchRes.text().catch(() => '');
+        console.error('[checkDomainStatus] PATCH HTTP error:', patchRes.status, body);
+      }
     }
 
     // active when both SSL cert is valid and ownership is verified
@@ -84,7 +101,7 @@ Deno.serve(async (req) => {
       ownership_status: ownershipStatus,
     });
 
-    return Response.json({ customDomain: updated });
+    return Response.json({ customDomain: updated, routingConfigured });
   } catch (error) {
     console.error('checkDomainStatus error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
