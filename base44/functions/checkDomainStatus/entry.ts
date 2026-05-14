@@ -69,49 +69,86 @@ Deno.serve(async (req) => {
     let routingError: string | null = null;
 
     if (!workerAttached) {
-      console.log('[checkDomainStatus] Worker not attached. Patching hostname to attach Worker and set custom_origin_server...');
-      const patchRes = await fetch(
-        `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${apiToken}`,
-            'Content-Type': 'application/json',
-          },
-          // Attach Worker directly (Workers Paid) + keep custom_origin_server as fallback.
-          // custom_origin_sni omitted — requires paid SSL for SaaS (CF error 1456).
-          body: JSON.stringify({
-            worker: { service: workerService },
-            custom_origin_server: fallbackOrigin,
-          }),
-        }
-      );
+      // Pre-flight: probe the Worker directly so we can surface the EXACT failure
+      // (token can't read Workers vs. Worker doesn't exist with this name vs. other CF error)
+      // BEFORE attempting the PATCH attachment.
+      let preflightFailed = false;
 
-      if (patchRes.ok) {
-        const patchData = await patchRes.json();
-        if (patchData.success) {
-          const attachedService = patchData.result?.worker?.service;
-          if (attachedService) {
-            routingConfigured = true;
-            console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
-          } else {
-            // CF accepted the PATCH but silently ignored the worker field.
-            // Most common cause: CLOUDFLARE_API_TOKEN is missing the Account-level
-            // "Workers Scripts: Edit" permission. Zone-level tokens (DNS + SSL only) cannot
-            // attach Workers to custom hostnames — CF silently drops the field.
-            // Fix: dash.cloudflare.com → My Profile → API Tokens → edit the token →
-            //   add Account → Workers Scripts → Edit permission.
-            routingError = `Cloudflare ignored the Worker attachment (worker.service not returned). Most likely fix: edit CLOUDFLARE_API_TOKEN in the Cloudflare dashboard (My Profile → API Tokens) and add "Account → Workers Scripts → Edit" permission. Also verify the Worker is named exactly "${workerService}" in Workers & Pages.`;
-            console.error('[checkDomainStatus] PATCH succeeded but worker not attached. CF result:', JSON.stringify(patchData.result));
-          }
-        } else {
-          routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
-          console.error('[checkDomainStatus] PATCH CF error:', routingError);
+      const zoneInfoRes = await fetch(`${CF_API}/zones/${zoneId}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` },
+      });
+      let accountId: string | null = null;
+      if (zoneInfoRes.ok) {
+        const zoneInfoData = await zoneInfoRes.json();
+        accountId = zoneInfoData.result?.account?.id || null;
+      }
+
+      if (accountId) {
+        const workerCheckUrl = `${CF_API}/accounts/${accountId}/workers/scripts/${workerService}`;
+        const workerCheckRes = await fetch(workerCheckUrl, {
+          headers: { 'Authorization': `Bearer ${apiToken}` },
+        });
+        console.log('[checkDomainStatus] Worker pre-flight:', workerCheckUrl, '→', workerCheckRes.status);
+
+        if (workerCheckRes.status === 401 || workerCheckRes.status === 403) {
+          routingError = `Cloudflare API token cannot read Workers. Fix: dash.cloudflare.com → My Profile → API Tokens → edit the token whose value is stored in Base44 as CLOUDFLARE_API_TOKEN → add BOTH "Account → Workers Scripts → Read" AND "Account → Workers Scripts → Edit" permissions. The token VALUE stays the same; only its permissions change, so no Base44 update is needed.`;
+          preflightFailed = true;
+        } else if (workerCheckRes.status === 404) {
+          routingError = `Worker named "${workerService}" not found in your Cloudflare account. Open dash.cloudflare.com → Workers & Pages and confirm the Worker's exact name. If it has a different name (e.g. "qr-redirect-worker"), set CLOUDFLARE_WORKER_SERVICE in Base44 environment secrets to that exact name.`;
+          preflightFailed = true;
+        } else if (!workerCheckRes.ok) {
+          const body = await workerCheckRes.text().catch(() => '');
+          routingError = `Worker pre-flight failed: HTTP ${workerCheckRes.status} ${body.slice(0, 200)}`;
+          preflightFailed = true;
         }
       } else {
-        const body = await patchRes.text().catch(() => '');
-        routingError = `HTTP ${patchRes.status}: ${body}`;
-        console.error('[checkDomainStatus] PATCH HTTP error:', routingError);
+        console.warn('[checkDomainStatus] Could not resolve account_id from zone; skipping pre-flight');
+      }
+
+      if (preflightFailed) {
+        console.error('[checkDomainStatus] Pre-flight failed:', routingError);
+      } else {
+        console.log('[checkDomainStatus] Worker not attached. Patching hostname to attach Worker and set custom_origin_server...');
+        const patchRes = await fetch(
+          `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${apiToken}`,
+              'Content-Type': 'application/json',
+            },
+            // Attach Worker directly (Workers Paid) + keep custom_origin_server as fallback.
+            // custom_origin_sni omitted — requires paid SSL for SaaS (CF error 1456).
+            body: JSON.stringify({
+              worker: { service: workerService },
+              custom_origin_server: fallbackOrigin,
+            }),
+          }
+        );
+
+        if (patchRes.ok) {
+          const patchData = await patchRes.json();
+          if (patchData.success) {
+            const attachedService = patchData.result?.worker?.service;
+            if (attachedService) {
+              routingConfigured = true;
+              console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
+            } else {
+              // Pre-flight passed (Worker exists, token can read it), but PATCH silently dropped
+              // the worker field. The token has Read but not Edit on Workers Scripts, OR the zone
+              // is not on Workers Paid, OR Workers for Platforms is required.
+              routingError = `Cloudflare accepted the request but did not attach the Worker. Most likely cause: CLOUDFLARE_API_TOKEN has "Workers Scripts: Read" but not "Workers Scripts: Edit". Add Edit permission at dash.cloudflare.com → My Profile → API Tokens. If Edit is already present, your zone may need Workers Paid plan ($5/mo at dash.cloudflare.com → Workers & Pages → Plans).`;
+              console.error('[checkDomainStatus] PATCH succeeded but worker not attached. CF result:', JSON.stringify(patchData.result));
+            }
+          } else {
+            routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
+            console.error('[checkDomainStatus] PATCH CF error:', routingError);
+          }
+        } else {
+          const body = await patchRes.text().catch(() => '');
+          routingError = `HTTP ${patchRes.status}: ${body}`;
+          console.error('[checkDomainStatus] PATCH HTTP error:', routingError);
+        }
       }
     }
 
