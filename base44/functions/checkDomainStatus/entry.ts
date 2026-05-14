@@ -61,13 +61,15 @@ Deno.serve(async (req) => {
     // 1. A Worker is directly attached (Workers Paid) — preferred, handles request at the edge
     // 2. custom_origin_server is set — fallback for non-Workers-Paid zones
     const workerService = Deno.env.get('CLOUDFLARE_WORKER_SERVICE') || 'qr-redirect';
-    const cfOrigin = (cfHostname.custom_origin_server || '').toLowerCase().trim();
+    // routingConfigured requires the Worker to be ATTACHED to this custom hostname.
+    // Having custom_origin_server set is not sufficient — CF for SaaS will still TCP-connect
+    // to the origin (causing 403/522). Only an attached Worker runs at the edge without origin.
     const workerAttached = !!(cfHostname.worker?.service);
-    let routingConfigured = workerAttached || (!!cfOrigin && cfOrigin === fallbackOrigin.toLowerCase().trim());
+    let routingConfigured = workerAttached;
     let routingError: string | null = null;
 
-    if (!routingConfigured) {
-      console.log('[checkDomainStatus] Patching hostname to attach Worker and set custom_origin_server...');
+    if (!workerAttached) {
+      console.log('[checkDomainStatus] Worker not attached. Patching hostname to attach Worker and set custom_origin_server...');
       const patchRes = await fetch(
         `${CF_API}/zones/${zoneId}/custom_hostnames/${domain.cf_custom_hostname_id}`,
         {
@@ -88,8 +90,15 @@ Deno.serve(async (req) => {
       if (patchRes.ok) {
         const patchData = await patchRes.json();
         if (patchData.success) {
-          routingConfigured = true;
-          console.log('[checkDomainStatus] PATCH succeeded, worker:', patchData.result?.worker?.service, 'origin:', patchData.result?.custom_origin_server);
+          const attachedService = patchData.result?.worker?.service;
+          if (attachedService) {
+            routingConfigured = true;
+            console.log('[checkDomainStatus] PATCH succeeded, worker:', attachedService, 'origin:', patchData.result?.custom_origin_server);
+          } else {
+            // CF accepted the PATCH but silently ignored the worker field — zone is likely not on Workers Paid
+            routingError = `Worker field was not accepted by Cloudflare (zone may not be on Workers Paid plan). Upgrade at dash.cloudflare.com → Workers & Pages → Plans.`;
+            console.error('[checkDomainStatus] PATCH succeeded but worker not set:', JSON.stringify(patchData.result));
+          }
         } else {
           routingError = patchData.errors?.map((e: { code?: number; message: string }) => `[${e.code ?? '?'}] ${e.message}`).join('; ') || 'CF API error';
           console.error('[checkDomainStatus] PATCH CF error:', routingError);
