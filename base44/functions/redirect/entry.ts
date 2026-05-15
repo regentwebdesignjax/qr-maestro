@@ -148,6 +148,9 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({
+      id: qrCode.id,
+      owner_email: qrCode.owner_email,
+      name: qrCode.name,
       content_type: qrCode.content_type,
       short_code: qrCode.short_code,
       content: qrCode.content,
