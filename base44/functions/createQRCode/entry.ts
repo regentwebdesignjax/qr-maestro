@@ -32,8 +32,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // For dynamic codes, use client-provided short_code or generate one if missing
-    if (qrCodeData.type === 'dynamic') {
+    // Dynamic codes always need a short_code.
+    // Static business cards also need one so the QR encodes a redirect URL
+    // instead of the raw JSON metadata.
+    const needsShortCode = qrCodeData.type === 'dynamic' || qrCodeData.content_type === 'business_card';
+    if (needsShortCode) {
       if (!qrCodeData.short_code) {
         qrCodeData.short_code = generateShortCode();
         console.log('[createQRCode] Generated new short_code:', qrCodeData.short_code);
