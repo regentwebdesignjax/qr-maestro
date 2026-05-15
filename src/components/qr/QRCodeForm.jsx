@@ -1140,6 +1140,41 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               </Alert>
             }
 
+            {/* Landing Page Buttons — DBC only */}
+            {formData.content_type === 'business_card' && (
+              <div className="border rounded-xl p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="font-semibold text-sm">Landing Page Buttons</Label>
+                  {!isPro && <Lock className="w-4 h-4 text-gray-400" />}
+                </div>
+                {!isPro ? (
+                  <p className="text-xs text-gray-500">
+                    Customize the CTA button colors on your Digital Business Card.{' '}
+                    <Link to="/Pricing" className="text-primary underline font-semibold">Upgrade to unlock</Link>
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Background</Label>
+                      <ColorInput
+                        value={dc.cta_button_color || dc.landing_theme_color || '#BB3F27'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_button_color', v)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500">Button Text Color</Label>
+                      <ColorInput
+                        value={dc.cta_text_color || '#ffffff'}
+                        onChange={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
+                        onPreview={(v) => handleDesignChangeAndPreview('cta_text_color', v)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Landing Page Branding — for dynamic types that have a landing page (not url/business_card which redirect directly) */}
             {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.content_type !== 'linkpages' && formData.type === 'dynamic' && (
               <div className="border rounded-xl p-4 space-y-4">

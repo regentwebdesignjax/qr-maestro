@@ -61,7 +61,7 @@ export default function BusinessCardDisplay({ data }) {
   const [exchangeSubmitting, setExchangeSubmitting] = useState(false);
   const themeColor = data.design_config?.landing_theme_color || '#BB3F27';
   const btnBg = data.design_config?.landing_button_bg || data.design_config?.cta_button_color || themeColor;
-  const btnText = data.design_config?.landing_button_text || '#ffffff';
+  const btnText = data.design_config?.landing_button_text || data.design_config?.cta_text_color || '#ffffff';
 
   // Auto-darken a hex color by a percentage for hover states
   const darken = (hex, pct = 15) => {
