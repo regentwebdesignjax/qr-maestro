@@ -26,6 +26,10 @@
       "type": "string",
       "description": "Optional tag (e.g. Employee ID or Region Code) for routing leads after CSV export"
     },
+    "lead_phone": {
+      "type": "string",
+      "description": "Phone number provided by the lead"
+    },
     "notes": {
       "type": "string",
       "description": "Optional notes provided by the lead (e.g. context about how they met or what they're interested in)"
@@ -37,9 +41,7 @@
     "lead_email"
   ],
   "rls": {
-    "create": {
-      "data.user_email": "{{user.email}}"
-    },
+    "create": true,
     "read": {
       "$or": [
         {
