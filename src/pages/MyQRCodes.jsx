@@ -5,16 +5,25 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Lock, QrCode as QrCodeIcon, FolderOpen, Layers } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Lock, QrCode as QrCodeIcon, FolderOpen, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 import QRMobileCard from '../components/qr/QRMobileCard';
+
+const PAGE_SIZE_KEY = 'qr_codes_page_size';
+const PAGE_SIZE_OPTIONS = [25, 50, 75, 100];
 
 export default function MyQRCodes() {
   const [user, setUser] = useState(null);
   const [activeFolder, setActiveFolder] = useState('all');
   const [showFolders, setShowFolders] = useState(false);
   const [customDomainBase, setCustomDomainBase] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(() => {
+    const saved = localStorage.getItem(PAGE_SIZE_KEY);
+    return saved ? parseInt(saved, 10) : 25;
+  });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -157,9 +166,25 @@ export default function MyQRCodes() {
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
   const canCreateStatic = isPro || staticCount < 10;
 
-  const visibleQrCodes = activeFolder === 'all'
+  const filteredQrCodes = activeFolder === 'all'
     ? qrCodes
     : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
+
+  const totalPages = Math.max(1, Math.ceil(filteredQrCodes.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const visibleQrCodes = filteredQrCodes.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const handlePageSizeChange = (val) => {
+    const newSize = parseInt(val, 10);
+    localStorage.setItem(PAGE_SIZE_KEY, String(newSize));
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  const handleFolderChange = (folder) => {
+    setActiveFolder(folder);
+    setCurrentPage(1);
+  };
 
   const handleFoldersChange = async (newFolders) => {
     const existingIds = new Set(folders.map(f => f.id));
@@ -264,7 +289,7 @@ export default function MyQRCodes() {
               <FoldersSidebar
                 folders={allFolders}
                 activeFolder={activeFolder}
-                onFolderChange={(f) => { setActiveFolder(f); setShowFolders(false); }}
+                onFolderChange={(f) => { handleFolderChange(f); setShowFolders(false); }}
                 onFoldersChange={handleFoldersChange}
                 onFolderDelete={handleFolderDelete}
                 onFolderRename={handleFolderRename}
@@ -279,7 +304,7 @@ export default function MyQRCodes() {
             <FoldersSidebar
               folders={allFolders}
               activeFolder={activeFolder}
-              onFolderChange={setActiveFolder}
+              onFolderChange={handleFolderChange}
               onFoldersChange={handleFoldersChange}
               onFolderDelete={handleFolderDelete}
               onFolderRename={handleFolderRename}
@@ -313,15 +338,46 @@ export default function MyQRCodes() {
                     )}
                   </div>
                 ) : (
-                  <QRCodeList
-                    qrCodes={visibleQrCodes}
-                    isPro={isPro}
-                    subActive={subActive}
-                    folders={folders}
-                    qrFolderMap={qrFolderMap}
-                    onDelete={(id) => deleteQRMutation.mutate(id)}
-                    onMoveToFolder={handleMoveToFolder}
-                  />
+                  <>
+                    <QRCodeList
+                      qrCodes={visibleQrCodes}
+                      isPro={isPro}
+                      subActive={subActive}
+                      folders={folders}
+                      qrFolderMap={qrFolderMap}
+                      onDelete={(id) => deleteQRMutation.mutate(id)}
+                      onMoveToFolder={handleMoveToFolder}
+                    />
+                    {filteredQrCodes.length > 25 && (
+                      <div className="flex items-center justify-between pt-4 mt-2 border-t">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>Show</span>
+                          <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                            <SelectTrigger className="h-8 w-20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PAGE_SIZE_OPTIONS.map(s => (
+                                <SelectItem key={s} value={String(s)}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span>per page</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">
+                            Page {safePage} of {totalPages}
+                          </span>
+                          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safePage === 1}>
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}>
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -341,15 +397,43 @@ export default function MyQRCodes() {
                   </Link>
                 </div>
               ) : (
-                visibleQrCodes.map(qr => (
-                  <QRMobileCard
-                    key={qr.id}
-                    qr={qr}
-                    isPro={isPro}
-                    onDelete={(id) => deleteQRMutation.mutate(id)}
-                    customDomainBase={customDomainBase}
-                  />
-                ))
+                <>
+                  {visibleQrCodes.map(qr => (
+                    <QRMobileCard
+                      key={qr.id}
+                      qr={qr}
+                      isPro={isPro}
+                      onDelete={(id) => deleteQRMutation.mutate(id)}
+                      customDomainBase={customDomainBase}
+                    />
+                  ))}
+                  {filteredQrCodes.length > 25 && (
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                          <SelectTrigger className="h-8 w-20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAGE_SIZE_OPTIONS.map(s => (
+                              <SelectItem key={s} value={String(s)}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span>per page</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">{safePage}/{totalPages}</span>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={safePage === 1}>
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}>
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
