@@ -103,21 +103,39 @@ function roundedRectSvgPath(x, y, w, h, r) {
   ].join(' ');
 }
 
-function getQRContent(qr) {
-  console.log('[getQRContent] called with:', { type: qr.type, content_type: qr.content_type, short_code: qr.short_code, redirect_base_url: qr.redirect_base_url });
+function getQRContent(qr, isPreview = false) {
+  console.log('[getQRContent] called with:', { type: qr.type, content_type: qr.content_type, short_code: qr.short_code, redirect_base_url: qr.redirect_base_url, isPreview });
 
   // Dynamic QRs, linkpages, and business cards always use the redirect URL
   // so the QR never encodes raw JSON/metadata.
   const useRedirect = qr.type === 'dynamic' || qr.content_type === 'linkpages' || qr.content_type === 'business_card';
-  if (useRedirect && qr.short_code) {
-    if (qr.redirect_base_url) {
-      const url = `${qr.redirect_base_url}/${qr.short_code}`;
-      console.log('[getQRContent] ✓ using custom domain:', url);
+  
+  if (useRedirect) {
+    if (isPreview) {
+      try {
+        const previewPayload = {
+          content_type: qr.content_type,
+          content: qr.content,
+          design_config: qr.design_config,
+          name: qr.name
+        };
+        const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(previewPayload))));
+        return `${window.location.origin}/r?preview_data=${dataStr}`;
+      } catch (e) {
+        console.warn('Preview payload too large, falling back to standard redirect URL', e);
+      }
+    }
+
+    if (qr.short_code) {
+      if (qr.redirect_base_url) {
+        const url = `${qr.redirect_base_url}/${qr.short_code}`;
+        console.log('[getQRContent] ✓ using custom domain:', url);
+        return url;
+      }
+      const url = `${window.location.origin}/r?code=${qr.short_code}`;
+      console.log('[getQRContent] using redirect URL:', url);
       return url;
     }
-    const url = `${window.location.origin}/r?code=${qr.short_code}`;
-    console.log('[getQRContent] using redirect URL:', url);
-    return url;
   }
 
   console.log('[getQRContent] returning raw content:', qr.content);
@@ -131,8 +149,8 @@ function getQRContent(qr) {
  * Applies all design_config properties: colors, gradients, module style,
  * eye shapes, eye color, logo, and transparent background.
  */
-export async function renderQR(canvas, qrData, canvasPx = 300) {
-  console.log('[renderQR] called with qrData:', { type: qrData.type, content_type: qrData.content_type, short_code: qrData.short_code, redirect_base_url: qrData.redirect_base_url });
+export async function renderQR(canvas, qrData, canvasPx = 300, isPreview = false) {
+  console.log('[renderQR] called with qrData:', { type: qrData.type, content_type: qrData.content_type, short_code: qrData.short_code, redirect_base_url: qrData.redirect_base_url, isPreview });
 
   const dc = qrData.design_config || {};
   const fgColor = dc.foreground_color || '#000000';
@@ -145,7 +163,7 @@ export async function renderQR(canvas, qrData, canvasPx = 300) {
   const eyeInnerShape = dc.eye_inner_shape || 'square';
   const eyeColor = dc.eye_color || fgColor;
 
-  const content = getQRContent(qrData);
+  const content = getQRContent(qrData, isPreview);
   console.log('[renderQR] content to encode in QR:', content);
 
   const qrMatrix = QRCode.create(content, { errorCorrectionLevel: 'H' });
@@ -245,11 +263,11 @@ export async function renderQR(canvas, qrData, canvasPx = 300) {
 /**
  * Renders a QR code to a new off-screen canvas at the given pixel size.
  */
-export async function renderQRToCanvas(qrData, size = 300) {
+export async function renderQRToCanvas(qrData, size = 300, isPreview = false) {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
-  await renderQR(canvas, qrData, size);
+  await renderQR(canvas, qrData, size, isPreview);
   return canvas;
 }
 

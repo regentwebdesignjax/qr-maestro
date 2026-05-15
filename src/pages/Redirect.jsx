@@ -369,8 +369,36 @@ export default function Redirect() {
   useEffect(() => {
     const run = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
+      const previewData = urlParams.get('preview_data');
 
+      if (previewData) {
+        try {
+          const payload = JSON.parse(decodeURIComponent(escape(atob(previewData))));
+          const data = {
+            content_type: payload.content_type,
+            content: payload.content,
+            design_config: payload.design_config || {},
+            name: payload.name || 'Preview',
+            id: 'preview',
+            short_code: 'preview'
+          };
+
+          if (data.content_type === 'business_card') {
+            try { data.bc = JSON.parse(data.content); } catch { data.bc = {}; }
+          }
+          if (data.content_type === 'linkpages') {
+            try { data.linkpage = JSON.parse(data.content); } catch { data.linkpage = {}; }
+          }
+
+          setState({ status: 'display', data });
+        } catch (error) {
+          console.error('Preview parsing error:', error);
+          window.location.href = '/';
+        }
+        return;
+      }
+
+      const code = urlParams.get('code');
       if (!code) {
         window.location.href = '/';
         return;

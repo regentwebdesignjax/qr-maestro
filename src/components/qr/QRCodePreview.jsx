@@ -75,7 +75,7 @@ function QRCanvasView({ qrData, customDomainBase }) {
     });
     const canvas = canvasRef.current;
     if (!canvas) return;
-    renderQR(canvas, effectiveQrData)
+    renderQR(canvas, effectiveQrData, 300, true)
       .then(url => setQrCodeUrl(url))
       .catch(err => console.error('QR render error:', err));
   }, [effectiveQrData]);
@@ -200,7 +200,7 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
       redirect_base_url: effectiveQrData.redirect_base_url,
       customDomainBase
     });
-    renderQR(canvas, effectiveQrData)
+    renderQR(canvas, effectiveQrData, 300, true)
       .then(url => setQrCodeUrl(url))
       .catch(err => console.error('QR render error:', err));
   }, [effectiveQrData]);
