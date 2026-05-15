@@ -106,20 +106,21 @@ function roundedRectSvgPath(x, y, w, h, r) {
 function getQRContent(qr) {
   console.log('[getQRContent] called with:', { type: qr.type, content_type: qr.content_type, short_code: qr.short_code, redirect_base_url: qr.redirect_base_url });
 
-  // For dynamic QR codes and linkpages, use short_code redirect (proven pattern)
-  if ((qr.type === 'dynamic' || qr.content_type === 'linkpages') && qr.short_code) {
-    // Use custom domain if one was stored at creation time
+  // Dynamic QRs, linkpages, and business cards always use the redirect URL
+  // so the QR never encodes raw JSON/metadata.
+  const useRedirect = qr.type === 'dynamic' || qr.content_type === 'linkpages' || qr.content_type === 'business_card';
+  if (useRedirect && qr.short_code) {
     if (qr.redirect_base_url) {
       const url = `${qr.redirect_base_url}/${qr.short_code}`;
       console.log('[getQRContent] ✓ using custom domain:', url);
       return url;
     }
     const url = `${window.location.origin}/r?code=${qr.short_code}`;
-    console.log('[getQRContent] ✗ using default URL (no custom domain):', url, 'redirect_base_url was:', qr.redirect_base_url);
+    console.log('[getQRContent] using redirect URL:', url);
     return url;
   }
 
-  console.log('[getQRContent] ✗ not dynamic, returning content:', qr.content);
+  console.log('[getQRContent] returning raw content:', qr.content);
   return qr.content;
 }
 

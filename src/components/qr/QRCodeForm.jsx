@@ -427,7 +427,10 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
     if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
 
-    const shortCode = formData.type === 'dynamic'
+    // Business cards always need a short_code so the QR encodes a redirect URL
+    // instead of the raw JSON metadata.
+    const isBcOrLinkpages = formData.content_type === 'business_card' || formData.content_type === 'linkpages';
+    const shortCode = (formData.type === 'dynamic' || isBcOrLinkpages)
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
 
