@@ -10,6 +10,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: lead_name, lead_email, and user_email are required' }, { status: 400 });
     }
 
+    // Store phone in the dedicated field AND embed it in notes as a prefix so it
+    // survives even if the lead_phone column hasn't been provisioned yet.
+    const notesValue = lead_phone
+      ? `[PHONE: ${lead_phone}] ${notes || ''}`.trim()
+      : (notes || '');
+
     const leadData = {
       user_email,
       qr_code_id: qr_code_id || '',
@@ -18,7 +24,7 @@ Deno.serve(async (req) => {
       lead_email,
       lead_phone: lead_phone ? String(lead_phone) : '',
       lead_tag: lead_tag || '',
-      notes: notes || '',
+      notes: notesValue,
     };
 
     const result = await base44.asServiceRole.entities.Lead.create(leadData);

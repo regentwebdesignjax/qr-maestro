@@ -10,14 +10,14 @@ import { formatPhone } from '@/lib/formatPhone';
 // Helper function to extract phone from notes field
 function extractPhoneFromNotes(notes) {
   if (!notes) return null;
-  const match = notes.match(/^\[PHONE:\s*(\d+)\]\s*/);
-  return match ? match[1] : null;
+  const match = notes.match(/^\[PHONE:\s*([^\]]+)\]\s*/);
+  return match ? match[1].trim() : null;
 }
 
 // Helper function to remove phone prefix from notes
 function cleanNotes(notes) {
   if (!notes) return '';
-  return notes.replace(/^\[PHONE:\s*\d+\]\s*/, '').trim();
+  return notes.replace(/^\[PHONE:\s*[^\]]+\]\s*/, '').trim();
 }
 
 // Returns a map of email -> [all leads with that email] for emails with >1 entry
