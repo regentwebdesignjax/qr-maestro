@@ -218,17 +218,6 @@ export default function Leads() {
     enabled: !!user,
   });
 
-  useEffect(() => {
-    if (leads.length > 0) {
-      console.log('=== LEADS DATA DEBUG ===');
-      console.log('Total leads:', leads.length);
-      console.log('First lead object:', leads[0]);
-      console.log('First lead keys:', Object.keys(leads[0]));
-      console.log('First lead phone field:', leads[0]?.lead_phone);
-      console.log('All lead phone values:', leads.map(l => ({ name: l.lead_name, phone: l.lead_phone })));
-    }
-  }, [leads]);
-
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
   const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
   const dupeEmailCount = Object.keys(dupeGroups).length;
