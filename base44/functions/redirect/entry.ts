@@ -26,13 +26,12 @@ function parseUserAgent(ua) {
 }
 
 async function geoFromIp(ip) {
-  // Skip private/loopback IPs
   if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('10.') || ip.startsWith('192.168.')) {
     return {};
   }
   try {
     const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,lat,lon`, {
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(4000),
     });
     const data = await res.json();
     if (data.status === 'success') {
@@ -56,15 +55,18 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    const url = new URL(req.url);
-    // Support code in query param (GET) or in POST body
-    let code = url.searchParams.get('code');
-    if (!code && req.method === 'POST') {
+    // Parse the full body once
+    let bodyData = {};
+    const urlParams = new URL(req.url);
+    let code = urlParams.searchParams.get('code');
+
+    if (req.method === 'POST') {
       try {
-        const body = await req.clone().json();
-        code = body.code || null;
+        bodyData = await req.json();
+        if (!code) code = bodyData.code || null;
       } catch (_) {}
     }
+
     console.log('[redirect] Looking up code:', code);
 
     if (!code) {
@@ -82,7 +84,6 @@ Deno.serve(async (req) => {
     console.log('[redirect] Query returned', qrCodes.length, 'results');
 
     if (qrCodes.length === 0) {
-      console.log('[redirect] QR code not found for short_code:', code);
       return Response.json({ content_type: 'inactive', error: 'QR code not found' }, { status: 404 });
     }
 
@@ -93,32 +94,26 @@ Deno.serve(async (req) => {
       return Response.json({ content_type: 'inactive', error: 'QR code is inactive' }, { status: 404 });
     }
 
-    // Extract request metadata for scan analytics
+    // Extract UA and referrer
     const ua = req.headers.get('User-Agent') || req.headers.get('user-agent') || '';
     const { device_type, os, browser } = parseUserAgent(ua);
+    const referrer = req.headers.get('Referer') || req.headers.get('referer') || bodyData.referrer || '';
 
-    // Try Cloudflare headers first
-    const cfCountry = req.headers.get('X-Geo-Country') || req.headers.get('CF-IPCountry') || '';
-    const cfCity = req.headers.get('X-Geo-City') || req.headers.get('CF-IPCity') || '';
-    const cfState = req.headers.get('X-Geo-Region') || '';
-    const cfLatStr = req.headers.get('X-Geo-Latitude') || req.headers.get('CF-IPLatitude') || '';
-    const cfLngStr = req.headers.get('X-Geo-Longitude') || req.headers.get('CF-IPLongitude') || '';
-    const referrer = req.headers.get('Referer') || req.headers.get('referer') || '';
+    // Geo: prefer client-supplied geo (from browser's ip-api call), then CF headers, then server-side lookup
+    let country = bodyData.geo_country || req.headers.get('X-Geo-Country') || req.headers.get('CF-IPCountry') || '';
+    let city = bodyData.geo_city || req.headers.get('X-Geo-City') || req.headers.get('CF-IPCity') || '';
+    let state = bodyData.geo_state || req.headers.get('X-Geo-Region') || '';
+    let lat = bodyData.geo_lat != null ? parseFloat(bodyData.geo_lat) : undefined;
+    let lng = bodyData.geo_lng != null ? parseFloat(bodyData.geo_lng) : undefined;
 
-    let country = cfCountry;
-    let city = cfCity;
-    let state = cfState;
-    let lat = cfLatStr ? parseFloat(cfLatStr) : undefined;
-    let lng = cfLngStr ? parseFloat(cfLngStr) : undefined;
-
-    // If lat/lng missing, fall back to ip-api.com (free, no key needed)
+    // If still no lat/lng, try server-side IP lookup
     if (!lat || !lng) {
       const clientIp =
         req.headers.get('CF-Connecting-IP') ||
         req.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
         req.headers.get('X-Real-IP') ||
         '';
-      console.log('[redirect] No CF lat/lng, trying ip-api for IP:', clientIp);
+      console.log('[redirect] No lat/lng from client or CF headers, trying ip-api for IP:', clientIp);
       const geoData = await geoFromIp(clientIp);
       if (geoData.lat) lat = geoData.lat;
       if (geoData.lng) lng = geoData.lng;
@@ -127,9 +122,9 @@ Deno.serve(async (req) => {
       if (!state && geoData.state) state = geoData.state;
     }
 
-    console.log('[redirect] Geo data:', { country, city, state, lat, lng });
+    console.log('[redirect] Final geo:', { country, city, state, lat, lng });
 
-    // Record analytics scan + increment count (fire-and-forget, don't block redirect)
+    // Record analytics (fire-and-forget)
     Promise.all([
       base44.asServiceRole.entities.Scan.create({
         qr_code_id: qrCode.id,
@@ -148,12 +143,10 @@ Deno.serve(async (req) => {
       }),
     ]).catch((e) => console.error('[redirect] Analytics error:', e));
 
-    // For URL content type, return the destination URL
     if (qrCode.content_type === 'url') {
       return Response.json({ content_type: 'url', url: qrCode.content });
     }
 
-    // For other content types, return metadata so the client renders the landing page
     return Response.json({
       content_type: qrCode.content_type,
       short_code: qrCode.short_code,

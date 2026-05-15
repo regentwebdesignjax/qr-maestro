@@ -376,8 +376,24 @@ export default function Redirect() {
         return;
       }
 
+      // Fetch geo from browser (has real user IP) and pass to backend
+      let geoPayload = {};
       try {
-        const response = await base44.functions.invoke('redirect', { code });
+        const geoRes = await fetch('http://ip-api.com/json/?fields=status,countryCode,regionName,city,lat,lon');
+        const geoData = await geoRes.json();
+        if (geoData.status === 'success') {
+          geoPayload = {
+            geo_country: geoData.countryCode,
+            geo_city: geoData.city,
+            geo_state: geoData.regionName,
+            geo_lat: geoData.lat,
+            geo_lng: geoData.lon,
+          };
+        }
+      } catch (_) {}
+
+      try {
+        const response = await base44.functions.invoke('redirect', { code, ...geoPayload });
         const data = response?.data;
 
         if (!data) { window.location.href = '/'; return; }
