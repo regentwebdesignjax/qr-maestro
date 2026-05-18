@@ -11,7 +11,7 @@ export default function BentoFeatures() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Everything You Need</p>
-          <h2 className="text-4xl font-black text-foreground">The Scroll of Features</h2>
+          <h2 className="text-4xl font-black text-foreground">Powerful Features at Every Level</h2>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-fr">
@@ -24,9 +24,9 @@ export default function BentoFeatures() {
               <span className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border mb-4 inline-block" style={{ color: GOLD, borderColor: GOLD }}>
                 Black Belt Exclusive
               </span>
-              <h3 className="text-2xl font-black mt-3 mb-3">The Way of Water</h3>
+              <h3 className="text-2xl font-black mt-3 mb-3">Dynamic QR Codes</h3>
               <p className="text-gray-300 leading-relaxed text-sm">
-                Dynamic QR codes that bend to your will. Update the destination URL at any time without reprinting a single code. Run multiple campaigns from one printed asset.
+                Update where your codes link anytime without reprinting. Perfect for running multiple campaigns from one printed asset or pivoting your strategy on the fly.
               </p>
             </div>
             <Link to="/Pricing" className="mt-6">
@@ -45,8 +45,8 @@ export default function BentoFeatures() {
               <span className="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border inline-block mb-2" style={{ color: GOLD, borderColor: GOLD }}>
                 Pro Analytics
               </span>
-              <h3 className="text-lg font-black text-foreground">Inner Vision</h3>
-              <p className="text-sm text-muted-foreground mt-1">Real-time scan analytics — location, device, time. Know exactly who is engaging with your codes.</p>
+              <h3 className="text-lg font-black text-foreground">Real-Time Analytics</h3>
+              <p className="text-sm text-muted-foreground mt-1">Track location, device type, scan time, and more. Understand your audience and measure campaign performance.</p>
             </div>
           </div>
 
@@ -55,7 +55,7 @@ export default function BentoFeatures() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Palette className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-black text-foreground text-base leading-tight">Bespoke Gi</h3>
+            <h3 className="font-black text-foreground text-base leading-tight">Custom Design</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">Custom colors, logos, gradients & eye shapes. Your brand, your code.</p>
           </div>
 
@@ -64,7 +64,7 @@ export default function BentoFeatures() {
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <h3 className="font-black text-white text-base leading-tight">The Iron Guard</h3>
+            <h3 className="font-black text-white text-base leading-tight">Enterprise Security</h3>
             <p className="text-xs text-gray-300 leading-relaxed">Enterprise-grade security with unlimited scans and zero data selling. Your customers stay yours.</p>
           </div>
         </div>
