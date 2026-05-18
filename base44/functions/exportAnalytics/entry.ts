@@ -100,7 +100,7 @@ function buildCSV(scans) {
 
 async function fetchLogoBase64() {
   try {
-    const res = await fetch('https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png');
+    const res = await fetch('https://media.base44.com/images/public/697bd26bb993b44c81affe97/27b4b8272_QR-Sensei-Logo.png');
     const buf = await res.arrayBuffer();
     const bytes = new Uint8Array(buf);
     let binary = '';
@@ -123,30 +123,35 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   const dark = [20, 32, 36];
   const gray = [130, 130, 130];
 
-  // ── Brand header bar ──────────────────────────────────────────────
-  doc.setFillColor(...red);
-  doc.rect(0, 0, W, 28, 'F');
+  // ── Header (white background) ─────────────────────────────────────
+  // White header — no background fill needed
 
   // Try to add logo
   const logoData = await fetchLogoBase64();
   if (logoData) {
-    // Logo on the left (height ~10mm, auto width)
-    doc.addImage(logoData, 'PNG', margin, 4, 40, 10);
+    // Logo on the left — wide logo so use height 14mm and proportional width (~56mm for ~4:1 ratio)
+    doc.addImage(logoData, 'PNG', margin, 6, 56, 14);
   } else {
-    // Fallback: text logo
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...red);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('QR Sensei', margin, 13);
+    doc.text('QR SENSEI', margin, 16);
   }
 
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...gray);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Analytics Report', margin, 23);
+  doc.text('Analytics Report', margin, 24);
 
   doc.setFontSize(8);
-  doc.text(`Generated: ${new Date().toUTCString()}`, W - margin, 23, { align: 'right' });
+  doc.setTextColor(...gray);
+  doc.text(`Generated: ${new Date().toUTCString()}`, W - margin, 24, { align: 'right' });
+
+  // Divider under header
+  doc.setDrawColor(...red);
+  doc.setLineWidth(0.5);
+  doc.line(margin, 28, W - margin, 28);
+  doc.setLineWidth(0.2);
 
   y = 38;
 
@@ -161,10 +166,11 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...gray);
   doc.text(`Period: ${dateLabel}`, margin, y);
-  y += 10;
+  y += 8;
 
   // ── Divider ───────────────────────────────────────────────────────
   doc.setDrawColor(230, 225, 220);
+  doc.setLineWidth(0.3);
   doc.line(margin, y, W - margin, y);
   y += 8;
 
