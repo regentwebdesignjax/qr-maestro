@@ -34,9 +34,9 @@ export default function Home() {
           
           <div className="max-w-xl">
             <h1 className="text-6xl font-black text-white mb-6 font-poppins leading-tight">
-              Master the Art of the Scan
+              Professional QR Codes in Seconds
             </h1>
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">QR Sensei provides professional QR code generation with custom styling, real-time analytics, and dynamic management.
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-lg">Create beautiful, branded QR codes. Update them anytime. Track every scan. QR Sensei is the complete platform for teams that need control over their QR code strategy.
 
             </p>
             <div className="flex gap-4">
@@ -75,24 +75,24 @@ export default function Home() {
       {/* Path to Mastery Stepper */}
       <PathToMastery />
 
-      {/* Feature Ribbon 1: The Fluid Form */}
+      {/* Feature Ribbon 1: Dynamic QR Codes */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex items-center justify-center">
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/720f33124_sensei-fluid-form.png"
-                alt="The Fluid Form"
+                alt="Dynamic QR Codes"
                 className="w-full max-w-sm drop-shadow-xl" />
               
             </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Zap className="w-6 h-6 text-primary" />
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">The Fluid Form</h3>
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Dynamic QR Codes</h3>
               </div>
               <h2 className="text-4xl font-black text-gray-900 mb-4 max-w-2xl font-poppins">
-                Dynamic QR Codes You Can Edit Anytime
+                Update Links Anytime. No Reprinting.
               </h2>
               <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
                 Unlike static codes, Dynamic QR codes allow you to update the destination URL in real-time without reprinting. Perfect for campaigns, promotions, and evolving strategies.
@@ -107,7 +107,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Feature Ribbon 2: Inner Vision Analytics */}
+      {/* Feature Ribbon 2: Real-Time Analytics */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#142024' }}>
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -126,10 +126,10 @@ export default function Home() {
             <div className="order-1">
               <div className="flex items-center gap-3 mb-4">
                 <BarChart3 className="w-6 h-6 text-primary" />
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Inner Vision</h3>
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Real-Time Analytics</h3>
               </div>
               <h2 className="text-4xl font-black text-white mb-4 max-w-2xl font-poppins">
-                See Every Scan in Real-Time
+                Understand Your Audience. Every Scan.
               </h2>
               <p className="text-lg text-gray-300 mb-6 max-w-3xl leading-relaxed">
                 Track where your codes are scanned, what devices people use, and when engagement peaks. Make data-driven decisions with comprehensive analytics.
@@ -144,24 +144,24 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Feature Ribbon 3: Bespoke Gi */}
+      {/* Feature Ribbon 3: Custom Design */}
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex items-center justify-center">
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/eb0a8a8a8_sensei-design.png"
-                alt="Bespoke Gi"
+                alt="Custom Design"
                 className="w-full max-w-xl drop-shadow-xl" />
               
             </div>
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Palette className="w-6 h-6 text-primary" />
-                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Bespoke Gi</h3>
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Custom Design</h3>
               </div>
               <h2 className="text-4xl font-black text-gray-900 mb-4 max-w-2xl font-poppins">
-                Custom Design Your QR Codes
+                Make Your QR Codes Match Your Brand
               </h2>
               <p className="text-lg text-gray-600 mb-6 max-w-3xl leading-relaxed">
                 Choose custom colors, upload your logo, apply gradients, and select unique eye shapes. Make your QR codes unmistakably yours.
@@ -190,13 +190,13 @@ export default function Home() {
             {/* Left: Copy */}
             <div>
               <h2 className="text-4xl font-black text-gray-900 mb-3 font-poppins leading-tight">
-                Master Your First Impression: The Digital Business Card
+                Digital Business Cards That Capture Leads
               </h2>
               <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-                A Black Belt exclusive feature for professionals and teams.
+                A Black Belt exclusive for sales teams and professionals.
               </p>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Standard business cards get lost. Sensei cards get saved. Transform your QR codes into a professional landing page that captures leads and drops your contact info directly into their phone.
+                Turn your QR code into an interactive landing page that lets people save your contact info directly to their phone. Perfect for sales meetings, networking events, and one-on-one connections.
               </p>
               <div className="bg-white/70 border border-gray-200 rounded-xl px-5 py-4 mb-8">
                 <p className="text-gray-800 text-sm leading-relaxed">
@@ -287,10 +287,10 @@ export default function Home() {
       <div className="w-screen py-24 px-[5vw]" style={{ backgroundColor: '#ffffff' }}>
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-4xl font-black text-gray-900 mb-6 font-poppins">
-            Begin Your Mastery
+            Ready to Get Started?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Start free with 3 Static QR Codes. Upgrade to Black Belt for unlimited codes, dynamic management, and detailed analytics.
+            Create your first QR code for free. Upgrade to Black Belt for unlimited dynamic codes, team management, and detailed analytics.
           </p>
           <Button
             size="lg"

@@ -5,14 +5,14 @@ import { Crosshair, Palette, BarChart3 } from 'lucide-react';
 const steps = [
 {
   number: '01',
-  title: 'Strike',
+  title: 'Select',
   subtitle: 'Choose Your Content',
-  description: 'Select from URLs, vCards, WiFi, PDFs, and more. Define your intent with precision.',
+  description: 'Select from URLs, vCards, WiFi, PDFs, and more. Define what your QR code should do.',
   icon: Crosshair
 },
 {
   number: '02',
-  title: 'Form',
+  title: 'Customize',
   subtitle: 'Design Your Code',
   description: 'Apply your brand colors, upload a logo, choose eye shapes and patterns. Make it unmistakably yours.',
   icon: Palette
@@ -20,7 +20,7 @@ const steps = [
 {
   number: '03',
   title: 'Deploy',
-  subtitle: 'Track & Adapt',
+  subtitle: 'Track & Manage',
   description: 'Launch your code and watch real-time analytics roll in. Update dynamic codes anytime without reprinting.',
   icon: BarChart3
 }];
@@ -34,8 +34,8 @@ export default function PathToMastery() {
     <section className="w-full py-24 px-[5vw] bg-background" ref={ref}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">THE METHOD</p>
-          <h2 className="text-4xl font-black text-foreground">The Path to Mastery</h2>
+          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">HOW IT WORKS</p>
+          <h2 className="text-4xl font-black text-foreground">Create, Design, Deploy in Minutes</h2>
         </div>
 
         <div className="relative grid md:grid-cols-3 gap-8">
