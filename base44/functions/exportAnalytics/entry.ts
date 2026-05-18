@@ -98,20 +98,7 @@ function buildCSV(scans) {
   return [headers.join(','), ...rows].join('\n');
 }
 
-async function fetchLogoBase64() {
-  try {
-    const res = await fetch('https://media.base44.com/images/public/697bd26bb993b44c81affe97/27b4b8272_QR-Sensei-Logo.png');
-    const buf = await res.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return 'data:image/png;base64,' + btoa(binary);
-  } catch (_) {
-    return null;
-  }
-}
-
-async function buildPDF(qrName, dateLabel, scans, stats) {
+function buildPDF(qrName, dateLabel, scans, stats) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210;
   const margin = 18;
@@ -123,29 +110,24 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   const dark = [20, 32, 36];
   const gray = [130, 130, 130];
 
-  // ── Header (white background) ─────────────────────────────────────
-  // White header — no background fill needed
-
-  // Try to add logo
-  const logoData = await fetchLogoBase64();
-  if (logoData) {
-    // Logo on the left — wide logo so use height 14mm and proportional width (~56mm for ~4:1 ratio)
-    doc.addImage(logoData, 'PNG', margin, 6, 56, 14);
-  } else {
-    doc.setTextColor(...red);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('QR SENSEI', margin, 16);
-  }
+  // ── Header ────────────────────────────────────────────────────────
+  // "QR" in brand red, " SENSEI" in dark — mirrors the actual logo typography
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...red);
+  doc.text('QR', margin, 16);
+  const qrTextW = doc.getTextWidth('QR');
+  doc.setTextColor(...dark);
+  doc.text(' SENSEI', margin + qrTextW, 16);
 
   doc.setTextColor(...gray);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Analytics Report', margin, 24);
+  doc.text('Analytics Report', margin, 23);
 
   doc.setFontSize(8);
   doc.setTextColor(...gray);
-  doc.text(`Generated: ${new Date().toUTCString()}`, W - margin, 24, { align: 'right' });
+  doc.text(`Generated: ${new Date().toUTCString()}`, W - margin, 23, { align: 'right' });
 
   // Divider under header
   doc.setDrawColor(...red);
@@ -474,7 +456,7 @@ Deno.serve(async (req) => {
 
     if (format === 'pdf') {
       const stats = computeStats(scans);
-      const pdfBuffer = await buildPDF(qrCode.name, date_label || `${start_date} - ${end_date}`, scans, stats);
+      const pdfBuffer = buildPDF(qrCode.name, date_label || `${start_date} - ${end_date}`, scans, stats);
       return new Response(pdfBuffer, {
         status: 200,
         headers: {
