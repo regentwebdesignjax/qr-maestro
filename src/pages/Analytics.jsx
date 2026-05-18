@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Lock, CalendarIcon, ScanLine, Users, Smartphone } from 'lucide-react';
+import { ArrowLeft, Lock, CalendarIcon, ScanLine, Users, Smartphone, Download, FileText, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay, startOfToday, endOfToday, startOfYesterday, endOfYesterday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -62,6 +63,7 @@ export default function Analytics() {
   const [preset, setPreset] = useState('30d');
   const [customRange, setCustomRange] = useState(null);
   const [calOpen, setCalOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -185,6 +187,33 @@ export default function Analytics() {
     setPreset(value);
   };
 
+  const handleExport = async (format) => {
+    setExporting(true);
+    try {
+      const response = await base44.functions.invoke('exportAnalytics', {
+        qr_code_id: qrCode.id,
+        start_date: dateRange.from.toISOString(),
+        end_date: (dateRange.to || dateRange.from).toISOString(),
+        format,
+        date_label: dateRangeLabel,
+      });
+      const blob = new Blob(
+        [response.data],
+        { type: format === 'pdf' ? 'application/pdf' : 'text/csv' }
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(qrCode.name || 'analytics').replace(/[^a-z0-9_\-]/gi, '_')}_analytics.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const dateRangeLabel = preset === 'custom' && customRange?.from
     ? `${format(customRange.from, 'MMM d, yyyy')}${customRange.to ? ` – ${format(customRange.to, 'MMM d, yyyy')}` : ''}`
     : PRESETS.find(p => p.value === preset)?.label;
@@ -203,7 +232,26 @@ export default function Analytics() {
             <p className="text-gray-500 text-sm mt-0.5">{qrCode?.name}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2 bg-white" disabled={exporting || !qrCode}>
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('pdf')} className="gap-2 cursor-pointer">
+                  <FileText className="w-4 h-4 text-red-500" />
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')} className="gap-2 cursor-pointer">
+                  <FileSpreadsheet className="w-4 h-4 text-green-600" />
+                  Export as CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Select value={preset} onValueChange={handlePresetChange}>
               <SelectTrigger className="w-[200px] bg-white">
                 <SelectValue placeholder="Select range" />
