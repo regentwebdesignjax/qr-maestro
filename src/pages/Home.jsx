@@ -289,8 +289,8 @@ export default function Home() {
           <h2 className="text-4xl font-black text-gray-900 mb-6 font-poppins">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Create your first QR code for free. Upgrade to Black Belt for unlimited dynamic codes, team management, and detailed analytics.
+          <p className="text-xl text-gray-600 mb-8">Create your first QR code for free. Upgrade to Black Belt for unlimited dynamic codes and detailed analytics.
+
           </p>
           <Button
             size="lg"
