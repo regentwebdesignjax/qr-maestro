@@ -10,17 +10,44 @@ import QRCodeList from '../components/qr/QRCodeList';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchUser = async () => {
         try {
+          // Check if this is a successful checkout redirect
+          const urlParams = new URLSearchParams(window.location.search);
+          const isSuccess = urlParams.get('success') === 'true';
+
           const currentUser = await base44.auth.me();
-          // Redirect admins to admin dashboard, non-admins to MyQRCodes
-          if (currentUser.role === 'admin') {
-            window.location.href = '/AdminDashboard';
+
+          // If returning from checkout, show success message and refresh user data
+          if (isSuccess) {
+            setShowSuccessMessage(true);
+            // Give webhook a moment to process, then refresh user data
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Force refresh of user data by invalidating cache
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            const refreshedUser = await base44.auth.me();
+
+            setUser(refreshedUser);
+            // Redirect after showing message
+            setTimeout(() => {
+              if (refreshedUser.role === 'admin') {
+                window.location.href = '/AdminDashboard';
+              } else {
+                window.location.href = '/MyQRCodes';
+              }
+            }, 2000);
           } else {
-            window.location.href = '/MyQRCodes';
+            // Redirect admins to admin dashboard, non-admins to MyQRCodes
+            if (currentUser.role === 'admin') {
+              window.location.href = '/AdminDashboard';
+            } else {
+              window.location.href = '/MyQRCodes';
+            }
           }
           return;
         } catch (error) {
@@ -28,7 +55,7 @@ export default function Dashboard() {
         }
       };
       fetchUser();
-    }, []);
+    }, [queryClient]);
 
     const handleManageSubscription = async () => {
       try {
@@ -63,10 +90,26 @@ export default function Dashboard() {
     },
   });
 
-  if (!user) {
+  if (!user || showSuccessMessage) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-green-50 to-white">
+        <div className="text-center">
+          {showSuccessMessage ? (
+            <>
+              <div className="mb-4 inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Upgrade Successful!</h2>
+              <p className="text-gray-600 mb-6">Your account has been upgraded to Black Belt.</p>
+              <p className="text-sm text-gray-500">Redirecting you to your dashboard...</p>
+              <div className="mt-6 animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+            </>
+          ) : (
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          )}
+        </div>
       </div>
     );
   }
