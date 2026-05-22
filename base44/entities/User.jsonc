@@ -29,6 +29,16 @@
       ],
       "default": "inactive"
     },
+    "subscription_period": {
+      "type": "string",
+      "enum": [
+        "none",
+        "monthly",
+        "annual"
+      ],
+      "default": "none",
+      "description": "Billing period for the active subscription"
+    },
     "trial_end_date": {
       "type": "string",
       "description": "ISO date string when the trial ends"
@@ -59,16 +69,6 @@
       ],
       "default": "none",
       "description": "Billing period for the Custom Domain add-on"
-    },
-    "subscription_period": {
-      "type": "string",
-      "enum": [
-        "none",
-        "monthly",
-        "annual"
-      ],
-      "default": "none",
-      "description": "Billing period for the active subscription"
     },
     "purchased_extra_dbcs": {
       "type": "integer",
