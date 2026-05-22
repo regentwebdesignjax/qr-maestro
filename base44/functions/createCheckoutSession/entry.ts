@@ -27,12 +27,18 @@ Deno.serve(async (req) => {
     // Ensure customer exists
     let customerId = user.stripe_customer_id;
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { user_id: user.id },
-      });
-      customerId = customer.id;
-      await base44.auth.updateMe({ stripe_customer_id: customerId });
+      try {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { user_id: user.id },
+        });
+        customerId = customer.id;
+        await base44.auth.updateMe({ stripe_customer_id: customerId });
+        console.log(`[createCheckoutSession] Created Stripe customer ${customerId} for user ${user.id}`);
+      } catch (error) {
+        console.error('[createCheckoutSession] Error creating Stripe customer:', error.message);
+        throw new Error(`Failed to create Stripe customer: ${error.message}`);
+      }
     }
 
     // Build line items
