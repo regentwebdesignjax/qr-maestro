@@ -307,7 +307,7 @@ export default function CustomDomains() {
                     DNS changes can take up to 30 minutes to propagate.
                   </p>
                   <div className="rounded-md bg-yellow-100 border border-yellow-300 px-3 py-2 text-xs text-yellow-900">
-                    <strong>Using Cloudflare for your domain?</strong> Set the CNAME proxy status to <strong>DNS only (gray cloud)</strong> — not Proxied. Leaving it proxied causes a Cloudflare routing conflict (Error 1000) when scanning.
+                    <strong>Using Cloudflare for your domain?</strong> Set the CNAME proxy status to <strong>DNS only (gray cloud)</strong> — not Proxied. Error 1000 only occurs if your domain registrar proxies the CNAME through their own Cloudflare zone; our setup does not cause this conflict.
                   </div>
                 </CardContent>
               </Card>

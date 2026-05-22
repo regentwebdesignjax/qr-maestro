@@ -110,6 +110,19 @@ Deno.serve(async (req) => {
 
     const cfHostname = cfData.result;
 
+    // Trigger validation refresh immediately — CF treats PATCH as a signal to retry HTTP validation
+    await fetch(
+      `${CF_API}/zones/${zoneId}/custom_hostnames/${cfHostname.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      }
+    ).catch((e) => console.warn('[addCustomDomain] validation refresh failed:', e.message));
+
     let customDomain;
     try {
       customDomain = await base44.asServiceRole.entities.CustomDomain.create({
