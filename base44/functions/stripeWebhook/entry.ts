@@ -96,8 +96,6 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.User.update(userToUpdate.id, {
             subscription_tier: 'pro',
             subscription_status: 'active',
-            subscription_period: period,
-            purchased_extra_dbcs: extraDbcs,
             ...(includesCustomDomain && {
               custom_domain_addon: true,
               custom_domain_addon_period: period,
@@ -137,7 +135,6 @@ Deno.serve(async (req) => {
 
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_status: status,
-            purchased_extra_dbcs: extraDbcs,
             custom_domain_addon: addonActive,
             ...(!addonActive && { custom_domain_addon_period: 'none' }),
           });
@@ -158,9 +155,7 @@ Deno.serve(async (req) => {
           const user = users[0];
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_tier: 'free',
-            subscription_status: 'none',
-            subscription_period: 'none',
-            purchased_extra_dbcs: 0,
+            subscription_status: 'inactive',
             custom_domain_addon: false,
             custom_domain_addon_period: 'none',
           });
