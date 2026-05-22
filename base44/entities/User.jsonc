@@ -60,5 +60,8 @@
       "default": "none",
       "description": "Billing period for the Custom Domain add-on"
     }
-  }
+  },
+  "required": [
+    "stripe_customer_id"
+  ]
 }
