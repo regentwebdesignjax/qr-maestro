@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
       case 'checkout.session.completed': {
         const session = event.data.object;
         const userId = session.metadata.user_id;
+        const customerId = session.customer;
         const period = session.metadata.period;
         const amountTotal = session.amount_total ? session.amount_total / 100 : null;
         const includesCustomDomain = session.metadata.include_custom_domain === 'true';
@@ -65,9 +66,34 @@ Deno.serve(async (req) => {
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { expand: ['data.price'] });
         const extraDbcs = getExtraDbcs(lineItems);
 
-        const users = await base44.asServiceRole.entities.User.filter({ id: userId });
-        if (users.length > 0) {
-          await base44.asServiceRole.entities.User.update(userId, {
+        let userToUpdate = null;
+
+        // Try to find user by user_id from metadata (primary lookup)
+        if (userId) {
+          const usersByIdResult = await base44.asServiceRole.entities.User.filter({ id: userId }).catch((e) => {
+            console.error('Error filtering user by ID:', e.message);
+            return [];
+          });
+          if (usersByIdResult.length > 0) {
+            userToUpdate = usersByIdResult[0];
+            console.log(`[checkout.session.completed] Found user by ID: ${userId}`);
+          }
+        }
+
+        // Fallback: try to find user by stripe_customer_id if ID lookup failed
+        if (!userToUpdate && customerId) {
+          const usersByCustomerResult = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: customerId }).catch((e) => {
+            console.error('Error filtering user by customer ID:', e.message);
+            return [];
+          });
+          if (usersByCustomerResult.length > 0) {
+            userToUpdate = usersByCustomerResult[0];
+            console.log(`[checkout.session.completed] Found user by stripe_customer_id: ${customerId}`);
+          }
+        }
+
+        if (userToUpdate) {
+          await base44.asServiceRole.entities.User.update(userToUpdate.id, {
             subscription_tier: 'pro',
             subscription_status: 'active',
             subscription_period: period,
@@ -77,6 +103,9 @@ Deno.serve(async (req) => {
               custom_domain_addon_period: period,
             }),
           });
+          console.log(`[checkout.session.completed] Updated user subscription for user: ${userToUpdate.id}`);
+        } else {
+          console.error(`[checkout.session.completed] Failed to find user. userId=${userId}, customerId=${customerId}`);
         }
 
         await base44.asServiceRole.entities.ConversionEvent.create({
@@ -84,7 +113,7 @@ Deno.serve(async (req) => {
           plan: 'black_belt',
           period: period ?? 'unknown',
           revenue: amountTotal,
-          user_id: userId,
+          user_id: userToUpdate?.id || userId,
           customer_email: session.customer_email ?? null,
           stripe_session_id: session.id,
         });
