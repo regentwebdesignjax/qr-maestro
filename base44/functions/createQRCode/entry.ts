@@ -32,6 +32,28 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Enforce: Pro users cannot exceed their DBC (Digital Business Card) seat limit
+    const isDBC = qrCodeData.content_type === 'vcard' || qrCodeData.content_type === 'business_card';
+    if (isPro && isDBC) {
+      const dbcCapacity = 10 + (user.purchased_extra_dbcs || 0);
+      const existingDBCs = await base44.entities.QRCode.filter({
+        created_by: user.email
+      }).then(codes =>
+        codes.filter(qr =>
+          (qr.content_type === 'vcard' || qr.content_type === 'business_card') &&
+          qr.is_active !== false
+        )
+      );
+
+      if (existingDBCs.length >= dbcCapacity) {
+        return Response.json({
+          error: `You have reached your Digital Business Card limit (${existingDBCs.length}/${dbcCapacity}). Purchase additional seats to create more DBCs.`,
+          current: existingDBCs.length,
+          limit: dbcCapacity
+        }, { status: 403 });
+      }
+    }
+
     // Dynamic codes always need a short_code.
     // Static business cards also need one so the QR encodes a redirect URL
     // instead of the raw JSON metadata.
