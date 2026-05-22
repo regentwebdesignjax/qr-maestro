@@ -59,6 +59,21 @@
       ],
       "default": "none",
       "description": "Billing period for the Custom Domain add-on"
+    },
+    "subscription_period": {
+      "type": "string",
+      "enum": [
+        "none",
+        "monthly",
+        "annual"
+      ],
+      "default": "none",
+      "description": "Billing period for the active subscription"
+    },
+    "purchased_extra_dbcs": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of extra Digital Business Cards purchased beyond the base 10"
     }
   },
   "required": [

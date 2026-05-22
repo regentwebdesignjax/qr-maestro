@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
           const user = users[0];
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_tier: 'free',
-            subscription_status: 'none',
+            subscription_status: 'inactive',
             subscription_period: 'none',
             purchased_extra_dbcs: 0,
             custom_domain_addon: false,
