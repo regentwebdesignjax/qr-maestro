@@ -1,7 +1,32 @@
-import React from 'react';
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import 'leaflet/dist/leaflet.css';
+
+function MapFitBounds({ markers }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (markers.length === 0) return;
+
+    if (markers.length === 1) {
+      // Single marker: zoom in to level 10
+      map.setView([markers[0].lat, markers[0].lng], 10);
+    } else {
+      // Multiple markers: calculate bounds and fit
+      const lats = markers.map(m => m.lat);
+      const lngs = markers.map(m => m.lng);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+
+      map.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [50, 50] });
+    }
+  }, [markers, map]);
+
+  return null;
+}
 
 export default function ScanMap({ scans }) {
   // Group by city+country using lat/lng from scan records
@@ -41,6 +66,7 @@ export default function ScanMap({ scans }) {
             scrollWheelZoom={false}
             attributionControl={false}
           >
+            <MapFitBounds markers={markers} />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="© OpenStreetMap contributors"

@@ -125,9 +125,9 @@ export default function TimeOfDayHeatmap({ scans }) {
                 background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
               }}
             />
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-1">
-              <div className="text-right">{maxVal}</div>
-              <div className="text-right">0</div>
+            <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-2 min-w-max">
+              <div className="text-right font-medium">{maxVal}</div>
+              <div className="text-right font-medium">0</div>
             </div>
           </div>
         </div>
