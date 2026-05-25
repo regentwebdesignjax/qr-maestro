@@ -588,7 +588,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           transition={{ duration: 0.25, ease: 'easeInOut' }} className="space-y-4">
               <div>
                 <p className="text-gray-600 text-sm mb-2">What type of QR code do you want to create?</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button type="button" onClick={() => handleChange('type', 'static')}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${formData.type === 'static' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}>
                     <p className={`font-medium text-sm ${formData.type === 'static' ? 'text-primary' : 'text-gray-800'}`}>Static</p>
@@ -837,7 +837,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               <div className="space-y-3">
                     {socialLinks.map((link, idx) => (
                       <div key={idx} className="space-y-1">
-                        <div className="flex gap-2 items-center">
+                        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                           <Select value={link.platform} onValueChange={(val) => {
                             const next = socialLinks.map((l, i) => i === idx ? { ...l, platform: val, customName: val !== 'other' ? '' : l.customName } : l);
                             setSocialLinks(next);
@@ -845,14 +845,14 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                             handleChange('content', content);
                             triggerPreview({ content });
                           }}>
-                            <SelectTrigger className="w-40 shrink-0"><SelectValue placeholder="Platform" /></SelectTrigger>
+                            <SelectTrigger className="w-full sm:w-40 sm:shrink-0"><SelectValue placeholder="Platform" /></SelectTrigger>
                             <SelectContent>
                               {SOCIAL_PLATFORMS.map(p => (
                                 <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <Input placeholder="https://..." value={link.url || ''} className="flex-1"
+                          <Input placeholder="https://..." value={link.url || ''} className="flex-1 w-full"
                             onChange={(e) => {
                               const next = socialLinks.map((l, i) => i === idx ? { ...l, url: e.target.value } : l);
                               setSocialLinks(next);
@@ -860,7 +860,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                               handleChange('content', content);
                               triggerPreview({ content });
                             }} />
-                          <Button type="button" variant="ghost" size="icon" className="shrink-0"
+                          <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center"
                             onClick={() => {
                               const next = socialLinks.filter((_, i) => i !== idx);
                               setSocialLinks(next);
@@ -872,7 +872,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                           </Button>
                         </div>
                         {link.platform === 'other' && (
-                          <Input placeholder="Platform name" value={link.customName || ''} className="w-40"
+                          <Input placeholder="Platform name" value={link.customName || ''} className="w-full"
                             onChange={(e) => {
                               const next = socialLinks.map((l, i) => i === idx ? { ...l, customName: e.target.value } : l);
                               setSocialLinks(next);
@@ -1117,7 +1117,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                   {/* QR Style */}
                   <div>
                     <Label className="mb-2 block">QR Code Style</Label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       <QRStyleButton value="squares" label="Squares" />
                       <QRStyleButton value="dots" label="Dots" />
                       <QRStyleButton value="rounded" label="Rounded" />
@@ -1130,7 +1130,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
                     <div>
                       <Label className="text-xs text-gray-500 mb-2 block">Outer Eye Shape</Label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         <EyeShapeButton field="eye_outer_shape" value="square" label="Square">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7">
                             <rect x="3" y="3" width="18" height="18" rx="0" />
@@ -1235,7 +1235,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <Link to="/Pricing" className="text-primary underline font-semibold">Upgrade to unlock</Link>
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs text-gray-500">Button Background</Label>
                       <ColorInput
@@ -1337,7 +1337,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
                     {/* Button Colors — for non-business_card landing page types */}
                     {formData.content_type !== 'business_card' && (
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-xs text-gray-500">Button Background</Label>
                           <ColorInput

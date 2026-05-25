@@ -301,7 +301,7 @@ export default function Analytics() {
         </div>
 
         {/* Summary stat cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card className="border-0 shadow-sm">
             <CardContent className="pt-6 pb-5">
               <div className="flex items-start gap-4">
