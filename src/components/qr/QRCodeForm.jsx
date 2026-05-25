@@ -634,7 +634,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     'border-gray-200 hover:border-gray-300'}`
                     }>
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                          <Icon className={`w-12 h-12 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
+                          <Icon className={`w-10 h-10 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
                           {isProDisabled && <Lock className="w-3 h-3 text-gray-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
