@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { format, subDays, subMonths, isWithinInterval, startOfDay, endOfDay, startOfToday, endOfToday, startOfYesterday, endOfYesterday } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import ScansOverTimeChart from '../components/analytics/ScansOverTimeChart';
 import ScanMap from '../components/analytics/ScanMap';
 import ScanLocationsTable from '../components/analytics/ScanLocationsTable';
@@ -350,26 +351,50 @@ export default function Analytics() {
               </CardHeader>
               <CardContent>
                 {Object.keys(osStats).length > 0 ? (
-                  <div className="space-y-4">
-                    {Object.entries(osStats)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([os, count]) => {
-                        const pct = Math.round((count / filteredScans.length) * 100);
-                        const barColor = OS_COLORS[os] || 'bg-gray-400';
-                        return (
-                          <div key={os}>
-                            <div className="flex items-center justify-between text-sm mb-1.5">
-                              <span className="text-gray-700 font-medium">{os}</span>
-                              <span className="font-semibold text-gray-800">
-                                {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
-                              </span>
+                  <div className="space-y-6">
+                    {/* Pie Chart */}
+                    <div className="flex justify-center">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie
+                            data={Object.entries(osStats).map(([os, count]) => ({ name: os, value: count }))}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={75}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            {Object.entries(osStats).map(([os], index) => (
+                              <Cell key={`cell-${index}`} fill={OS_COLORS[os]?.replace('bg-', '').replace('500', '500').replace('800', '800') === 'gray' ? '#6b7280' : OS_COLORS[os]?.split('bg-')[1]?.split(' ')[0] === 'gray' ? (OS_COLORS[os].includes('800') ? '#1f2937' : '#9ca3af') : (OS_COLORS[os].includes('blue') ? '#3b82f6' : OS_COLORS[os].includes('green') ? '#22c55e' : OS_COLORS[os].includes('purple') ? '#a855f7' : OS_COLORS[os].includes('orange') ? '#f97316' : OS_COLORS[os].includes('400') ? '#60a5fa' : '#6b7280')} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Bar Chart Data */}
+                    <div className="space-y-4">
+                      {Object.entries(osStats)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([os, count]) => {
+                          const pct = Math.round((count / filteredScans.length) * 100);
+                          const barColor = OS_COLORS[os] || 'bg-gray-400';
+                          return (
+                            <div key={os}>
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-gray-700 font-medium">{os}</span>
+                                <span className="font-semibold text-gray-800">
+                                  {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2.5">
+                                <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-100 rounded-full h-2.5">
-                              <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                    </div>
                   </div>
                 ) : (
                   <p className="text-gray-400 text-sm italic">No OS data for this period.</p>
