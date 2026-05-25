@@ -4,8 +4,8 @@ import { Phone, Mail, MapPin, Clock, Globe, ChevronDown } from 'lucide-react';
 export default function BusinessPageLanding({ data }) {
   const [expandedDay, setExpandedDay] = useState(null);
 
-  // Parse business page data
-  const pageData = typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {};
+  // Parse business page data - handle both preview (already parsed) and redirect (needs parsing)
+  const pageData = data.business_name ? data : (typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {});
 
   // Utility function to get business day status
   const getTodayHours = () => {
