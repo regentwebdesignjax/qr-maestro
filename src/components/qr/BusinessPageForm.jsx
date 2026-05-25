@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Upload, X, Clock } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -29,16 +30,8 @@ export default function BusinessPageForm({ data, onChange }) {
     if (field === 'logo') setUploadingLogo(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-
-      if (!response.ok) {
-        throw new Error(`Upload failed with status ${response.status}`);
-      }
-
-      const result = await response.json();
-      const url = result.url || result;
+      const result = await base44.integrations.Core.UploadFile({ file });
+      const url = result?.file_url || result?.data?.file_url;
 
       if (!url) {
         throw new Error('No URL returned from upload endpoint');

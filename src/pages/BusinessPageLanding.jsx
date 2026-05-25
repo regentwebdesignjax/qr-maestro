@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Globe, ChevronDown } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Globe, ChevronDown, Building2 } from 'lucide-react';
 
 const formatPhone = (phone) => {
   const digits = phone.replace(/\D/g, '');
@@ -56,13 +56,15 @@ export default function BusinessPageLanding({ data }) {
               </div>
             )}
             {/* Logo overlapping banner */}
-            {pageData.logo && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-                <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+              <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
+                {pageData.logo ? (
                   <img src={pageData.logo} alt="Logo" className="w-full h-full object-contain p-2" />
-                </div>
+                ) : (
+                  <Building2 className="w-10 h-10 text-gray-400" />
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Identity block */}
