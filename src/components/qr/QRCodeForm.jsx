@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
 import LinkpagesForm from './LinkpagesForm';
+import BusinessPageForm from './BusinessPageForm';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FONT_OPTIONS } from './TicketCouponDisplay';
@@ -662,7 +663,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     'border-gray-200 hover:border-gray-300'}`
                     }>
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                          <Icon className={`w-14 h-14 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
+                          <Icon className={`w-12 h-12 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
                           {isProDisabled && <Lock className="w-3 h-3 text-gray-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -769,11 +770,15 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               )}
 
               {formData.content_type === 'business_page' && (
-                <div className="space-y-4">
-                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                    <p className="text-sm text-blue-900">Business Page form coming soon. Basic layout template ready.</p>
-                  </div>
-                </div>
+                <BusinessPageForm
+                  data={businessPageData}
+                  onChange={(updated) => {
+                    setBusinessPageData(updated);
+                    const serialized = JSON.stringify(updated);
+                    handleChange('content', serialized);
+                    triggerPreview({ content: serialized });
+                  }}
+                />
               )}
 
               {formData.content_type !== 'business_card' && formData.content_type !== 'linkpages' && formData.content_type !== 'map_location' && formData.content_type !== 'business_page' && (
