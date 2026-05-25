@@ -219,7 +219,7 @@ export async function renderQR(canvas, qrData, canvasPx = 300) {
       const logo = new Image();
       logo.crossOrigin = 'anonymous';
       logo.onload = () => {
-        const maxSize = canvasPx * 0.2;
+        const maxSize = canvasPx * 0.3;
         const aspect = logo.naturalWidth / logo.naturalHeight;
         let drawW, drawH;
         if (aspect >= 1) { drawW = maxSize; drawH = maxSize / aspect; }
@@ -229,7 +229,10 @@ export async function renderQR(canvas, qrData, canvasPx = 300) {
         const pad = 6;
         if (!transparentBg) {
           ctx.fillStyle = bgColor;
-          ctx.fillRect(lx - pad, ly - pad, drawW + pad * 2, drawH + pad * 2);
+          const radius = pad * 1.5;
+          ctx.beginPath();
+          ctx.roundRect(lx - pad, ly - pad, drawW + pad * 2, drawH + pad * 2, radius);
+          ctx.fill();
         }
         ctx.drawImage(logo, lx, ly, drawW, drawH);
         resolve();
@@ -384,10 +387,11 @@ export async function downloadQRSvg(qr) {
 
   // Logo — fetch and base64-encode for a self-contained SVG file
   if (dc.logo_url) {
-    const logoSize = total * 0.2;
+    const logoSize = total * 0.3;
     const lx = (total - logoSize) / 2;
     const ly = (total - logoSize) / 2;
     const pad = total * 0.012;
+    const radius = pad * 1.5;
 
     let logoHref = dc.logo_url;
     try {
@@ -401,7 +405,7 @@ export async function downloadQRSvg(qr) {
     } catch { /* fall back to original URL if fetch fails */ }
 
     if (!transparentBg) {
-      parts.push(`<rect x="${lx - pad}" y="${ly - pad}" width="${logoSize + pad * 2}" height="${logoSize + pad * 2}" fill="${bgColor}"/>`);
+      parts.push(`<rect x="${lx - pad}" y="${ly - pad}" width="${logoSize + pad * 2}" height="${logoSize + pad * 2}" rx="${radius}" ry="${radius}" fill="${bgColor}"/>`);
     }
     parts.push(`<image href="${logoHref}" x="${lx}" y="${ly}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`);
   }
