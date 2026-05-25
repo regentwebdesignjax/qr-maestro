@@ -337,48 +337,51 @@ export default function Analytics() {
           <ScansOverTimeChart scans={filteredScans} dateRange={{ from: dateRange.from, to: dateRange.to || dateRange.from }} />
         </div>
 
-        {/* Scans by Devices Used */}
-        <div className="mb-6 max-w-md">
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Smartphone className="w-4 h-4 text-blue-500" />
-                Scans by Devices Used
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {Object.keys(osStats).length > 0 ? (
-                <div className="space-y-4">
-                  {Object.entries(osStats)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([os, count]) => {
-                      const pct = Math.round((count / filteredScans.length) * 100);
-                      const barColor = OS_COLORS[os] || 'bg-gray-400';
-                      return (
-                        <div key={os}>
-                          <div className="flex items-center justify-between text-sm mb-1.5">
-                            <span className="text-gray-700 font-medium">{os}</span>
-                            <span className="font-semibold text-gray-800">
-                              {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
-                            </span>
+        {/* Scans by Devices Used and Scans by Time of Day — side by side */}
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          {/* Scans by Devices Used */}
+          <div>
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-blue-500" />
+                  Scans by Devices Used
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {Object.keys(osStats).length > 0 ? (
+                  <div className="space-y-4">
+                    {Object.entries(osStats)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([os, count]) => {
+                        const pct = Math.round((count / filteredScans.length) * 100);
+                        const barColor = OS_COLORS[os] || 'bg-gray-400';
+                        return (
+                          <div key={os}>
+                            <div className="flex items-center justify-between text-sm mb-1.5">
+                              <span className="text-gray-700 font-medium">{os}</span>
+                              <span className="font-semibold text-gray-800">
+                                {count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span>
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2.5">
+                              <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                            </div>
                           </div>
-                          <div className="w-full bg-gray-100 rounded-full h-2.5">
-                            <div className={`${barColor} h-2.5 rounded-full transition-all`} style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-sm italic">No OS data for this period.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <p className="text-gray-400 text-sm italic">No OS data for this period.</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Scans by Time of Day — full width */}
-        <div className="mb-6">
-          <TimeOfDayHeatmap scans={filteredScans} />
+          {/* Scans by Time of Day */}
+          <div>
+            <TimeOfDayHeatmap scans={filteredScans} />
+          </div>
         </div>
 
         {/* Scan Locations Table and Map */}
