@@ -237,46 +237,48 @@ export default function BusinessPageForm({ data, onChange }) {
           <h3 className="font-semibold text-sm">Business Hours</h3>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {data.schedule?.map((day, idx) => (
-            <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm p-2 sm:p-0 rounded sm:rounded-none">
-              <label className="w-full sm:w-20 font-medium text-gray-700">{day.day}</label>
+            <div key={idx}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+                <label className="font-medium text-gray-700 w-12">{day.day}</label>
 
-              {day.closed ? (
-                <div className="flex-1 flex items-center gap-2 w-full">
-                  <span className="text-gray-500 text-xs sm:text-sm">Closed</span>
-                  <button
-                    type="button"
-                    onClick={() => handleScheduleChange(idx, 'closed', false)}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Open
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-wrap items-center gap-1 sm:gap-2 w-full">
-                  <Input
-                    type="time"
-                    value={day.open || '09:00'}
-                    onChange={(e) => handleScheduleChange(idx, 'open', e.target.value)}
-                    className="h-8 text-xs flex-1 min-w-[80px] sm:flex-none"
-                  />
-                  <span className="text-gray-500 text-xs sm:text-sm">–</span>
-                  <Input
-                    type="time"
-                    value={day.close || '17:00'}
-                    onChange={(e) => handleScheduleChange(idx, 'close', e.target.value)}
-                    className="h-8 text-xs flex-1 min-w-[80px] sm:flex-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleScheduleChange(idx, 'closed', true)}
-                    className="text-xs text-gray-500 hover:text-gray-700 font-medium whitespace-nowrap"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
+                {day.closed ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 text-xs sm:text-sm">Closed</span>
+                    <button
+                      type="button"
+                      onClick={() => handleScheduleChange(idx, 'closed', false)}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Open
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2">
+                    <Input
+                      type="time"
+                      value={day.open || '09:00'}
+                      onChange={(e) => handleScheduleChange(idx, 'open', e.target.value)}
+                      className="h-8 text-xs w-full sm:w-auto"
+                    />
+                    <span className="text-gray-500 text-xs sm:text-sm hidden sm:inline">–</span>
+                    <Input
+                      type="time"
+                      value={day.close || '17:00'}
+                      onChange={(e) => handleScheduleChange(idx, 'close', e.target.value)}
+                      className="h-8 text-xs w-full sm:w-auto"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleScheduleChange(idx, 'closed', true)}
+                      className="text-xs text-gray-500 hover:text-gray-700 font-medium whitespace-nowrap"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
