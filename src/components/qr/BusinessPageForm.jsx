@@ -32,10 +32,23 @@ export default function BusinessPageForm({ data, onChange }) {
       const formData = new FormData();
       formData.append('file', file);
       const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const { url } = await response.json();
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+      const url = result.url || result;
+
+      if (!url) {
+        throw new Error('No URL returned from upload endpoint');
+      }
+
+      console.log(`[${field}] Image uploaded successfully:`, url);
       handleChange(field, url);
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error(`[${field}] Upload failed:`, error);
+      alert(`Failed to upload ${field === 'brand_image' ? 'brand image' : 'logo'}: ${error.message}`);
     } finally {
       if (field === 'brand_image') setUploadingBrandImage(false);
       if (field === 'logo') setUploadingLogo(false);
@@ -244,7 +257,7 @@ export default function BusinessPageForm({ data, onChange }) {
           <Label className="text-xs text-gray-500">Brand Image (Header)</Label>
           {data.brand_image ? (
             <div className="mt-1 space-y-2">
-              <img src={data.brand_image} alt="Brand" className="w-full h-32 object-cover rounded border" />
+              <img src={data.brand_image} alt="Brand" className="w-full h-32 object-cover rounded border" onError={(e) => { e.currentTarget.src = ''; console.error('Brand image failed to load'); }} />
               <Button
                 type="button"
                 variant="outline"
@@ -283,7 +296,7 @@ export default function BusinessPageForm({ data, onChange }) {
           <Label className="text-xs text-gray-500">Logo</Label>
           {data.logo ? (
             <div className="mt-1 space-y-2">
-              <img src={data.logo} alt="Logo" className="w-24 h-24 object-contain border rounded" />
+              <img src={data.logo} alt="Logo" className="w-24 h-24 object-contain border rounded" onError={(e) => { e.currentTarget.src = ''; console.error('Logo failed to load'); }} />
               <Button
                 type="button"
                 variant="outline"
