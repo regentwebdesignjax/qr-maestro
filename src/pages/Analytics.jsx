@@ -221,7 +221,7 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <div className="container mx-auto px-4 max-w-5xl pt-8">
+      <div className="container mx-auto px-4 pt-8">
         <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back to Dashboard</Button>
         </Link>
