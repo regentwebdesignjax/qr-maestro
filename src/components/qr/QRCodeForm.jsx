@@ -188,13 +188,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
         brand_image: '',
         logo: '',
         schedule: [
-          { day: 'Mon', open: '09:00', close: '17:00', closed: false },
-          { day: 'Tue', open: '09:00', close: '17:00', closed: false },
-          { day: 'Wed', open: '09:00', close: '17:00', closed: false },
-          { day: 'Thu', open: '09:00', close: '17:00', closed: false },
-          { day: 'Fri', open: '09:00', close: '17:00', closed: false },
-          { day: 'Sat', open: '10:00', close: '16:00', closed: false },
-          { day: 'Sun', open: '10:00', close: '16:00', closed: true }
+          { day: 'Mon.', open: '09:00', close: '17:00', closed: false },
+          { day: 'Tues.', open: '09:00', close: '17:00', closed: false },
+          { day: 'Wed.', open: '09:00', close: '17:00', closed: false },
+          { day: 'Thurs.', open: '09:00', close: '17:00', closed: false },
+          { day: 'Fri.', open: '09:00', close: '17:00', closed: false },
+          { day: 'Sat.', open: '10:00', close: '16:00', closed: false },
+          { day: 'Sun.', open: '10:00', close: '16:00', closed: true }
         ]
       }
     };
@@ -240,13 +240,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       brand_image: '',
       logo: '',
       schedule: [
-        { day: 'Mon', open: '09:00', close: '17:00', closed: false },
-        { day: 'Tue', open: '09:00', close: '17:00', closed: false },
-        { day: 'Wed', open: '09:00', close: '17:00', closed: false },
-        { day: 'Thu', open: '09:00', close: '17:00', closed: false },
-        { day: 'Fri', open: '09:00', close: '17:00', closed: false },
-        { day: 'Sat', open: '10:00', close: '16:00', closed: false },
-        { day: 'Sun', open: '10:00', close: '16:00', closed: true }
+        { day: 'Mon.', open: '09:00', close: '17:00', closed: false },
+        { day: 'Tues.', open: '09:00', close: '17:00', closed: false },
+        { day: 'Wed.', open: '09:00', close: '17:00', closed: false },
+        { day: 'Thurs.', open: '09:00', close: '17:00', closed: false },
+        { day: 'Fri.', open: '09:00', close: '17:00', closed: false },
+        { day: 'Sat.', open: '10:00', close: '16:00', closed: false },
+        { day: 'Sun.', open: '10:00', close: '16:00', closed: true }
       ]
     };
 
