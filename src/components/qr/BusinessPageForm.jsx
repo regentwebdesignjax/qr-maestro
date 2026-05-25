@@ -13,7 +13,10 @@ export default function BusinessPageForm({ data, onChange }) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const handleChange = (field, value) => {
-    onChange({ ...data, [field]: value });
+    const updated = { ...data, [field]: value };
+    console.log(`[BusinessPageForm] Updated field "${field}":`, value);
+    console.log(`[BusinessPageForm] Full data after change:`, updated);
+    onChange(updated);
   };
 
   const handleScheduleChange = (dayIndex, field, value) => {

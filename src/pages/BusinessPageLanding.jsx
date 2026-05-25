@@ -23,6 +23,10 @@ export default function BusinessPageLanding({ data }) {
   // Parse business page data - handle both preview (already parsed) and redirect (needs parsing)
   const pageData = data.business_name ? data : (typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {});
 
+  console.log('[BusinessPageLanding] Received data:', data);
+  console.log('[BusinessPageLanding] Parsed pageData:', pageData);
+  console.log('[BusinessPageLanding] brand_image:', pageData.brand_image);
+
   // Utility function to get business day status
   const getTodayHours = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
