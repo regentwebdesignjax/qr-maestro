@@ -23,7 +23,7 @@ export default function BusinessPageLanding({ data }) {
 
   // Utility function to get business day status
   const getTodayHours = () => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.'];
     const today = days[new Date().getDay()];
     return pageData.schedule?.find(s => s.day === today);
   };

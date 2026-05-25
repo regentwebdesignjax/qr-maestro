@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, X, Clock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS_OF_WEEK = ['Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.', 'Sun.'];
 
 function ImageUploader({ label, hint, value, onChange, id, previewSize = 'w-full h-32' }) {
   const [uploading, setUploading] = useState(false);
