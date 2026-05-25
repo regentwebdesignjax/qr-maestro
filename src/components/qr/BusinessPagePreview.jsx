@@ -33,7 +33,7 @@ export default function BusinessPagePreview({ data = {} }) {
         {/* Card content */}
         <div className="overflow-y-auto max-h-[520px] bg-gray-50">
           {/* Brand Header Image */}
-          <div className="relative w-full h-48 bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
+          <div className="relative w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-visible">
             {pageData.brand_image ? (
               <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
             ) : (
