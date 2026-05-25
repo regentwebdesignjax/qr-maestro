@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import ScansOverTimeChart from '../components/analytics/ScansOverTimeChart';
 import ScanMap from '../components/analytics/ScanMap';
+import ScanLocationsTable from '../components/analytics/ScanLocationsTable';
 import TimeOfDayHeatmap from '../components/analytics/TimeOfDayHeatmap';
 
 const PRESETS = [
@@ -379,8 +380,12 @@ export default function Analytics() {
           <TimeOfDayHeatmap scans={filteredScans} />
         </div>
 
-        {/* World Map */}
-        <ScanMap scans={filteredScans} />
+        {/* Scan Locations Table and Map */}
+        <ScanLocationsTable scans={filteredScans} />
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-4">Scans by Location</h2>
+          <ScanMap scans={filteredScans} />
+        </div>
       </div>
     </div>
   );
