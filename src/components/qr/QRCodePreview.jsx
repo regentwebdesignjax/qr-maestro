@@ -8,7 +8,7 @@ import { renderQR, renderQRToCanvas, downloadQRSvg } from '@/utils/qrExport';
 import BusinessCardPreview from './BusinessCardPreview';
 import LinkpagePreview from './LinkpagePreview';
 import TicketCouponDisplay from './TicketCouponDisplay';
-import BusinessPageLanding from '@/pages/BusinessPageLanding';
+import BusinessPagePreview from './BusinessPagePreview';
 
 // ─── Tab Toggle for Business Card ─────────────────────────────────────────────
 
@@ -300,7 +300,7 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
       <div>
         <PreviewToggle active={businessPageTab} onChange={setBusinessPageTab} />
         {businessPageTab === 'landing' ? (
-          <BusinessPageLanding data={{ ...businessPageData, content_type: 'business_page' }} />
+          <BusinessPagePreview data={{ ...businessPageData, content_type: 'business_page' }} />
         ) : (
           <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
         )}

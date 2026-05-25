@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Clock, Globe, Building2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Building2 } from 'lucide-react';
 
 const formatPhone = (phone) => {
   const digits = phone.replace(/\D/g, '');
@@ -34,154 +34,139 @@ export default function BusinessPageLanding({ data }) {
   const buttonColor = pageData.button_color || '#2f3f7f';
 
   return (
-    <div className="flex justify-center">
-      {/* Phone frame */}
-      <div className="w-[280px] rounded-[2rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden bg-white">
-        {/* Status bar */}
-        <div className="bg-gray-800 h-6 flex items-center justify-center">
-          <div className="w-16 h-1.5 rounded-full bg-gray-600"></div>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Brand Header Image */}
+      <div className="relative w-full h-64 sm:h-80 bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
+        {pageData.brand_image ? (
+          <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-white/30">Brand Image</span>
+          </div>
+        )}
+        {/* Logo overlapping banner */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
+            {pageData.logo ? (
+              <img src={pageData.logo} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-12">
+        {/* Identity block */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{pageData.business_name}</h1>
+          {pageData.headline && (
+            <p className="text-lg text-gray-600">{pageData.headline}</p>
+          )}
         </div>
 
-        {/* Card content */}
-        <div className="overflow-y-auto max-h-[520px] bg-gray-50">
-          {/* Brand Header Image */}
-          <div className="relative w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-visible">
-            {pageData.brand_image ? (
-              <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-white/30 text-xs">Brand Image</span>
-              </div>
-            )}
-            {/* Logo overlapping banner */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-              <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
-                {pageData.logo ? (
-                  <img src={pageData.logo} alt="Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <Building2 className="w-10 h-10 text-gray-400" />
+        {/* Message/Description Card */}
+        {pageData.message && (
+          <div className="mb-8 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <p className="text-gray-700 leading-relaxed">{pageData.message}</p>
+          </div>
+        )}
+
+        {/* Contact Information */}
+        <div className="space-y-3 mb-8">
+          {pageData.contact_name && (
+            <div className="p-4 bg-white rounded-lg border border-gray-200">
+              <div>
+                <p className="font-semibold text-gray-900">{pageData.contact_name}</p>
+                {pageData.contact_title && (
+                  <p className="text-sm text-gray-600">{pageData.contact_title}</p>
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Identity block */}
-          <div className="pt-12 px-4 pb-2 text-center">
-            <h1 className="text-base font-bold text-gray-900 leading-tight">{pageData.business_name}</h1>
-            {pageData.headline && (
-              <p className="text-xs text-gray-500 mt-0.5">{pageData.headline}</p>
-            )}
-          </div>
-
-          {/* Message/Description Card */}
-          {pageData.message && (
-            <div className="px-4 py-3">
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <p className="text-xs text-gray-700 leading-relaxed">{pageData.message}</p>
-              </div>
-            </div>
           )}
 
-          {/* Contact Information */}
-          <div className="px-4 pb-3 space-y-1.5">
-            {pageData.contact_name && (
-              <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
-                <div>
-                  <span className="text-xs font-medium text-gray-700 block">{pageData.contact_name}</span>
-                  {pageData.contact_title && (
-                    <span className="text-xs text-gray-500">{pageData.contact_title}</span>
-                  )}
+          {pageData.phone && (
+            <a
+              href={`tel:${pageData.phone}`}
+              className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <Phone className="w-5 h-5 text-gray-400 shrink-0" />
+              <span className="text-gray-700">{formatPhone(pageData.phone)}</span>
+            </a>
+          )}
+
+          {pageData.email && (
+            <a
+              href={`mailto:${pageData.email}`}
+              className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <Mail className="w-5 h-5 text-gray-400 shrink-0" />
+              <span className="text-gray-700">{pageData.email}</span>
+            </a>
+          )}
+
+          {pageData.address && (
+            <a
+              href={`https://www.google.com/maps?q=${encodeURIComponent(pageData.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <MapPin className="w-5 h-5 text-gray-400 shrink-0" />
+              <span className="text-gray-700">{pageData.address}</span>
+            </a>
+          )}
+        </div>
+
+        {/* Business Hours */}
+        {pageData.schedule && pageData.schedule.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Business Hours</h2>
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              {pageData.schedule.map((day, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <span className="font-medium text-gray-900 w-20">{day.day}</span>
+                  <span className={`${day.closed ? 'text-gray-500' : 'text-gray-600'}`}>
+                    {day.closed ? 'Closed' : `${convertTo12Hour(day.open)} – ${convertTo12Hour(day.close)}`}
+                  </span>
                 </div>
-              </div>
-            )}
-
-            {pageData.phone && (
-              <a
-                href={`tel:${pageData.phone}`}
-                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <span className="text-xs text-gray-700 truncate">{formatPhone(pageData.phone)}</span>
-              </a>
-            )}
-
-            {pageData.email && (
-              <a
-                href={`mailto:${pageData.email}`}
-                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <span className="text-xs text-gray-700 truncate">{pageData.email}</span>
-              </a>
-            )}
-
-            {pageData.address && (
-              <a
-                href={`https://www.google.com/maps?q=${encodeURIComponent(pageData.address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <span className="text-xs text-gray-700 truncate">{pageData.address}</span>
-              </a>
-            )}
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Business Hours */}
-          {pageData.schedule && pageData.schedule.length > 0 && (
-            <div className="px-4 pb-3">
-              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-                {pageData.schedule.map((day, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-b-0"
-                  >
-                    <span className="font-medium text-gray-900 text-xs w-16">{day.day}</span>
-                    <span className={`text-xs ${day.closed ? 'text-gray-500' : 'text-gray-600'}`}>
-                      {day.closed ? 'Closed' : `${convertTo12Hour(day.open)} – ${convertTo12Hour(day.close)}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* CTA Button */}
-          {pageData.button_url && (
-            <div className="px-4 py-3">
-              <a
-                href={pageData.button_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full block text-center py-2 px-4 rounded-lg font-semibold text-white text-xs transition-all"
-                style={{
-                  backgroundColor: buttonColor,
-                }}
-                onMouseEnter={(e) => {
-                  const c = buttonColor.replace('#', '');
-                  const factor = 0.85;
-                  const r = Math.max(0, Math.round(parseInt(c.substring(0, 2), 16) * factor));
-                  const g = Math.max(0, Math.round(parseInt(c.substring(2, 4), 16) * factor));
-                  const b = Math.max(0, Math.round(parseInt(c.substring(4, 6), 16) * factor));
-                  const hoverColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-                  e.currentTarget.style.backgroundColor = hoverColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = buttonColor;
-                }}
-              >
-                {pageData.button_title || 'Learn More'}
-              </a>
-            </div>
-          )}
-
-        </div>
-
-        {/* Home indicator */}
-        <div className="bg-gray-800 h-6 flex items-end justify-center pb-1.5">
-          <div className="w-12 h-1 rounded-full bg-gray-600"></div>
-        </div>
+        {/* CTA Button */}
+        {pageData.button_url && (
+          <div className="mb-8">
+            <a
+              href={pageData.button_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full sm:w-auto text-center py-3 px-6 rounded-lg font-semibold text-white transition-all"
+              style={{
+                backgroundColor: buttonColor,
+              }}
+              onMouseEnter={(e) => {
+                const c = buttonColor.replace('#', '');
+                const factor = 0.85;
+                const r = Math.max(0, Math.round(parseInt(c.substring(0, 2), 16) * factor));
+                const g = Math.max(0, Math.round(parseInt(c.substring(2, 4), 16) * factor));
+                const b = Math.max(0, Math.round(parseInt(c.substring(4, 6), 16) * factor));
+                const hoverColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                e.currentTarget.style.backgroundColor = hoverColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = buttonColor;
+              }}
+            >
+              {pageData.button_title || 'Learn More'}
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
