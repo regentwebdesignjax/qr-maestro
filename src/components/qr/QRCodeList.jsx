@@ -16,7 +16,23 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { downloadQRPng, downloadQRSvg } from '@/utils/qrExport';
 
-const formatContentType = (type) => ({ url: 'URL', text: 'Text', wifi: 'WiFi', vcard: 'vCard' }[type] || type);
+const formatContentType = (type) => ({
+  url: 'URL',
+  text: 'Text',
+  wifi: 'WiFi',
+  vcard: 'vCard',
+  business_card: 'Business Card',
+  linkpages: 'Linkpages',
+  pdf: 'PDF',
+  social: 'Social Media',
+  coupon: 'Coupon',
+  image: 'Image',
+  mp3: 'MP3',
+  call: 'Call',
+  sms: 'SMS',
+  map_location: 'Map Location',
+  business_page: 'Business Page'
+}[type] || type);
 
 export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder }) {
   const [selected, setSelected] = useState(new Set());
