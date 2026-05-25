@@ -556,19 +556,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <button key={value} type="button"
                     onClick={() => {if (!isDisabled) {handleChange('content_type', value);triggerPreview({ content_type: value });}}}
                     disabled={isDisabled}
-                    className={`flex flex-col items-start gap-2 p-3 rounded-xl border-2 text-left transition-all ${
+                    className={`flex flex-row items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
                     isDisabled ?
                     'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' :
                     formData.content_type === value ?
                     'border-primary bg-primary/5' :
                     'border-gray-200 hover:border-gray-300'}`
                     }>
-                        <div className="flex items-center gap-1">
-                          <Icon className={`w-4 h-4 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-500'}`} />
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                          <Icon className={`w-14 h-14 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
                           {isProDisabled && <Lock className="w-3 h-3 text-gray-400" />}
                         </div>
-                        <div>
-                          <p className={`font-medium text-xs ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-medium text-sm ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
                           <p className={`text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                             {isStaticDisabled ? 'Requires Dynamic (Black Belt)' : isProDisabled ? 'Black Belt only' : desc}
                           </p>
