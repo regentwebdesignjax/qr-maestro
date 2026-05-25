@@ -615,7 +615,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
 
               <div>
                 <p className="text-gray-600 text-sm mb-2">What type of content will this QR code contain?</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   {CONTENT_TYPES.map(({ value, label, icon: Icon, desc, proOnly }) => {
                   const isStaticOnly = value !== 'url' && value !== 'business_card';
                   const isStaticDisabled = formData.type === 'static' && isStaticOnly;
@@ -626,7 +626,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <button key={value} type="button"
                     onClick={() => {if (!isDisabled) {handleChange('content_type', value);triggerPreview({ content_type: value });}}}
                     disabled={isDisabled}
-                    className={`flex flex-row items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                    className={`flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 text-center sm:text-left transition-all ${
                     isDisabled ?
                     'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed' :
                     formData.content_type === value ?
@@ -634,12 +634,12 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     'border-gray-200 hover:border-gray-300'}`
                     }>
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                          <Icon className={`w-10 h-10 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
+                          <Icon className={`w-8 sm:w-10 h-8 sm:h-10 ${isDisabled ? 'text-gray-400' : formData.content_type === value ? 'text-primary' : 'text-gray-600'}`} />
                           {isProDisabled && <Lock className="w-3 h-3 text-gray-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`font-medium text-sm ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
-                          <p className={`text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                          <p className={`font-medium text-xs sm:text-sm ${isDisabled ? 'text-gray-500' : formData.content_type === value ? 'text-primary' : 'text-gray-800'}`}>{label}</p>
+                          <p className={`text-[10px] sm:text-xs ${isDisabled ? 'text-gray-400' : 'text-gray-500'} mt-0.5 leading-tight`}>
                             {isStaticDisabled ? 'Requires Dynamic (Black Belt)' : isProDisabled ? 'Black Belt only' : desc}
                           </p>
                         </div>
