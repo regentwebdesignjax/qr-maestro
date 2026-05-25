@@ -1,8 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MapPin, Loader } from 'lucide-react';
-import { Loader as GoogleMapsLoader } from '@googlemaps/js-api-loader';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+
+const loadGoogleMapsPlaces = (apiKey) => {
+  if (window.google?.maps?.places) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const existingScript = document.getElementById('google-maps-places-script');
+    if (existingScript) {
+      existingScript.addEventListener('load', resolve, { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-maps-places-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
 
 export default function MapLocationForm({ data, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -25,16 +46,10 @@ export default function MapLocationForm({ data, onChange }) {
           return;
         }
 
-        const loader = new GoogleMapsLoader({
-          apiKey,
-          version: 'weekly',
-          libraries: ['places'],
-        });
+        await loadGoogleMapsPlaces(apiKey);
 
-        await loader.load();
-
-        autocompleteService.current = new google.maps.places.AutocompleteService();
-        placesService.current = new google.maps.places.PlacesService(
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        placesService.current = new window.google.maps.places.PlacesService(
           document.createElement('div')
         );
         setIsInitializing(false);
@@ -103,12 +118,12 @@ export default function MapLocationForm({ data, onChange }) {
       placesService.current.getDetails(
         { placeId: place_id, fields: ['geometry', 'formatted_address'] },
         (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry) {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.geometry) {
             const { lat, lng } = place.geometry.location;
             const updatedWithCoords = {
               ...updated,
-              latitude: lat,
-              longitude: lng,
+              latitude: lat(),
+              longitude: lng(),
             };
             onChange(updatedWithCoords);
           }
