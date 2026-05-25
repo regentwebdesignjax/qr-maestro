@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Globe, ChevronDown } from 'lucide-react';
 
+const formatPhone = (phone) => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return phone;
+};
+
+const convertTo12Hour = (time24) => {
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 export default function BusinessPageLanding({ data }) {
   const [expandedDay, setExpandedDay] = useState(null);
 
@@ -20,75 +36,81 @@ export default function BusinessPageLanding({ data }) {
   const buttonColor = pageData.button_color || '#2f3f7f';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Brand Header Image */}
-      {pageData.brand_image && (
-        <div className="w-full h-48 overflow-hidden bg-gray-200">
-          <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
+    <div className="flex justify-center">
+      {/* Phone frame */}
+      <div className="w-[280px] rounded-[2rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden bg-white">
+        {/* Status bar */}
+        <div className="bg-gray-800 h-6 flex items-center justify-center">
+          <div className="w-16 h-1.5 rounded-full bg-gray-600"></div>
         </div>
-      )}
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Logo and Title */}
-        <div className="flex items-start gap-4">
-          {pageData.logo && (
-            <div className="flex-shrink-0">
-              <img src={pageData.logo} alt="Logo" className="w-20 h-20 object-contain" />
-            </div>
-          )}
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{pageData.business_name}</h1>
-            {pageData.headline && (
-              <p className="text-lg text-gray-600 mt-1">{pageData.headline}</p>
+        {/* Card content */}
+        <div className="overflow-y-auto max-h-[520px] bg-gray-50">
+          {/* Brand Header Image */}
+          <div className="relative w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-visible">
+            {pageData.brand_image ? (
+              <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-white/30 text-xs">Brand Image</span>
+              </div>
+            )}
+            {/* Logo overlapping banner */}
+            {pageData.logo && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+                <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
+                  <img src={pageData.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                </div>
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Status Badge */}
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-          isOpen
-            ? 'bg-green-100 text-green-800'
-            : 'bg-red-100 text-red-800'
-        }`}>
-          <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-600' : 'bg-red-600'}`} />
-          {isOpen ? `Open until ${todayHours?.close || 'N/A'}` : 'Closed today'}
-        </div>
+          {/* Identity block */}
+          <div className="pt-12 px-4 pb-2 text-center">
+            <h1 className="text-base font-bold text-gray-900 leading-tight">{pageData.business_name}</h1>
+            {pageData.headline && (
+              <p className="text-xs text-gray-500 mt-0.5">{pageData.headline}</p>
+            )}
 
-        {/* Message/Description */}
-        {pageData.message && (
-          <div className="bg-white rounded-xl p-4 border border-gray-200">
-            <p className="text-gray-700 leading-relaxed">{pageData.message}</p>
+            {pageData.message && (
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-3">{pageData.message}</p>
+            )}
           </div>
-        )}
 
-        {/* Contact Information */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-gray-900">Contact</h2>
+          {/* Message/Description Card */}
+          {pageData.message && (
+            <div className="px-4 py-3">
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <p className="text-xs text-gray-700 leading-relaxed">{pageData.message}</p>
+              </div>
+            </div>
+          )}
 
-          <div className="space-y-2">
+          {/* Contact Information */}
+          <div className="px-4 pb-3 space-y-1.5">
             {pageData.contact_name && (
-              <div className="flex items-center gap-3 text-gray-700">
-                <span className="font-medium">{pageData.contact_name}</span>
+              <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
+                <span className="text-xs font-medium text-gray-700">{pageData.contact_name}</span>
               </div>
             )}
 
             {pageData.phone && (
               <a
                 href={`tel:${pageData.phone}`}
-                className="flex items-center gap-3 text-blue-600 hover:text-blue-700 font-medium"
+                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <Phone className="w-5 h-5" />
-                {pageData.phone}
+                <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs text-gray-700 truncate">{formatPhone(pageData.phone)}</span>
               </a>
             )}
 
             {pageData.email && (
               <a
                 href={`mailto:${pageData.email}`}
-                className="flex items-center gap-3 text-blue-600 hover:text-blue-700 font-medium break-all"
+                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <Mail className="w-5 h-5" />
-                {pageData.email}
+                <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs text-gray-700 truncate">{pageData.email}</span>
               </a>
             )}
 
@@ -97,74 +119,76 @@ export default function BusinessPageLanding({ data }) {
                 href={`https://www.google.com/maps?q=${encodeURIComponent(pageData.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 text-blue-600 hover:text-blue-700 font-medium"
+                className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <MapPin className="w-5 h-5" />
-                {pageData.address}
+                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs text-gray-700 truncate">{pageData.address}</span>
               </a>
             )}
           </div>
+
+          {/* Business Hours */}
+          {pageData.schedule && pageData.schedule.length > 0 && (
+            <div className="px-4 pb-3">
+              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+                {pageData.schedule.map((day, idx) => (
+                  <div key={idx}>
+                    <button
+                      onClick={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="flex items-center gap-2 text-left flex-1">
+                        <span className="font-medium text-gray-900 text-xs w-16">{day.day}</span>
+                        <span className={`text-xs ${day.closed ? 'text-gray-500' : 'text-gray-600'}`}>
+                          {day.closed ? 'Closed' : `${convertTo12Hour(day.open)} – ${convertTo12Hour(day.close)}`}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${expandedDay === idx ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CTA Button */}
+          {pageData.button_url && (
+            <div className="px-4 py-3">
+              <a
+                href={pageData.button_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full block text-center py-2 px-4 rounded-lg font-semibold text-white text-xs transition-all"
+                style={{
+                  backgroundColor: buttonColor,
+                }}
+                onMouseEnter={(e) => {
+                  const c = buttonColor.replace('#', '');
+                  const factor = 0.85;
+                  const r = Math.max(0, Math.round(parseInt(c.substring(0, 2), 16) * factor));
+                  const g = Math.max(0, Math.round(parseInt(c.substring(2, 4), 16) * factor));
+                  const b = Math.max(0, Math.round(parseInt(c.substring(4, 6), 16) * factor));
+                  const hoverColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                  e.currentTarget.style.backgroundColor = hoverColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = buttonColor;
+                }}
+              >
+                {pageData.button_title || 'Learn More'}
+              </a>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="text-center text-xs text-gray-500 py-3">
+            Scanned via QR Code
+          </div>
         </div>
 
-        {/* Business Hours */}
-        {pageData.schedule && pageData.schedule.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Hours
-            </h2>
-
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {pageData.schedule.map((day, idx) => (
-                <div key={idx}>
-                  <button
-                    onClick={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="flex items-center gap-3 text-left flex-1">
-                      <span className="font-medium text-gray-900 w-24">{day.day}</span>
-                      <span className={day.closed ? 'text-gray-500' : 'text-gray-600'}>
-                        {day.closed ? 'Closed' : `${day.open} – ${day.close}`}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedDay === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* CTA Button */}
-        {pageData.button_url && (
-          <a
-            href={pageData.button_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full block text-center py-3 px-4 rounded-xl font-semibold text-white transition-all"
-            style={{
-              backgroundColor: buttonColor,
-            }}
-            onMouseEnter={(e) => {
-              const c = buttonColor.replace('#', '');
-              const factor = 0.85;
-              const r = Math.max(0, Math.round(parseInt(c.substring(0, 2), 16) * factor));
-              const g = Math.max(0, Math.round(parseInt(c.substring(2, 4), 16) * factor));
-              const b = Math.max(0, Math.round(parseInt(c.substring(4, 6), 16) * factor));
-              const hoverColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-              e.currentTarget.style.backgroundColor = hoverColor;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = buttonColor;
-            }}
-          >
-            {pageData.button_title || 'Learn More'}
-          </a>
-        )}
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 pt-4">
-          Scanned via QR Code
+        {/* Home indicator */}
+        <div className="bg-gray-800 h-6 flex items-end justify-center pb-1.5">
+          <div className="w-12 h-1 rounded-full bg-gray-600"></div>
         </div>
       </div>
     </div>
