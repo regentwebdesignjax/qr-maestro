@@ -60,27 +60,52 @@ export default function MapLocationLanding({ data }) {
     );
   }
 
+  // Build the map embed URL - supports both lat/lon and address
+  const getMapEmbedUrl = () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+    if (!apiKey) {
+      console.error('Google Maps API key not found. Please set VITE_GOOGLE_MAPS_API_KEY in .env.local');
+      return null;
+    }
+
+    let query = '';
+    if (mapData?.latitude && mapData?.longitude) {
+      query = `${mapData.latitude},${mapData.longitude}`;
+    } else if (typeof mapData === 'string' && mapData) {
+      query = encodeURIComponent(mapData);
+    } else if (mapData?.address) {
+      query = encodeURIComponent(mapData.address);
+    }
+
+    if (!query) return null;
+    return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${query}&zoom=15`;
+  };
+
+  const mapEmbedUrl = getMapEmbedUrl();
+
   // Render the map interface similar to Google Maps
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Map Container */}
       <div className="flex-1 relative bg-gray-100 overflow-hidden">
-        {mapData?.latitude && mapData?.longitude ? (
+        {mapEmbedUrl ? (
           <iframe
             title="Location Map"
             width="100%"
             height="100%"
             frameBorder="0"
-            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD_kP-Yp06qSW5PCUbxXqLR7GkYhgBFAOo&q=${mapData.latitude},${mapData.longitude}&zoom=15`}
+            src={mapEmbedUrl}
             allowFullScreen=""
             loading="lazy"
             style={{ border: 'none' }}
+            onError={() => console.error('Map embed failed to load')}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
             <div className="text-center">
               <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600">Loading map...</p>
+              <p className="text-gray-600">{mapEmbedUrl === null && !displayAddress ? 'No location provided' : 'Unable to load map'}</p>
             </div>
           </div>
         )}
