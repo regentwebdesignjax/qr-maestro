@@ -121,7 +121,7 @@ export default function CreateQR() {
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4">
+      <div className="w-full mx-auto px-4 sm:px-6">
         <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />

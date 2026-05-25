@@ -188,7 +188,7 @@ export default function BulkCreate() {
   if (!isPro) {
     return (
       <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-2xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <Link to="/MyQRCodes"><Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back</Button></Link>
           <Card>
             <CardContent className="py-16 text-center">
@@ -206,7 +206,7 @@ export default function BulkCreate() {
   if (status === 'done') {
     return (
       <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-2xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <Card>
             <CardContent className="py-16 text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -226,7 +226,7 @@ export default function BulkCreate() {
     const pct = Math.round((progress.current / progress.total) * 100);
     return (
       <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-2xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <Card>
             <CardContent className="py-16 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-6"></div>

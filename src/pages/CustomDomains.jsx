@@ -141,7 +141,7 @@ export default function CustomDomains() {
   if (!isPro) {
     return (
       <div className="min-h-screen bg-background py-16">
-        <div className="container mx-auto px-4 max-w-2xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <div className="text-center space-y-4">
             <Lock className="w-12 h-12 text-gray-300 mx-auto" />
             <h1 className="text-2xl font-bold">Custom Domains</h1>
@@ -159,7 +159,7 @@ export default function CustomDomains() {
   if (!hasAddon) {
     return (
       <div className="min-h-screen bg-background py-16">
-        <div className="container mx-auto px-4 max-w-2xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <div className="text-center space-y-4">
             <Globe className="w-12 h-12 text-gray-300 mx-auto" />
             <h1 className="text-2xl font-bold">Custom Domains</h1>

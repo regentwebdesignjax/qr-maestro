@@ -163,7 +163,7 @@ export default function Analytics() {
   if (!isPro) {
     return (
       <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="w-full mx-auto px-4 sm:px-6">
           <Link to="/Dashboard">
             <Button variant="ghost" className="mb-6"><ArrowLeft className="w-4 h-4 mr-2" />Back to Dashboard</Button>
           </Link>

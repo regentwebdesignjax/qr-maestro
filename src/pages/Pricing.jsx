@@ -86,7 +86,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background py-16">
-      <div className="container mx-auto px-4">
+      <div className="w-full mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choosing Your Rank

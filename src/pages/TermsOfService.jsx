@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16 max-w-4xl">
+      <div className="w-full mx-auto px-4 sm:px-6 py-16">
         <article className="prose prose-sm max-w-none font-poppins">
           {/* Header */}
           <div className="mb-12">
