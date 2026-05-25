@@ -73,60 +73,60 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen flex flex-col pb-0 md:pb-0">
       {/* Header Navigation */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled || currentPageName !== 'Home' ? 'bg-white border-b border-border shadow-sm' : 'bg-transparent border-b border-transparent'}`}>
-        <div className="container mx-auto px-4">
+        <div className="w-full px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center shrink-0">
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
                 alt="QR Sensei"
-                className="h-9 w-auto"
+                className="h-8 sm:h-9 w-auto"
               />
             </Link>
 
             {/* Navigation Links */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-4 lg:gap-6 flex-1 px-8 justify-center">
               {user ? (
                 <>
-                  <Link to="/MyQRCodes" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
-                    <QrCode className="w-4 h-4" />
+                  <Link to="/MyQRCodes" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                    <QrCode className="w-4 h-4 shrink-0" />
                     My QR Codes
                   </Link>
-                  <Link to="/CreateQR" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
-                    <QrCode className="w-4 h-4" />
+                  <Link to="/CreateQR" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                    <QrCode className="w-4 h-4 shrink-0" />
                     Create QR
                   </Link>
                   {(user?.subscription_tier === 'pro' || user?.role === 'admin') && (
-                    <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
-                      <Users className="w-4 h-4" />
+                    <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                      <Users className="w-4 h-4 shrink-0" />
                       Leads
                     </Link>
                   )}
                   {user?.custom_domain_addon && (
-                    <Link to="/CustomDomains" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm">
-                      <Globe className="w-4 h-4" />
+                    <Link to="/CustomDomains" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                      <Globe className="w-4 h-4 shrink-0" />
                       Custom Domain
                     </Link>
                   )}
                   {user?.role === 'admin' && (
-                    <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm">
-                      <Shield className="w-4 h-4" />
+                    <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                      <Shield className="w-4 h-4 shrink-0" />
                       Admin
                     </Link>
                   )}
                 </>
               ) : (
                 <>
-                  <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     Home
                   </Link>
-                  <Link to="/WhyUs" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/WhyUs" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     Why Us?
                   </Link>
-                  <Link to="/FAQ" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/FAQ" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     FAQ
                   </Link>
-                  <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm">
+                  <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     Pricing
                   </Link>
                 </>
@@ -134,7 +134,7 @@ export default function Layout({ children, currentPageName }) {
             </nav>
 
             {/* Auth Buttons / User Menu */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
               {loading ? (
                 <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
               ) : user ? (

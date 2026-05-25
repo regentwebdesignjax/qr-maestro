@@ -48,26 +48,26 @@ export default function Testimonials() {
   }, [api]);
 
   return (
-    <section className="w-full py-24 px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
+    <section className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14">
-          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">Social Proof</p>
-          <h2 className="text-4xl font-black text-foreground">Testimonials from the Masters</h2>
+        <div className="text-center mb-10 sm:mb-14">
+          <p className="text-xs sm:text-sm font-semibold text-primary uppercase tracking-widest mb-3">Social Proof</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground">Testimonials from the Masters</h2>
         </div>
 
         <Carousel setApi={setApi} opts={{ loop: true, align: 'center' }} className="w-full">
           <CarouselContent>
             {testimonials.map((t, i) => (
-              <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/3">
-                <div className="bg-white rounded-xl border border-border p-6 h-full flex flex-col gap-4 shadow-card hover:shadow-card-hover hover:scale-105 transition-all duration-300">
+              <CarouselItem key={i} className="basis-full sm:basis-1/2 lg:basis-1/3">
+                <div className="bg-white rounded-xl border border-border p-5 sm:p-6 h-full flex flex-col gap-4 shadow-card hover:shadow-card-hover hover:scale-105 transition-all duration-300">
                   <p className="text-muted-foreground text-sm leading-relaxed flex-1">"{t.quote}"</p>
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
                       {t.initials}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.title}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{t.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{t.title}</p>
                     </div>
                   </div>
                 </div>
@@ -77,11 +77,11 @@ export default function Testimonials() {
         </Carousel>
 
         {/* Trusted By Marquee */}
-        <div className="mt-14 border-t border-border pt-10">
-          <p className="text-center text-xs text-muted-foreground uppercase tracking-widest mb-6">Trusted by teams at</p>
-          <div className="flex flex-wrap justify-center gap-8">
+        <div className="mt-10 sm:mt-14 border-t border-border pt-8 sm:pt-10">
+          <p className="text-center text-xs text-muted-foreground uppercase tracking-widest mb-4 sm:mb-6">Trusted by teams at</p>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8">
             {brands.map((brand) => (
-              <span key={brand} className="text-muted-foreground/50 font-bold text-sm uppercase tracking-wide grayscale hover:text-muted-foreground transition-colors">
+              <span key={brand} className="text-muted-foreground/50 font-bold text-xs sm:text-sm uppercase tracking-wide grayscale hover:text-muted-foreground transition-colors">
                 {brand}
               </span>
             ))}
