@@ -115,19 +115,21 @@ export default function TimeOfDayHeatmap({ scans }) {
           </div>
 
           {/* Intensity gradient scale */}
-          <div className="flex flex-col items-center gap-2 flex-shrink-0">
-            <div className="text-xs text-muted-foreground font-medium">Scans</div>
-            <div
-              className="rounded-sm"
-              style={{
-                width: '18px',
-                height: '480px',
-                background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
-              }}
-            />
-            <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-2 min-w-max">
-              <div className="text-right font-medium">{maxVal}</div>
-              <div className="text-right font-medium">0</div>
+          <div className="flex flex-col items-center flex-shrink-0">
+            <div className="text-xs text-muted-foreground font-medium mb-2">Scans</div>
+            <div className="relative" style={{ width: '18px', height: '480px' }}>
+              <div
+                className="rounded-sm absolute inset-0"
+                style={{
+                  background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
+                }}
+              />
+              <div className="absolute -right-10 top-0 text-xs text-muted-foreground font-medium">
+                {maxVal}
+              </div>
+              <div className="absolute -right-10 bottom-0 text-xs text-muted-foreground font-medium">
+                0
+              </div>
             </div>
           </div>
         </div>
