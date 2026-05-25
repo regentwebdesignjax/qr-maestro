@@ -77,20 +77,20 @@ export default function TimeOfDayHeatmap({ scans }) {
         <CardTitle className="text-base font-semibold">Scans by Time of Day</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 overflow-x-auto">
+        <div className="flex gap-4 w-full">
           {/* Hours labels (left side) */}
-          <div className="flex flex-col justify-between flex-shrink-0" style={{ width: '40px', height: '336px' }}>
+          <div className="flex flex-col justify-between flex-shrink-0" style={{ width: '45px', height: '360px' }}>
             {invertedHours.map(h => (
-              <div key={h} className="text-xs text-muted-foreground text-right h-3 leading-3">
+              <div key={h} className="text-xs text-muted-foreground text-right h-4 leading-4">
                 {formatHour(h)}
               </div>
             ))}
           </div>
 
           {/* Heatmap grid */}
-          <div className="flex gap-0.5 flex-shrink-0">
+          <div className="flex gap-1 flex-1">
             {DAYS_OF_WEEK.map((day, dayIdx) => (
-              <div key={day} className="flex flex-col gap-0.5">
+              <div key={day} className="flex flex-col gap-1 flex-1">
                 {/* Grid cells for this day (inverted: top to bottom) */}
                 {invertedHours.map(h => {
                   const count = grid[dayIdx][h];
@@ -99,7 +99,7 @@ export default function TimeOfDayHeatmap({ scans }) {
                   return (
                     <div
                       key={`${day}-${h}`}
-                      className="w-12 h-3 rounded-sm transition-colors"
+                      className="w-full h-4 rounded-sm transition-colors"
                       style={{ backgroundColor: getHeatmapColor(intensity) }}
                       title={`${day} ${formatHour(h)}: ${count} scan${count !== 1 ? 's' : ''}`}
                     />
@@ -120,8 +120,8 @@ export default function TimeOfDayHeatmap({ scans }) {
             <div
               className="rounded-sm"
               style={{
-                width: '16px',
-                height: '336px',
+                width: '18px',
+                height: '360px',
                 background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
               }}
             />
