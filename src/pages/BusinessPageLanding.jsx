@@ -73,10 +73,6 @@ export default function BusinessPageLanding({ data }) {
             {pageData.headline && (
               <p className="text-xs text-gray-500 mt-0.5">{pageData.headline}</p>
             )}
-
-            {pageData.message && (
-              <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-3">{pageData.message}</p>
-            )}
           </div>
 
           {/* Message/Description Card */}
