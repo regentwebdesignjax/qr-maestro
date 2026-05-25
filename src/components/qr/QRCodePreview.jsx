@@ -8,6 +8,7 @@ import { renderQR, renderQRToCanvas, downloadQRSvg } from '@/utils/qrExport';
 import BusinessCardPreview from './BusinessCardPreview';
 import LinkpagePreview from './LinkpagePreview';
 import TicketCouponDisplay from './TicketCouponDisplay';
+import BusinessPageLanding from '@/pages/BusinessPageLanding';
 
 // ─── Tab Toggle for Business Card ─────────────────────────────────────────────
 
@@ -156,6 +157,7 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
   const [bcTab, setBcTab] = useState('landing');
   const [couponTab, setCouponTab] = useState('landing');
   const [linkpageTab, setLinkpageTab] = useState('landing');
+  const [businessPageTab, setBusinessPageTab] = useState('landing');
 
   // Inject custom domain at render time so timing of parent state updates can't
   // strip out the branded URL between renders.
@@ -184,6 +186,12 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
       } else {
         setLinkpageTab('landing');
       }
+    } else if (effectiveQrData?.content_type === 'business_page') {
+      if (currentStep === 2) {
+        setBusinessPageTab('qr');
+      } else {
+        setBusinessPageTab('landing');
+      }
     }
   }, [currentStep, effectiveQrData?.content_type]);
 
@@ -191,7 +199,7 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
     const isDynamic = effectiveQrData?.type === 'dynamic' && effectiveQrData?.short_code;
     const hasContent = !!effectiveQrData?.content;
     if (!isDynamic && !hasContent) return;
-    if (effectiveQrData.content_type === 'business_card' || effectiveQrData.content_type === 'linkpages') return; // handled separately
+    if (effectiveQrData.content_type === 'business_card' || effectiveQrData.content_type === 'linkpages' || effectiveQrData.content_type === 'business_page') return; // handled separately
     const canvas = canvasRef.current;
     if (!canvas) return;
     console.log('[QRCodePreview] rendering with effectiveQrData:', {
@@ -277,6 +285,24 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
         <PreviewToggle active={couponTab} onChange={setCouponTab} />
         {couponTab === 'landing' ? (
           <TicketCouponDisplay couponData={couponData} design_config={effectiveQrData.design_config} />
+        ) : (
+          <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
+        )}
+      </div>
+    );
+  }
+
+  // ── Business Page: tabbed view ──
+  if (effectiveQrData.content_type === 'business_page') {
+    let businessPageData = {};
+    try { businessPageData = JSON.parse(effectiveQrData.content || '{}'); } catch {}
+    return (
+      <div>
+        <PreviewToggle active={businessPageTab} onChange={setBusinessPageTab} />
+        {businessPageTab === 'landing' ? (
+          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+            <BusinessPageLanding data={{ ...businessPageData, content_type: 'business_page' }} />
+          </div>
         ) : (
           <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
         )}
