@@ -55,31 +55,23 @@ export default function BusinessPagePreview({ data = {} }) {
 
           {/* Identity block */}
           <div className="pt-12 px-4 pb-2 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">{pageData.business_name}</h1>
+            <h1 className="text-lg font-bold text-gray-900 leading-tight">{pageData.business_name}</h1>
             {pageData.headline && (
               <p className="text-xs text-gray-500 mt-0.5">{pageData.headline}</p>
             )}
+            {pageData.message && (
+              <p className="text-xs text-gray-600 mt-2 leading-relaxed">{pageData.message}</p>
+            )}
           </div>
 
-          {/* Message/Description Card */}
-          {pageData.message && (
-            <div className="px-4 py-3">
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <p className="text-xs text-gray-700 leading-relaxed">{pageData.message}</p>
-              </div>
-            </div>
-          )}
-
           {/* Contact Information */}
-          <div className="px-4 pb-3 space-y-1.5">
+          <div className="px-4 py-2 space-y-1">
             {pageData.contact_name && (
-              <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
-                <div>
-                  <span className="text-xs font-medium text-gray-700 block">{pageData.contact_name}</span>
-                  {pageData.contact_title && (
-                    <span className="text-xs text-gray-500">{pageData.contact_title}</span>
-                  )}
-                </div>
+              <div className="text-center pb-1.5">
+                <p className="text-xs font-medium text-gray-700">{pageData.contact_name}</p>
+                {pageData.contact_title && (
+                  <p className="text-xs text-gray-500">{pageData.contact_title}</p>
+                )}
               </div>
             )}
 
