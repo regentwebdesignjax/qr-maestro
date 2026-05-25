@@ -136,7 +136,7 @@ export default function BusinessPageForm({ data, onChange }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-gray-500">Phone</Label>
             <Input
@@ -170,7 +170,7 @@ export default function BusinessPageForm({ data, onChange }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-gray-500">Latitude</Label>
             <Input
@@ -239,12 +239,12 @@ export default function BusinessPageForm({ data, onChange }) {
 
         <div className="space-y-2">
           {data.schedule?.map((day, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-sm">
-              <label className="w-20 font-medium text-gray-700">{day.day}</label>
+            <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm p-2 sm:p-0 rounded sm:rounded-none">
+              <label className="w-full sm:w-20 font-medium text-gray-700">{day.day}</label>
 
               {day.closed ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <span className="text-gray-500 text-sm">Closed</span>
+                <div className="flex-1 flex items-center gap-2 w-full">
+                  <span className="text-gray-500 text-xs sm:text-sm">Closed</span>
                   <button
                     type="button"
                     onClick={() => handleScheduleChange(idx, 'closed', false)}
@@ -254,24 +254,24 @@ export default function BusinessPageForm({ data, onChange }) {
                   </button>
                 </div>
               ) : (
-                <div className="flex-1 flex items-center gap-2">
+                <div className="flex-1 flex flex-wrap items-center gap-1 sm:gap-2 w-full">
                   <Input
                     type="time"
                     value={day.open || '09:00'}
                     onChange={(e) => handleScheduleChange(idx, 'open', e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs flex-1 min-w-[80px] sm:flex-none"
                   />
-                  <span className="text-gray-500">–</span>
+                  <span className="text-gray-500 text-xs sm:text-sm">–</span>
                   <Input
                     type="time"
                     value={day.close || '17:00'}
                     onChange={(e) => handleScheduleChange(idx, 'close', e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs flex-1 min-w-[80px] sm:flex-none"
                   />
                   <button
                     type="button"
                     onClick={() => handleScheduleChange(idx, 'closed', true)}
-                    className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+                    className="text-xs text-gray-500 hover:text-gray-700 font-medium whitespace-nowrap"
                   >
                     Close
                   </button>

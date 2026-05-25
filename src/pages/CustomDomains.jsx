@@ -279,19 +279,19 @@ export default function CustomDomains() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-md bg-white border border-yellow-200 overflow-hidden text-sm font-mono">
-                    <div className="grid grid-cols-[80px_1fr] gap-x-4 divide-y divide-yellow-100">
+                  <div className="rounded-md bg-white border border-yellow-200 overflow-hidden text-sm font-mono space-y-1 sm:space-y-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-[80px_1fr] gap-x-4 gap-y-1 divide-y sm:divide-y divide-yellow-100">
                       <div className="px-4 py-2 bg-yellow-50 font-semibold text-gray-600 text-xs uppercase tracking-wide">Type</div>
-                      <div className="px-4 py-2">CNAME</div>
+                      <div className="px-4 py-2 font-mono">CNAME</div>
                       <div className="px-4 py-2 bg-yellow-50 font-semibold text-gray-600 text-xs uppercase tracking-wide">Name</div>
-                      <div className="px-4 py-2">{customDomain.hostname.split('.')[0]}</div>
+                      <div className="px-4 py-2 font-mono break-all">{customDomain.hostname.split('.')[0]}</div>
                       <div className="px-4 py-2 bg-yellow-50 font-semibold text-gray-600 text-xs uppercase tracking-wide">Target</div>
-                      <div className="px-4 py-2 flex items-center justify-between gap-2">
-                        <span>{CNAME_TARGET}</span>
+                      <div className="px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <span className="break-all font-mono">{CNAME_TARGET}</span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2 text-xs"
+                          className="h-6 px-2 text-xs shrink-0"
                           onClick={() => copyToClipboard(CNAME_TARGET)}
                         >
                           <Copy className="w-3 h-3 mr-1" />
@@ -299,7 +299,7 @@ export default function CustomDomains() {
                         </Button>
                       </div>
                       <div className="px-4 py-2 bg-yellow-50 font-semibold text-gray-600 text-xs uppercase tracking-wide">TTL</div>
-                      <div className="px-4 py-2">Auto (or 3600)</div>
+                      <div className="px-4 py-2 font-mono">Auto (or 3600)</div>
                     </div>
                   </div>
                   <p className="text-xs text-yellow-800">

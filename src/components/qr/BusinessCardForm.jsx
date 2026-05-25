@@ -88,7 +88,7 @@ export default function BusinessCardForm({ data, onChange }) {
           value={data.headshot_url || ''}
           onChange={(v) => set('headshot_url', v)}
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-gray-600">Full Name *</Label>
             <Input className="mt-1" placeholder="Alex Johnson" value={data.name || ''} onChange={(e) => set('name', e.target.value)} />
@@ -148,19 +148,20 @@ export default function BusinessCardForm({ data, onChange }) {
         <div className="space-y-2">
           <Label className="text-xs text-gray-600">Social Links</Label>
           {socialLinks.map((link, idx) => (
-            <div key={idx} className="flex gap-2 items-center">
+            <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
               <Input
                 placeholder="Platform (e.g. LinkedIn)"
                 value={link.platform}
                 onChange={(e) => updateLink(idx, 'platform', e.target.value)}
-                className="w-32 shrink-0"
+                className="w-full sm:w-32 sm:shrink-0"
               />
               <Input
                 placeholder="URL or handle"
                 value={link.url}
                 onChange={(e) => updateLink(idx, 'url', e.target.value)}
+                className="w-full"
               />
-              <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => removeLink(idx)}>
+              <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center" onClick={() => removeLink(idx)}>
                 <Trash2 className="w-4 h-4 text-gray-400" />
               </Button>
             </div>
