@@ -77,44 +77,41 @@ export default function TimeOfDayHeatmap({ scans }) {
         <CardTitle className="text-base font-semibold">Scans by Time of Day</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-6">
-          {/* Main heatmap area */}
-          <div className="flex-1">
-            {/* Hour labels (left side, vertical) */}
-            <div className="flex flex-col justify-between mb-2" style={{ height: '432px' }}>
-              {invertedHours.map(h => (
-                <div key={h} className="text-xs text-muted-foreground text-right pr-2 h-4 leading-4">
-                  {formatHour(h)}
+        <div className="flex gap-8">
+          {/* Hours labels (left side) */}
+          <div className="flex flex-col justify-between" style={{ width: '50px', height: '432px' }}>
+            {invertedHours.map(h => (
+              <div key={h} className="text-xs text-muted-foreground text-right h-4 leading-4">
+                {formatHour(h)}
+              </div>
+            ))}
+          </div>
+
+          {/* Heatmap grid */}
+          <div className="flex gap-1">
+            {DAYS_OF_WEEK.map((day, dayIdx) => (
+              <div key={day} className="flex flex-col gap-0.5">
+                {/* Grid cells for this day (inverted: top to bottom) */}
+                {invertedHours.map(h => {
+                  const count = grid[dayIdx][h];
+                  const intensity = count / maxVal;
+
+                  return (
+                    <div
+                      key={`${day}-${h}`}
+                      className="w-20 h-4 rounded-sm transition-colors"
+                      style={{ backgroundColor: getHeatmapColor(intensity) }}
+                      title={`${day} ${formatHour(h)}: ${count} scan${count !== 1 ? 's' : ''}`}
+                    />
+                  );
+                })}
+
+                {/* Day label below grid */}
+                <div className="text-xs font-medium text-muted-foreground text-center mt-1">
+                  {day}
                 </div>
-              ))}
-            </div>
-
-            {/* Heatmap grid */}
-            <div className="flex gap-1">
-              {DAYS_OF_WEEK.map((day, dayIdx) => (
-                <div key={day} className="flex flex-col gap-0.5">
-                  {/* Grid cells for this day (inverted: top to bottom) */}
-                  {invertedHours.map(h => {
-                    const count = grid[dayIdx][h];
-                    const intensity = count / maxVal;
-
-                    return (
-                      <div
-                        key={`${day}-${h}`}
-                        className="w-20 h-4 rounded-sm transition-colors"
-                        style={{ backgroundColor: getHeatmapColor(intensity) }}
-                        title={`${day} ${formatHour(h)}: ${count} scan${count !== 1 ? 's' : ''}`}
-                      />
-                    );
-                  })}
-
-                  {/* Day label below grid */}
-                  <div className="text-xs font-medium text-muted-foreground text-center mt-1">
-                    {day}
-                  </div>
-                </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
           {/* Intensity gradient scale */}
