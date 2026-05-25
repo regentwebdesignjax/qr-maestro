@@ -7,7 +7,6 @@ import BrandedLayout from '@/components/qr/BrandedLayout';
 import BusinessCardDisplay from '@/components/qr/BusinessCardDisplay';
 import TicketCouponDisplay from '@/components/qr/TicketCouponDisplay';
 import LinkpageLanding from '@/pages/LinkpageLanding';
-import MapLocationLanding from '@/pages/MapLocationLanding';
 import BusinessPageLanding from '@/pages/BusinessPageLanding';
 
 function parseWifi(content) {
@@ -498,11 +497,6 @@ export default function Redirect() {
   // Linkpage gets its own full-page display
   if (data.content_type === 'linkpages') {
     return <LinkpageLanding initialData={data.linkpage} qrCodeId={data.id} shortCode={data.short_code} />;
-  }
-
-  // Map location gets its own full-page display
-  if (data.content_type === 'map_location') {
-    return <MapLocationLanding data={data} />;
   }
 
   // Business page gets its own full-page display

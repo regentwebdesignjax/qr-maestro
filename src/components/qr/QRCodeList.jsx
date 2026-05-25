@@ -30,7 +30,6 @@ const formatContentType = (type) => ({
   mp3: 'MP3',
   call: 'Call',
   sms: 'SMS',
-  map_location: 'Map Location',
   business_page: 'Business Page'
 }[type] || type);
 

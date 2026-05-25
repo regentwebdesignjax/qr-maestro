@@ -12,7 +12,6 @@ import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
 import LinkpagesForm from './LinkpagesForm';
 import BusinessPageForm from './BusinessPageForm';
-import MapLocationForm from './MapLocationForm';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FONT_OPTIONS } from './TicketCouponDisplay';
@@ -31,7 +30,6 @@ const CONTENT_TYPES = [
 { value: 'mp3', label: 'MP3', icon: Music, desc: 'Play an audio file (upload required)', dynamicOnly: true },
 { value: 'call', label: 'Call', icon: Phone, desc: 'Place a quick call', dynamicOnly: true },
 { value: 'sms', label: 'SMS', icon: MessageCircle, desc: 'Send a text message', dynamicOnly: true },
-{ value: 'map_location', label: 'Map Location', icon: MapPin, desc: 'Share a location on Google Maps', dynamicOnly: true },
 { value: 'business_page', label: 'Business Page', icon: Building2, desc: 'Business info with schedule & contact', dynamicOnly: true, proOnly: true }];
 
 
@@ -98,14 +96,6 @@ function generateWifiContent(wifi_data) {
   const password = wifi_data.password || '';
   const encryption = wifi_data.encryption || 'WPA';
   return `WIFI:S:${ssid};T:${encryption};P:${password};;`;
-}
-
-function generateMapLocationContent(map_data) {
-  if (!map_data?.address && !map_data?.latitude && !map_data?.longitude) return '';
-  if (map_data.latitude && map_data.longitude) {
-    return `${map_data.latitude},${map_data.longitude}`;
-  }
-  return map_data.address || '';
 }
 
 function generateBusinessPageContent(business_data) {
@@ -182,7 +172,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
         custom_slug: '',
         browser_title: ''
       },
-      mapLocation: { address: '', latitude: '', longitude: '' },
       businessPage: {
         business_name: '',
         headline: '',
@@ -235,7 +224,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       custom_slug: '',
       browser_title: ''
     };
-    let mapLocation = { address: '', latitude: '', longitude: '' };
     let businessPage = {
       business_name: '',
       headline: '',
@@ -303,25 +291,13 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       try {
         linkpage = JSON.parse(initialData.content);
       } catch {}
-    } else if (initialData.content_type === 'map_location' && initialData.content) {
-      try {
-        const parsed = JSON.parse(initialData.content);
-        mapLocation = parsed;
-      } catch {
-        const [lat, lon] = initialData.content.split(',').map(s => s.trim());
-        if (lat && lon) {
-          mapLocation = { address: '', latitude: lat, longitude: lon };
-        } else {
-          mapLocation = { address: initialData.content, latitude: '', longitude: '' };
-        }
-      }
     } else if (initialData.content_type === 'business_page' && initialData.content) {
       try {
         businessPage = JSON.parse(initialData.content);
       } catch {}
     }
 
-    return { wifi, socialLinks, bc, vcard, coupon, linkpage, mapLocation, businessPage };
+    return { wifi, socialLinks, bc, vcard, coupon, linkpage, businessPage };
   };
 
   const initialParsed = parseInitialData();
@@ -330,7 +306,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [bcData, setBcData] = useState(initialParsed.bc);
   const [couponData, setCouponData] = useState(initialParsed.coupon);
   const [linkpageData, setLinkpageData] = useState(initialParsed.linkpage);
-  const [mapLocationData, setMapLocationData] = useState(initialParsed.mapLocation);
   const [businessPageData, setBusinessPageData] = useState(initialParsed.businessPage);
 
   const [formData, setFormData] = useState({
@@ -338,7 +313,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     type: initialData?.type || 'static',
     content_type: initialData?.content_type || 'url',
     content: initialData?.content || '',
-    short_code: initialData?.short_code || ((initialData?.content_type === 'business_card' || initialData?.content_type === 'linkpages' || initialData?.content_type === 'map_location' || initialData?.content_type === 'business_page' || initialData?.type === 'dynamic') ? Math.random().toString(36).substring(2, 10) : null),
+    short_code: initialData?.short_code || ((initialData?.content_type === 'business_card' || initialData?.content_type === 'linkpages' || initialData?.content_type === 'business_page' || initialData?.type === 'dynamic') ? Math.random().toString(36).substring(2, 10) : null),
     vcard_data: initialParsed.vcard,
     design_config: {
       foreground_color: '#000000',
@@ -377,7 +352,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
       });
     } else if (field === 'content_type') {
       setFormData((prev) => {
-        const alwaysDynamic = value === 'business_card' || value === 'linkpages' || value === 'map_location' || value === 'business_page';
+        const alwaysDynamic = value === 'business_card' || value === 'linkpages' || value === 'business_page';
         return {
           ...prev,
           content_type: value,
@@ -403,7 +378,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
         ...overrides,
         design_config: { ...prev.design_config, ...(overrides.design_config || {}) }
       };
-      const alwaysDynamic = merged.content_type === 'business_card' || merged.content_type === 'linkpages' || merged.content_type === 'map_location' || merged.content_type === 'business_page';
+      const alwaysDynamic = merged.content_type === 'business_card' || merged.content_type === 'linkpages' || merged.content_type === 'business_page';
       const shortCode = (merged.type === 'dynamic' || alwaysDynamic) ? (merged.short_code || 'preview') : null;
       onGenerate({ ...merged, short_code: shortCode });
       return prev; // don't actually change state here
@@ -414,7 +389,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const handleDesignChangeAndPreview = (field, value) => {
     setFormData((prev) => {
       const next = { ...prev, design_config: { ...prev.design_config, [field]: value } };
-      const alwaysDynamic = next.content_type === 'business_card' || next.content_type === 'linkpages' || next.content_type === 'map_location' || next.content_type === 'business_page';
+      const alwaysDynamic = next.content_type === 'business_card' || next.content_type === 'linkpages' || next.content_type === 'business_page';
       const shortCode = (next.type === 'dynamic' || alwaysDynamic) ? (next.short_code || 'preview') : null;
       onGenerate({ ...next, short_code: shortCode });
       return next;
@@ -526,22 +501,19 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const handleSaveQR = async () => {
     const isBc = formData.content_type === 'business_card';
     const isLinkpages = formData.content_type === 'linkpages';
-    const isMapLocation = formData.content_type === 'map_location';
     const isBusinessPage = formData.content_type === 'business_page';
-    if (!formData.name || (!formData.content && !isBc && !isLinkpages && !isMapLocation && !isBusinessPage)) { alert('Please fill in all required fields'); return; }
+    if (!formData.name || (!formData.content && !isBc && !isLinkpages && !isBusinessPage)) { alert('Please fill in all required fields'); return; }
     if (isBc && !bcData.name) { alert('Please enter a name for your business card'); return; }
     if (isLinkpages && !linkpageData.title) { alert('Please fill in Linkpage Title'); return; }
-    if (isMapLocation && !mapLocationData.address && !mapLocationData.latitude) { alert('Please enter an address or coordinates'); return; }
     if (isBusinessPage && !businessPageData.business_name) { alert('Please enter a business name'); return; }
 
     let content = formData.content;
     if (isBc) content = JSON.stringify(bcData);
     else if (isLinkpages) content = JSON.stringify(linkpageData);
-    else if (isMapLocation) content = generateMapLocationContent(mapLocationData);
     else if (isBusinessPage) content = generateBusinessPageContent(businessPageData);
 
-    // Types that always need a short_code: business_card, linkpages, map_location, business_page
-    const alwaysDynamic = isBc || isLinkpages || isMapLocation || isBusinessPage;
+    // Types that always need a short_code: business_card, linkpages, business_page
+    const alwaysDynamic = isBc || isLinkpages || isBusinessPage;
     const shortCode = (formData.type === 'dynamic' || alwaysDynamic)
       ? (formData.short_code || Math.random().toString(36).substring(2, 10))
       : null;
@@ -555,8 +527,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     ? !!formData.name && !!bcData.name
     : formData.content_type === 'linkpages'
     ? !!formData.name && !!linkpageData.title
-    : formData.content_type === 'map_location'
-    ? !!formData.name && (!!mapLocationData.address || !!mapLocationData.latitude)
     : formData.content_type === 'business_page'
     ? !!formData.name && !!businessPageData.business_name
     : !!formData.name && !!formData.content;
@@ -729,18 +699,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 />
               )}
 
-              {formData.content_type === 'map_location' && (
-                <MapLocationForm
-                  data={mapLocationData}
-                  onChange={(updated) => {
-                    setMapLocationData(updated);
-                    const c = generateMapLocationContent(updated);
-                    handleChange('content', c);
-                    triggerPreview({ content: c });
-                  }}
-                />
-              )}
-
               {formData.content_type === 'business_page' && (
                 <BusinessPageForm
                   data={businessPageData}
@@ -753,7 +711,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                 />
               )}
 
-              {formData.content_type !== 'business_card' && formData.content_type !== 'linkpages' && formData.content_type !== 'map_location' && formData.content_type !== 'business_page' && (
+              {formData.content_type !== 'business_card' && formData.content_type !== 'linkpages' && formData.content_type !== 'business_page' && (
               <div>
                 <Label htmlFor="content">
                   {formData.content_type === 'url' && 'Destination URL *'}
