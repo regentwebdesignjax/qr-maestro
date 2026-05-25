@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Globe, ChevronDown, Building2 } from 'lucide-react';
+import React from 'react';
+import { Phone, Mail, MapPin, Clock, Globe, Building2 } from 'lucide-react';
 
 const formatPhone = (phone) => {
   const digits = phone.replace(/\D/g, '');
@@ -18,8 +18,6 @@ const convertTo12Hour = (time24) => {
 };
 
 export default function BusinessPageLanding({ data }) {
-  const [expandedDay, setExpandedDay] = useState(null);
-
   // Parse business page data - handle both preview (already parsed) and redirect (needs parsing)
   const pageData = data.business_name ? data : (typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {});
 
@@ -135,19 +133,14 @@ export default function BusinessPageLanding({ data }) {
             <div className="px-4 pb-3">
               <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
                 {pageData.schedule.map((day, idx) => (
-                  <div key={idx}>
-                    <button
-                      onClick={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                    >
-                      <div className="flex items-center gap-2 text-left flex-1">
-                        <span className="font-medium text-gray-900 text-xs w-16">{day.day}</span>
-                        <span className={`text-xs ${day.closed ? 'text-gray-500' : 'text-gray-600'}`}>
-                          {day.closed ? 'Closed' : `${convertTo12Hour(day.open)} – ${convertTo12Hour(day.close)}`}
-                        </span>
-                      </div>
-                      <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${expandedDay === idx ? 'rotate-180' : ''}`} />
-                    </button>
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 last:border-b-0"
+                  >
+                    <span className="font-medium text-gray-900 text-xs w-16">{day.day}</span>
+                    <span className={`text-xs ${day.closed ? 'text-gray-500' : 'text-gray-600'}`}>
+                      {day.closed ? 'Closed' : `${convertTo12Hour(day.open)} – ${convertTo12Hour(day.close)}`}
+                    </span>
                   </div>
                 ))}
               </div>
