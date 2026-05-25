@@ -17,7 +17,7 @@ const convertTo12Hour = (time24) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
-export default function BusinessPageLanding({ data }) {
+export default function BusinessPageLanding({ data, fullPage = true }) {
   // Parse business page data - handle both preview (already parsed) and redirect (needs parsing)
   const pageData = data.business_name ? data : (typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {});
 
@@ -34,7 +34,7 @@ export default function BusinessPageLanding({ data }) {
   const buttonColor = pageData.button_color || '#2f3f7f';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className={`${fullPage ? 'min-h-screen' : ''} bg-gradient-to-b from-gray-50 to-white`}>
       {/* Brand Header Image */}
       <div className="relative w-full h-64 sm:h-80 bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
         {pageData.brand_image ? (

@@ -13,7 +13,7 @@ export default function BusinessPagePreview({ data = {} }) {
 
         {/* Card content */}
         <div className="overflow-y-auto max-h-[520px] bg-gray-50">
-          <BusinessPageLanding data={data} />
+          <BusinessPageLanding data={data} fullPage={false} />
         </div>
 
         {/* Home indicator */}

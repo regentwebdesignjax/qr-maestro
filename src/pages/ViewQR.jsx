@@ -117,7 +117,18 @@ function parseContentFields(contentType, content) {
       if (d.address) fields.push({ label: 'Address', value: d.address });
       if (d.button_title) fields.push({ label: 'Button', value: d.button_title });
       if (d.schedule && Array.isArray(d.schedule)) {
-        fields.push({ label: 'Hours', value: `${d.schedule.length} days configured` });
+        const hoursText = d.schedule.map(day => {
+          if (day.closed) return `${day.day} Closed`;
+          const convertTo12Hour = (time24) => {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+          };
+          return `${day.day} ${convertTo12Hour(day.open)}–${convertTo12Hour(day.close)}`;
+        }).join(' • ');
+        fields.push({ label: 'Hours', value: hoursText });
       }
       return fields.length > 0 ? fields : null;
     } catch { return null; }
