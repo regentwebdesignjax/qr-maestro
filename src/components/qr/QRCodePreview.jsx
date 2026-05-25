@@ -300,8 +300,18 @@ export default function QRCodePreview({ qrData, currentStep, customDomainBase })
       <div>
         <PreviewToggle active={businessPageTab} onChange={setBusinessPageTab} />
         {businessPageTab === 'landing' ? (
-          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
-            <BusinessPageLanding data={{ ...businessPageData, content_type: 'business_page' }} />
+          <div className="flex justify-center">
+            {/* Phone frame */}
+            <div className="w-[280px] rounded-[2rem] border-[6px] border-gray-800 shadow-2xl overflow-hidden bg-white">
+              {/* Status bar */}
+              <div className="bg-gray-800 h-6 flex items-center justify-center">
+                <div className="w-16 h-1.5 rounded-full bg-gray-600"></div>
+              </div>
+              {/* Business Page content */}
+              <div className="overflow-y-auto max-h-[520px]">
+                <BusinessPageLanding data={{ ...businessPageData, content_type: 'business_page' }} />
+              </div>
+            </div>
           </div>
         ) : (
           <QRCanvasView qrData={effectiveQrData} customDomainBase={customDomainBase} />
