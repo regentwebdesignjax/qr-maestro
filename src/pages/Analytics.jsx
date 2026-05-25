@@ -337,9 +337,8 @@ export default function Analytics() {
           <ScansOverTimeChart scans={filteredScans} dateRange={{ from: dateRange.from, to: dateRange.to || dateRange.from }} />
         </div>
 
-        {/* Scans by Devices Used + Scans by Time of Day — side by side on desktop */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {/* Scans by Devices Used */}
+        {/* Scans by Devices Used */}
+        <div className="mb-6 max-w-md">
           <Card className="border-0 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -375,8 +374,10 @@ export default function Analytics() {
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Scans by Time of Day */}
+        {/* Scans by Time of Day — full width */}
+        <div className="mb-6">
           <TimeOfDayHeatmap scans={filteredScans} />
         </div>
 
