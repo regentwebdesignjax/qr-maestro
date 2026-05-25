@@ -79,7 +79,7 @@ export default function TimeOfDayHeatmap({ scans }) {
       <CardContent>
         <div className="flex gap-4 w-full">
           {/* Hours labels (left side) */}
-          <div className="flex flex-col justify-between flex-shrink-0" style={{ width: '45px', height: '360px' }}>
+          <div className="flex flex-col justify-between flex-shrink-0" style={{ width: '45px', height: '480px' }}>
             {invertedHours.map(h => (
               <div key={h} className="text-xs text-muted-foreground text-right h-4 leading-4">
                 {formatHour(h)}
@@ -121,7 +121,7 @@ export default function TimeOfDayHeatmap({ scans }) {
               className="rounded-sm"
               style={{
                 width: '18px',
-                height: '360px',
+                height: '480px',
                 background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
               }}
             />
