@@ -12,6 +12,7 @@ import { base44 } from '@/api/base44Client';
 import BusinessCardForm from './BusinessCardForm';
 import LinkpagesForm from './LinkpagesForm';
 import BusinessPageForm from './BusinessPageForm';
+import MapLocationForm from './MapLocationForm';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FONT_OPTIONS } from './TicketCouponDisplay';
@@ -729,44 +730,15 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               )}
 
               {formData.content_type === 'map_location' && (
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs text-gray-500">Address or Business Name *</Label>
-                    <Input placeholder="123 Main St, City, State" value={mapLocationData.address}
-                      onChange={(e) => {
-                        const next = { ...mapLocationData, address: e.target.value };
-                        setMapLocationData(next);
-                        const c = generateMapLocationContent(next);
-                        handleChange('content', c);
-                        triggerPreview({ content: c });
-                      }} />
-                    <p className="text-xs text-gray-400 mt-1">Google Maps will open to this location when scanned</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-gray-500">Latitude <span className="text-gray-400">(Optional)</span></Label>
-                      <Input placeholder="40.7128" type="number" step="any" value={mapLocationData.latitude}
-                        onChange={(e) => {
-                          const next = { ...mapLocationData, latitude: e.target.value };
-                          setMapLocationData(next);
-                          const c = generateMapLocationContent(next);
-                          handleChange('content', c);
-                          triggerPreview({ content: c });
-                        }} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Longitude <span className="text-gray-400">(Optional)</span></Label>
-                      <Input placeholder="-74.0060" type="number" step="any" value={mapLocationData.longitude}
-                        onChange={(e) => {
-                          const next = { ...mapLocationData, longitude: e.target.value };
-                          setMapLocationData(next);
-                          const c = generateMapLocationContent(next);
-                          handleChange('content', c);
-                          triggerPreview({ content: c });
-                        }} />
-                    </div>
-                  </div>
-                </div>
+                <MapLocationForm
+                  data={mapLocationData}
+                  onChange={(updated) => {
+                    setMapLocationData(updated);
+                    const c = generateMapLocationContent(updated);
+                    handleChange('content', c);
+                    triggerPreview({ content: c });
+                  }}
+                />
               )}
 
               {formData.content_type === 'business_page' && (
