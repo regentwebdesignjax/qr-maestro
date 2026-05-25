@@ -180,10 +180,6 @@ export default function BusinessPageLanding({ data }) {
             </div>
           )}
 
-          {/* Footer */}
-          <div className="text-center text-xs text-gray-500 py-3">
-            Scanned via QR Code
-          </div>
         </div>
 
         {/* Home indicator */}
