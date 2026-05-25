@@ -11,6 +11,7 @@ import QRCodePreview from '../components/qr/QRCodePreview';
 
 const CONTENT_TYPE_LABELS = {
   business_card: 'Business Card',
+  business_page: 'Business Page',
   linkpages: 'Linkpage',
   vcard: 'vCard Contact',
   url: 'Website',
@@ -96,6 +97,29 @@ function parseContentFields(contentType, content) {
       const slug = d.custom_slug || 'linkpage';
       const url = `${window.location.origin}/linkpage/${slug}`;
       return [{ label: 'Linkpage URL', value: url, isLink: true }];
+    } catch { return null; }
+  }
+
+  if (contentType === 'business_page') {
+    try {
+      const d = JSON.parse(content);
+      const fields = [];
+      if (d.business_name) fields.push({ label: 'Business', value: d.business_name });
+      if (d.headline) fields.push({ label: 'Headline', value: d.headline });
+      if (d.contact_name) {
+        const contact = d.contact_title
+          ? `${d.contact_name} (${d.contact_title})`
+          : d.contact_name;
+        fields.push({ label: 'Contact', value: contact });
+      }
+      if (d.phone) fields.push({ label: 'Phone', value: d.phone });
+      if (d.email) fields.push({ label: 'Email', value: d.email });
+      if (d.address) fields.push({ label: 'Address', value: d.address });
+      if (d.button_title) fields.push({ label: 'Button', value: d.button_title });
+      if (d.schedule && Array.isArray(d.schedule)) {
+        fields.push({ label: 'Hours', value: `${d.schedule.length} days configured` });
+      }
+      return fields.length > 0 ? fields : null;
     } catch { return null; }
   }
 
