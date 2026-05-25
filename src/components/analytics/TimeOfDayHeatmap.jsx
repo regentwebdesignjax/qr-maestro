@@ -1,81 +1,136 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getHours, getDay } from 'date-fns';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 function formatHour(h) {
-  if (h === 0) return '12a';
-  if (h === 12) return '12p';
-  return h < 12 ? `${h}a` : `${h - 12}p`;
+  if (h === 0) return '12am';
+  if (h === 12) return '12pm';
+  return h < 12 ? `${h}am` : `${h - 12}pm`;
+}
+
+function getHeatmapColor(intensity) {
+  if (intensity === 0) {
+    return 'rgba(249, 250, 251, 1)'; // Light gray
+  }
+
+  // Interpolate from light red to deep crimson
+  const startR = 0.95, startG = 0.90, startB = 0.88;
+  const endR = 0.733, endG = 0.247, endB = 0.153;
+
+  const r = startR + (endR - startR) * intensity;
+  const g = startG + (endG - startG) * intensity;
+  const b = startB + (endB - startB) * intensity;
+
+  return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 1)`;
 }
 
 export default function TimeOfDayHeatmap({ scans }) {
-  // Build a 7x24 grid: grid[day][hour] = count
-  const grid = Array.from({ length: 7 }, () => Array(24).fill(0));
+  // Build a 7x24 grid: grid[dayOfWeek][hour] = count
+  // dayOfWeek: 0=Mon, 1=Tue, ..., 6=Sun
+  const grid = useMemo(() => {
+    const heatmap = Array.from({ length: 7 }, () => Array(24).fill(0));
 
-  scans.forEach(scan => {
-    const raw = scan.created_date.endsWith('Z') ? scan.created_date : scan.created_date + 'Z';
-    const date = new Date(raw);
-    const day = getDay(date);   // 0 = Sun, local time
-    const hour = getHours(date); // local hour
-    grid[day][hour]++;
-  });
+    scans.forEach(scan => {
+      if (!scan.created_date) return;
 
-  const maxVal = Math.max(...grid.flat(), 1);
+      const raw = scan.created_date.endsWith('Z') ? scan.created_date : scan.created_date + 'Z';
+      const date = new Date(raw);
 
-  const getColor = (count) => {
-    if (count === 0) return 'bg-gray-100';
-    const intensity = count / maxVal;
-    if (intensity < 0.2) return 'bg-blue-100';
-    if (intensity < 0.4) return 'bg-blue-200';
-    if (intensity < 0.6) return 'bg-blue-400';
-    if (intensity < 0.8) return 'bg-blue-500';
-    return 'bg-blue-700';
-  };
+      if (isNaN(date.getTime())) return;
+
+      const dayOfWeek = getDay(date);
+      const hour = getHours(date);
+
+      // Convert Sunday (0) to Saturday (6) to Monday (0) to Sunday (6)
+      const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+      heatmap[adjustedDay][hour]++;
+    });
+
+    return heatmap;
+  }, [scans]);
+
+  const maxVal = useMemo(() => Math.max(...grid.flat(), 1), [grid]);
+
+  // Invert hours for display: 11pm at top, 12am at bottom
+  const invertedHours = [...HOURS].reverse();
+
+  if (scans.length === 0) {
+    return (
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold">Scans by Time of Day</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground italic">No scan data available yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="border-0 shadow-sm h-full">
+    <Card className="border-0 shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">Scans by Time of Day</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <div className="min-w-[600px]">
-            {/* Hour labels */}
-            <div className="flex ml-10 mb-1">
-              {HOURS.map(h => (
-                <div key={h} className="flex-1 text-center text-[10px] text-gray-400 font-medium">
-                  {h % 3 === 0 ? formatHour(h) : ''}
+        <div className="flex gap-6">
+          {/* Main heatmap area */}
+          <div className="flex-1">
+            {/* Hour labels (left side, vertical) */}
+            <div className="flex flex-col justify-between mb-2" style={{ height: '432px' }}>
+              {invertedHours.map(h => (
+                <div key={h} className="text-xs text-muted-foreground text-right pr-2 h-4 leading-4">
+                  {formatHour(h)}
                 </div>
               ))}
             </div>
 
-            {/* Grid rows */}
-            {DAYS.map((day, dayIdx) => (
-              <div key={day} className="flex items-center mb-0.5">
-                <div className="w-10 text-xs text-gray-500 font-medium shrink-0">{day}</div>
-                {HOURS.map(hour => {
-                  const count = grid[dayIdx][hour];
-                  return (
-                    <div
-                      key={hour}
-                      className={`flex-1 aspect-square rounded-sm mx-px ${getColor(count)} transition-colors`}
-                      title={`${day} ${formatHour(hour)}: ${count} scan${count !== 1 ? 's' : ''}`}
-                    />
-                  );
-                })}
-              </div>
-            ))}
+            {/* Heatmap grid */}
+            <div className="flex gap-1">
+              {DAYS_OF_WEEK.map((day, dayIdx) => (
+                <div key={day} className="flex flex-col gap-0.5">
+                  {/* Grid cells for this day (inverted: top to bottom) */}
+                  {invertedHours.map(h => {
+                    const count = grid[dayIdx][h];
+                    const intensity = count / maxVal;
 
-            {/* Legend */}
-            <div className="flex items-center gap-2 mt-3 justify-end">
-              <span className="text-xs text-gray-400">Less</span>
-              {['bg-gray-100', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-500', 'bg-blue-700'].map(c => (
-                <div key={c} className={`w-4 h-4 rounded-sm ${c}`} />
+                    return (
+                      <div
+                        key={`${day}-${h}`}
+                        className="w-20 h-4 rounded-sm transition-colors"
+                        style={{ backgroundColor: getHeatmapColor(intensity) }}
+                        title={`${day} ${formatHour(h)}: ${count} scan${count !== 1 ? 's' : ''}`}
+                      />
+                    );
+                  })}
+
+                  {/* Day label below grid */}
+                  <div className="text-xs font-medium text-muted-foreground text-center mt-1">
+                    {day}
+                  </div>
+                </div>
               ))}
-              <span className="text-xs text-gray-400">More</span>
+            </div>
+          </div>
+
+          {/* Intensity gradient scale */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="text-xs text-muted-foreground font-medium">Scans</div>
+            <div
+              className="rounded-sm"
+              style={{
+                width: '20px',
+                height: '432px',
+                background: 'linear-gradient(to bottom, rgba(187, 63, 39, 1), rgba(249, 250, 251, 1))',
+              }}
+            />
+            <div className="flex flex-col gap-1 text-xs text-muted-foreground mt-1">
+              <div className="text-right">{maxVal}</div>
+              <div className="text-right">0</div>
             </div>
           </div>
         </div>
