@@ -17,7 +17,7 @@ const convertTo12Hour = (time24) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
-export default function BusinessPageLanding({ data, fullPage = true }) {
+export default function BusinessPageLanding({ data }) {
   // Parse business page data - handle both preview (already parsed) and redirect (needs parsing)
   const pageData = data.business_name ? data : (typeof data.content === 'string' ? JSON.parse(data.content) : data.content || {});
 
@@ -34,9 +34,9 @@ export default function BusinessPageLanding({ data, fullPage = true }) {
   const buttonColor = pageData.button_color || '#2f3f7f';
 
   return (
-    <div className={`${fullPage ? 'min-h-screen' : ''} bg-gradient-to-b from-gray-50 to-white`}>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Brand Header Image */}
-      <div className={`relative w-full ${fullPage ? 'h-64 sm:h-80' : 'h-48'} bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden`}>
+      <div className="relative w-full h-64 sm:h-80 bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
         {pageData.brand_image ? (
           <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
         ) : (
@@ -57,12 +57,12 @@ export default function BusinessPageLanding({ data, fullPage = true }) {
       </div>
 
       {/* Main Content */}
-      <div className={`max-w-2xl mx-auto px-4 sm:px-6 ${fullPage ? 'pt-16 sm:pt-20' : 'pt-12'} pb-12`}>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-12">
         {/* Identity block */}
         <div className="text-center mb-8">
-          <h1 className={`${fullPage ? 'text-3xl sm:text-4xl' : 'text-2xl'} font-bold text-gray-900 mb-2`}>{pageData.business_name}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{pageData.business_name}</h1>
           {pageData.headline && (
-            <p className={`${fullPage ? 'text-lg' : 'text-base'} text-gray-600`}>{pageData.headline}</p>
+            <p className="text-lg text-gray-600">{pageData.headline}</p>
           )}
         </div>
 
