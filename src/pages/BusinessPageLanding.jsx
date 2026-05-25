@@ -25,7 +25,7 @@ export default function BusinessPageLanding({ data }) {
 
   // Utility function to get business day status
   const getTodayHours = () => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = days[new Date().getDay()];
     return pageData.schedule?.find(s => s.day === today);
   };
@@ -59,7 +59,7 @@ export default function BusinessPageLanding({ data }) {
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
               <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
                 {pageData.logo ? (
-                  <img src={pageData.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                  <img src={pageData.logo} alt="Logo" className="w-full h-full object-cover" />
                 ) : (
                   <Building2 className="w-10 h-10 text-gray-400" />
                 )}
@@ -88,7 +88,12 @@ export default function BusinessPageLanding({ data }) {
           <div className="px-4 pb-3 space-y-1.5">
             {pageData.contact_name && (
               <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
-                <span className="text-xs font-medium text-gray-700">{pageData.contact_name}</span>
+                <div>
+                  <span className="text-xs font-medium text-gray-700 block">{pageData.contact_name}</span>
+                  {pageData.contact_title && (
+                    <span className="text-xs text-gray-500">{pageData.contact_title}</span>
+                  )}
+                </div>
               </div>
             )}
 

@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Upload, X, Clock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-function ImageUploader({ label, hint, value, onChange, id }) {
+function ImageUploader({ label, hint, value, onChange, id, previewSize = 'w-full h-32' }) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e) => {
@@ -31,7 +31,7 @@ function ImageUploader({ label, hint, value, onChange, id }) {
       <Label className="text-xs text-gray-500">{label}</Label>
       {value ? (
         <div className="mt-1 space-y-2">
-          <img src={value} alt={label} className="w-full h-32 object-cover rounded border" />
+          <img src={value} alt={label} className={`${previewSize} object-cover rounded border`} />
           <Button
             type="button"
             variant="outline"
@@ -124,6 +124,15 @@ export default function BusinessPageForm({ data, onChange }) {
             placeholder="Owner/Manager Name"
             value={data.contact_name || ''}
             onChange={(e) => handleChange('contact_name', e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs text-gray-500">Title</Label>
+          <Input
+            placeholder="e.g., Owner, Manager, Director"
+            value={data.contact_title || ''}
+            onChange={(e) => handleChange('contact_title', e.target.value)}
           />
         </div>
 
@@ -291,6 +300,7 @@ export default function BusinessPageForm({ data, onChange }) {
           value={data.logo}
           onChange={(url) => handleChange('logo', url)}
           id="logo"
+          previewSize="w-20 h-20"
         />
       </div>
     </div>
