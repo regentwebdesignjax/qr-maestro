@@ -35,15 +35,17 @@ export default function BusinessPageLanding({ data }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Brand Header Image */}
-      <div className="relative w-full h-64 sm:h-80 bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
-        {pageData.brand_image ? (
-          <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-white/30">Brand Image</span>
-          </div>
-        )}
+      {/* Banner + Logo overlap */}
+      <div className="relative w-full">
+        <div className="w-full aspect-[3/1] bg-gradient-to-br from-gray-700 to-gray-900 overflow-hidden">
+          {pageData.brand_image ? (
+            <img src={pageData.brand_image} alt="Brand" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-white/30">Brand Image</span>
+            </div>
+          )}
+        </div>
         {/* Logo overlapping banner */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200 flex items-center justify-center">
