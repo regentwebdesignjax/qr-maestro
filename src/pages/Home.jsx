@@ -229,43 +229,43 @@ export default function Home() {
 
             {/* Right: Phone Mockup */}
             <div className="flex items-center justify-center order-1 md:order-2">
-              <div className="relative w-48 sm:w-56 md:w-64 lg:w-72">
+              <div className="relative w-64 md:w-72">
                 {/* Phone frame */}
                 <div className="rounded-[2.5rem] border-4 border-gray-800 shadow-2xl overflow-hidden bg-white">
                   <div className="bg-gray-800 h-6 flex items-center justify-center">
                     <div className="w-16 h-1.5 rounded-full bg-gray-600"></div>
                   </div>
                   {/* Card preview */}
-                  <div className="bg-gradient-to-b from-[#142024] to-[#1e3040] px-5 pt-8 pb-6 text-sm">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 mx-auto mb-3 flex items-center justify-center border-2 border-white/30">
-                      <span className="text-xl sm:text-2xl">👤</span>
+                  <div className="bg-gradient-to-b from-[#142024] to-[#1e3040] px-5 pt-8 pb-6">
+                    <div className="w-16 h-16 rounded-full bg-white/20 mx-auto mb-3 flex items-center justify-center border-2 border-white/30">
+                      <span className="text-2xl">👤</span>
                     </div>
-                    <p className="text-white font-bold text-center text-xs sm:text-sm">Alex Tanaka</p>
-                    <p className="text-white/60 text-[10px] sm:text-xs text-center mt-0.5">VP of Sales · Acme Corp</p>
-                    <div className="mt-3 sm:mt-4 flex gap-1.5 sm:gap-2 justify-center">
-                      <div className="bg-primary text-white text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 font-medium">Save Contact</div>
-                      <div className="bg-white/10 text-white text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 font-medium">LinkedIn</div>
+                    <p className="text-white font-bold text-center text-sm">Alex Tanaka</p>
+                    <p className="text-white/60 text-xs text-center mt-0.5">VP of Sales · Acme Corp</p>
+                    <div className="mt-4 flex gap-2 justify-center">
+                      <div className="bg-primary text-white text-xs rounded-lg px-3 py-1.5 font-medium">Save Contact</div>
+                      <div className="bg-white/10 text-white text-xs rounded-lg px-3 py-1.5 font-medium">LinkedIn</div>
                     </div>
-                    <div className="mt-3 sm:mt-4 bg-white/10 rounded-xl p-2 sm:p-3 space-y-1.5 sm:space-y-2">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary/70 shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs truncate">alex@acmecorp.com</p>
+                    <div className="mt-4 bg-white/10 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-primary/70"></div>
+                        <p className="text-white/70 text-xs">alex@acmecorp.com</p>
                       </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary/70 shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs truncate">+1 (555) 123-4567</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-primary/70"></div>
+                        <p className="text-white/70 text-xs">+1 (555) 123-4567</p>
                       </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-primary/70 shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs truncate">acmecorp.com</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-primary/70"></div>
+                        <p className="text-white/70 text-xs">acmecorp.com</p>
                       </div>
                     </div>
-                    <div className="mt-2 sm:mt-3 bg-white/5 border border-white/10 rounded-xl p-2 sm:p-3">
-                      <p className="text-white/50 text-[10px] sm:text-xs text-center mb-1.5 sm:mb-2">Exchange Info</p>
-                      <div className="space-y-1">
-                        <div className="bg-white/10 h-5 sm:h-6 rounded-md"></div>
-                        <div className="bg-white/10 h-5 sm:h-6 rounded-md"></div>
-                        <div className="bg-primary h-5 sm:h-6 rounded-md"></div>
+                    <div className="mt-3 bg-white/5 border border-white/10 rounded-xl p-3">
+                      <p className="text-white/50 text-xs text-center mb-2">Exchange Info</p>
+                      <div className="space-y-1.5">
+                        <div className="bg-white/10 h-6 rounded-md"></div>
+                        <div className="bg-white/10 h-6 rounded-md"></div>
+                        <div className="bg-primary h-6 rounded-md"></div>
                       </div>
                     </div>
                   </div>
