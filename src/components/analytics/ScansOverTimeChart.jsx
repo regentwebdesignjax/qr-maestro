@@ -11,68 +11,89 @@ export default function ScansOverTimeChart({ scans, dateRange }) {
   const chartData = useMemo(() => {
     const daysDiff = differenceInDays(to, from);
 
-    // Group by month if range > 90 days, by week if > 30 days, else by day
-    const getGroupKey = (date) => {
-      if (daysDiff > 90) return format(date, 'MMM yyyy');
-      if (daysDiff > 30) return format(date, 'MMM d'); // week start label via grouping below
-      return format(date, 'MMM d');
-    };
+    // Bucketing strategy:
+    // ≤ 60 days  → daily   (every day in range shown, even zeros)
+    // 61–90 days → weekly  (Monday-anchored week buckets)
+    // > 90 days  → monthly
 
-    const grouped = {};
+    if (daysDiff > 90) {
+      // Monthly buckets
+      const grouped = {};
+      scans.forEach(s => {
+        if (!s.created_date) return;
+        const raw = s.created_date.endsWith('Z') ? s.created_date : s.created_date + 'Z';
+        const d = new Date(raw);
+        if (isNaN(d.getTime()) || d < from || d > to) return;
+        const key = format(d, 'yyyy-MM');
+        grouped[key] = (grouped[key] || 0) + 1;
+      });
 
-    scans.forEach(s => {
-      if (!s.created_date) return;
-      const raw = s.created_date.endsWith('Z') ? s.created_date : s.created_date + 'Z';
-      const d = new Date(raw);
-      if (isNaN(d.getTime())) return;
-      if (d < from || d > to) return;
+      // Fill all months in range with 0 if missing
+      const cur = new Date(from.getFullYear(), from.getMonth(), 1);
+      const end = new Date(to.getFullYear(), to.getMonth(), 1);
+      while (cur <= end) {
+        const key = format(cur, 'yyyy-MM');
+        if (!(key in grouped)) grouped[key] = 0;
+        cur.setMonth(cur.getMonth() + 1);
+      }
 
-      let key;
-      if (daysDiff > 90) {
-        key = format(d, 'yyyy-MM'); // sort key
-      } else if (daysDiff > 30) {
-        // group by week: find week start (Monday)
-        const day = d.getDay(); // 0=Sun
-        const diff = (day === 0 ? -6 : 1 - day);
+      return Object.entries(grouped)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, count]) => {
+          const [y, m] = key.split('-');
+          return { date: format(new Date(Number(y), Number(m) - 1, 1), 'MMM yyyy'), scans: count };
+        });
+
+    } else if (daysDiff > 60) {
+      // Weekly buckets (Monday-anchored)
+      const grouped = {};
+      scans.forEach(s => {
+        if (!s.created_date) return;
+        const raw = s.created_date.endsWith('Z') ? s.created_date : s.created_date + 'Z';
+        const d = new Date(raw);
+        if (isNaN(d.getTime()) || d < from || d > to) return;
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
         const weekStart = new Date(d);
         weekStart.setDate(d.getDate() + diff);
-        key = format(weekStart, 'yyyy-MM-dd');
-      } else {
-        key = format(d, 'yyyy-MM-dd');
-      }
-
-      grouped[key] = (grouped[key] || 0) + 1;
-    });
-
-    // If no scans at all, build a minimal skeleton from the range
-    if (Object.keys(grouped).length === 0) {
-      if (daysDiff > 90) {
-        // Show month buckets for the visible range
-        const cur = new Date(from.getFullYear(), from.getMonth(), 1);
-        const end = new Date(to.getFullYear(), to.getMonth(), 1);
-        while (cur <= end) {
-          grouped[format(cur, 'yyyy-MM')] = 0;
-          cur.setMonth(cur.getMonth() + 1);
-        }
-      }
-    }
-
-    return Object.entries(grouped)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, count]) => {
-        let label;
-        if (daysDiff > 90) {
-          // key = 'yyyy-MM'
-          const [y, m] = key.split('-');
-          label = format(new Date(Number(y), Number(m) - 1, 1), 'MMM yyyy');
-        } else if (daysDiff > 30) {
-          // key = 'yyyy-MM-dd' (week start)
-          label = format(new Date(key + 'T00:00:00'), 'MMM d');
-        } else {
-          label = format(new Date(key + 'T00:00:00'), daysDiff <= 7 ? 'EEE MMM d' : 'MMM d');
-        }
-        return { date: label, scans: count };
+        const key = format(weekStart, 'yyyy-MM-dd');
+        grouped[key] = (grouped[key] || 0) + 1;
       });
+
+      return Object.entries(grouped)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, count]) => ({
+          date: format(new Date(key + 'T00:00:00'), 'MMM d'),
+          scans: count,
+        }));
+
+    } else {
+      // Daily buckets — show EVERY day in range, including zeros
+      const grouped = {};
+      // Pre-fill all days with 0
+      const cur = new Date(from);
+      while (cur <= to) {
+        grouped[format(cur, 'yyyy-MM-dd')] = 0;
+        cur.setDate(cur.getDate() + 1);
+      }
+      // Count scans per day
+      scans.forEach(s => {
+        if (!s.created_date) return;
+        const raw = s.created_date.endsWith('Z') ? s.created_date : s.created_date + 'Z';
+        const d = new Date(raw);
+        if (isNaN(d.getTime()) || d < from || d > to) return;
+        const key = format(d, 'yyyy-MM-dd');
+        if (key in grouped) grouped[key] += 1;
+      });
+
+      const labelFmt = daysDiff <= 7 ? 'EEE MMM d' : 'MMM d';
+      return Object.entries(grouped)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, count]) => ({
+          date: format(new Date(key + 'T00:00:00'), labelFmt),
+          scans: count,
+        }));
+    }
   }, [scans, from, to]);
 
   return (
