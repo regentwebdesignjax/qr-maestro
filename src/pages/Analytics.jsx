@@ -29,7 +29,7 @@ const PRESETS = [
   { value: 'custom', label: 'Custom Date Range', pro: true },
 ];
 
-function getDateRange(preset) {
+function getDateRange(preset, qrCode) {
   const now = new Date();
   switch (preset) {
     case 'today': return { from: startOfToday(), to: endOfToday() };
@@ -41,7 +41,10 @@ function getDateRange(preset) {
     case '90d': return { from: subDays(now, 89), to: now };
     case '12mo': return { from: subMonths(now, 12), to: now };
     case '24mo': return { from: subMonths(now, 24), to: now };
-    case 'lifetime': return { from: new Date('2000-01-01'), to: now };
+    case 'lifetime': {
+      const createdAt = qrCode?.created_date ? new Date(qrCode.created_date) : subMonths(now, 1);
+      return { from: startOfDay(createdAt), to: now };
+    }
     default: return { from: subDays(now, 29), to: now };
   }
 }
@@ -117,8 +120,8 @@ export default function Analytics() {
 
   const dateRange = useMemo(() => {
     if (preset === 'custom' && customRange?.from) return customRange;
-    return getDateRange(preset);
-  }, [preset, customRange]);
+    return getDateRange(preset, qrCode);
+  }, [preset, customRange, qrCode]);
 
   const filteredScans = useMemo(() => {
     // new Date(utcString) converts to local time automatically.
