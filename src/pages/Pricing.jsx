@@ -342,19 +342,23 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Linkpages (Static & Dynamic QRs)</span>
+                  <span className="font-semibold">Linkpages</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited Static QR Codes</span>
+                  <span className="font-semibold">Business Pages</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited Dynamic QR Codes</span>
+                  <span className="font-semibold">Unlimited Static & Dynamic QR Codes</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Real-time Scan Analytics</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">HubSpot CRM Integration</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
