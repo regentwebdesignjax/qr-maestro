@@ -113,7 +113,7 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   // ── Fetch logo once (used in header + footer) ─────────────────────
   let logoBase64 = null;
   try {
-    const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png';
+    const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/c7663cf3b_qr-sensei-logo-white-red.png';
     const logoRes = await fetch(logoUrl);
     const logoBuffer = await logoRes.arrayBuffer();
     const logoBytes = new Uint8Array(logoBuffer);
@@ -126,12 +126,7 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
 
   // Logo — left side
   if (logoBase64) {
-    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 8, 52, 20);
-  } else {
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...red);
-    doc.text('QR SENSEI', margin, 22);
+    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 6, 70, 26);
   }
 
   // "ANALYTICS REPORT" — right side, dark bold uppercase
