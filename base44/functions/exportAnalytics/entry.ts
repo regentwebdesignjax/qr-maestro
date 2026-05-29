@@ -153,28 +153,6 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
 
   // ── QR code name + date range ─────────────────────────────────────
   doc.setTextColor(...dark);
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text(qrName || 'QR Code Report', margin, y);
-  y += 6;
-
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...gray);
-  doc.text(`Period: ${dateLabel}`, margin, y);
-  y += 9;
-
-  // Divider
-  doc.setDrawColor(...red);
-  doc.setLineWidth(0.6);
-  doc.line(margin, y, margin + 30, y);
-  doc.setDrawColor(220, 215, 210);
-  doc.setLineWidth(0.3);
-  doc.line(margin + 30, y, W - margin, y);
-  y += 9;
-
-  // ── QR code name + date range ─────────────────────────────────────
-  doc.setTextColor(...dark);
   doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
   doc.text(qrName || 'QR Code Report', margin, y);
@@ -187,9 +165,12 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   y += 8;
 
   // ── Divider ───────────────────────────────────────────────────────
+  doc.setDrawColor(...red);
+  doc.setLineWidth(0.6);
+  doc.line(margin, y, margin + 30, y);
   doc.setDrawColor(230, 225, 220);
   doc.setLineWidth(0.3);
-  doc.line(margin, y, W - margin, y);
+  doc.line(margin + 30, y, W - margin, y);
   y += 8;
 
   // ── Overview cards ────────────────────────────────────────────────
