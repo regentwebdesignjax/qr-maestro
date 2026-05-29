@@ -98,7 +98,7 @@ function buildCSV(scans) {
   return [headers.join(','), ...rows].join('\n');
 }
 
-function buildPDF(qrName, dateLabel, scans, stats) {
+async function buildPDF(qrName, dateLabel, scans, stats) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210;
   const margin = 18;
@@ -108,34 +108,70 @@ function buildPDF(qrName, dateLabel, scans, stats) {
   // Brand colors
   const red = [187, 63, 39];
   const dark = [20, 32, 36];
-  const gray = [130, 130, 130];
+  const gray = [110, 120, 125];
+  const lightGray = [180, 185, 188];
 
-  // ── Header ────────────────────────────────────────────────────────
-  // "QR" in brand red, " SENSEI" in dark — mirrors the actual logo typography
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...red);
-  doc.text('QR', margin, 16);
-  const qrTextW = doc.getTextWidth('QR');
-  doc.setTextColor(...dark);
-  doc.text(' SENSEI', margin + qrTextW, 16);
+  // ── Header band ───────────────────────────────────────────────────
+  // Dark branded header background
+  doc.setFillColor(...dark);
+  doc.rect(0, 0, W, 36, 'F');
 
-  doc.setTextColor(...gray);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Analytics Report', margin, 23);
+  // Red accent bar at very top
+  doc.setFillColor(...red);
+  doc.rect(0, 0, W, 3, 'F');
 
+  // Try to embed the QR Sensei logo as an image
+  try {
+    const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/cc5c14df2_qr-sensei-logo.svg';
+    const logoRes = await fetch(logoUrl);
+    const logoBlob = await logoRes.blob();
+    const logoBuffer = await logoBlob.arrayBuffer();
+    const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoBuffer)));
+    const logoDataUrl = `data:image/svg+xml;base64,${logoBase64}`;
+    doc.addImage(logoDataUrl, 'SVG', margin, 8, 48, 18);
+  } catch (_) {
+    // Fallback: text logo if image fails
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...red);
+    doc.text('QR', margin, 20);
+    const qrW = doc.getTextWidth('QR');
+    doc.setTextColor(255, 255, 255);
+    doc.text(' SENSEI', margin + qrW, 20);
+  }
+
+  // "Analytics Report" label — right side of header
   doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 205, 208);
+  doc.text('ANALYTICS REPORT', W - margin, 16, { align: 'right' });
+  doc.setFontSize(7);
+  doc.setTextColor(150, 158, 163);
+  doc.text(`Generated ${new Date().toUTCString()}`, W - margin, 22, { align: 'right' });
+
+  y = 46;
+
+  // ── QR code name + date range ─────────────────────────────────────
+  doc.setTextColor(...dark);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text(qrName || 'QR Code Report', margin, y);
+  y += 6;
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(...gray);
-  doc.text(`Generated: ${new Date().toUTCString()}`, W - margin, 23, { align: 'right' });
+  doc.text(`Period: ${dateLabel}`, margin, y);
+  y += 9;
 
-  // Divider under header
+  // Divider
   doc.setDrawColor(...red);
-  doc.setLineWidth(0.5);
-  doc.line(margin, 28, W - margin, 28);
-  doc.setLineWidth(0.2);
-
-  y = 38;
+  doc.setLineWidth(0.6);
+  doc.line(margin, y, margin + 30, y);
+  doc.setDrawColor(220, 215, 210);
+  doc.setLineWidth(0.3);
+  doc.line(margin + 30, y, W - margin, y);
+  y += 9;
 
   // ── QR code name + date range ─────────────────────────────────────
   doc.setTextColor(...dark);
@@ -404,11 +440,14 @@ function buildPDF(qrName, dateLabel, scans, stats) {
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setDrawColor(230, 225, 220);
-    doc.line(margin, 285, W - margin, 285);
-    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...gray);
-    doc.text('Powered by QR Sensei | qr-sensei.com', margin, 290);
-    doc.text(`Page ${i} of ${pageCount}`, W - margin, 290, { align: 'right' });
+    // Footer background
+    doc.setFillColor(...dark);
+    doc.rect(0, 280, W, 17, 'F');
+    doc.setFillColor(...red);
+    doc.rect(0, 280, W, 1.5, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(160, 168, 172);
+    doc.text('Powered by QR Sensei  |  qr-sensei.com', margin, 288);
+    doc.text(`Page ${i} of ${pageCount}`, W - margin, 288, { align: 'right' });
   }
 
   return doc.output('arraybuffer');
@@ -456,7 +495,7 @@ Deno.serve(async (req) => {
 
     if (format === 'pdf') {
       const stats = computeStats(scans);
-      const pdfBuffer = buildPDF(qrCode.name, date_label || `${start_date} - ${end_date}`, scans, stats);
+      const pdfBuffer = await buildPDF(qrCode.name, date_label || `${start_date} - ${end_date}`, scans, stats);
       return new Response(pdfBuffer, {
         status: 200,
         headers: {
