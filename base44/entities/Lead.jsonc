@@ -22,17 +22,26 @@
       "type": "string",
       "description": "Email provided by the lead"
     },
-    "lead_tag": {
-      "type": "string",
-      "description": "Optional tag (e.g. Employee ID or Region Code) for routing leads after CSV export"
-    },
     "lead_phone": {
       "type": "string",
       "description": "Phone number provided by the lead"
     },
+    "lead_tag": {
+      "type": "string",
+      "description": "Optional tag (e.g. Employee ID or Region Code) for routing leads after CSV export"
+    },
     "notes": {
       "type": "string",
       "description": "Optional notes provided by the lead (e.g. context about how they met or what they're interested in)"
+    },
+    "crm_synced": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this lead has been synced to the user's CRM"
+    },
+    "crm_sync_error": {
+      "type": "string",
+      "description": "Last sync error message, if any"
     }
   },
   "required": [
