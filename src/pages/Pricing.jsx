@@ -214,6 +214,10 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Unlimited Static & Dynamic QRs</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">{totalSeats} Digital Business Cards</span>
                 </li>
                 <li className="flex items-start">
@@ -223,10 +227,6 @@ export default function Pricing() {
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Business Pages</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited Static & Dynamic QRs</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -342,6 +342,10 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">Unlimited Static & Dynamic QRs</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">{totalSeats} Digital Business Cards</span>
                 </li>
                 <li className="flex items-start">
@@ -351,10 +355,6 @@ export default function Pricing() {
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
                   <span className="font-semibold">Business Pages</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited Static & Dynamic QRs</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
