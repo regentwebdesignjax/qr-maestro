@@ -120,15 +120,14 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   doc.setFillColor(...red);
   doc.rect(0, 0, W, 3, 'F');
 
-  // Try to embed the QR Sensei logo as an image
+  // Embed the QR Sensei logo (PNG)
   try {
-    const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/cc5c14df2_qr-sensei-logo.svg';
+    const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png';
     const logoRes = await fetch(logoUrl);
-    const logoBlob = await logoRes.blob();
-    const logoBuffer = await logoBlob.arrayBuffer();
+    const logoBuffer = await logoRes.arrayBuffer();
     const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoBuffer)));
-    const logoDataUrl = `data:image/svg+xml;base64,${logoBase64}`;
-    doc.addImage(logoDataUrl, 'SVG', margin, 8, 48, 18);
+    const logoDataUrl = `data:image/png;base64,${logoBase64}`;
+    doc.addImage(logoDataUrl, 'PNG', margin, 7, 52, 20);
   } catch (_) {
     // Fallback: text logo if image fails
     doc.setFontSize(20);
