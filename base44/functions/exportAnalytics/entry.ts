@@ -109,45 +109,49 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   const red = [187, 63, 39];
   const dark = [20, 32, 36];
   const gray = [110, 120, 125];
-  const lightGray = [180, 185, 188];
 
-  // ── Header band ───────────────────────────────────────────────────
-  // Dark branded header background
-  doc.setFillColor(...dark);
-  doc.rect(0, 0, W, 36, 'F');
-
-  // Red accent bar at very top
-  doc.setFillColor(...red);
-  doc.rect(0, 0, W, 3, 'F');
-
-  // Embed the QR Sensei logo (PNG)
+  // ── Fetch logo once (used in header + footer) ─────────────────────
+  let logoBase64 = null;
   try {
     const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png';
     const logoRes = await fetch(logoUrl);
     const logoBuffer = await logoRes.arrayBuffer();
     const logoBytes = new Uint8Array(logoBuffer);
-    const logoBase64 = btoa(new TextDecoder('iso-8859-1').decode(logoBytes));
-    const logoDataUrl = `data:image/png;base64,${logoBase64}`;
-    doc.addImage(logoDataUrl, 'PNG', margin, 7, 52, 20);
-  } catch (_) {
-    // Fallback: text logo if image fails
-    doc.setFontSize(20);
+    logoBase64 = btoa(new TextDecoder('iso-8859-1').decode(logoBytes));
+  } catch (_) { /* logo unavailable */ }
+
+  // ── Header — white background ──────────────────────────────────────
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, W, 38, 'F');
+
+  // Logo — left side
+  if (logoBase64) {
+    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 8, 52, 20);
+  } else {
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...red);
-    doc.text('QR', margin, 20);
-    const qrW = doc.getTextWidth('QR');
-    doc.setTextColor(255, 255, 255);
-    doc.text(' SENSEI', margin + qrW, 20);
+    doc.text('QR SENSEI', margin, 22);
   }
 
-  // "Analytics Report" label — right side of header
-  doc.setFontSize(8);
+  // "ANALYTICS REPORT" — right side, dark bold uppercase
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...dark);
+  doc.text('ANALYTICS REPORT', W - margin, 17, { align: 'right' });
+
+  // "Generated [Date | Time]" — right side, smaller gray
+  const now = new Date();
+  const genLabel = `Generated ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} | ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(200, 205, 208);
-  doc.text('ANALYTICS REPORT', W - margin, 16, { align: 'right' });
-  doc.setFontSize(7);
-  doc.setTextColor(150, 158, 163);
-  doc.text(`Generated ${new Date().toUTCString()}`, W - margin, 22, { align: 'right' });
+  doc.setTextColor(...gray);
+  doc.text(genLabel, W - margin, 23, { align: 'right' });
+
+  // Thin separator line under header
+  doc.setDrawColor(220, 215, 210);
+  doc.setLineWidth(0.3);
+  doc.line(margin, 35, W - margin, 35);
 
   y = 46;
 
@@ -421,14 +425,19 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    // Footer background
+    // Dark footer band
     doc.setFillColor(...dark);
-    doc.rect(0, 280, W, 17, 'F');
+    doc.rect(0, 277, W, 20, 'F');
+    // Red accent bar at very bottom
     doc.setFillColor(...red);
-    doc.rect(0, 280, W, 1.5, 'F');
-    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(160, 168, 172);
-    doc.text('Powered by QR Sensei  |  qr-sensei.com', margin, 288);
-    doc.text(`Page ${i} of ${pageCount}`, W - margin, 288, { align: 'right' });
+    doc.rect(0, 295, W, 2, 'F');
+    // "Powered by QR Sensei" — left
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(160, 168, 172);
+    doc.text('Powered by QR Sensei', margin, 288);
+    // Small logo icon — right side of footer
+    if (logoBase64) {
+      doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', W - margin - 22, 278, 22, 14);
+    }
   }
 
   return doc.output('arraybuffer');
