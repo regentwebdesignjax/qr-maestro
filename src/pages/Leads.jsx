@@ -214,11 +214,10 @@ export default function Leads() {
 
   const checkHubSpotConnection = useCallback(async () => {
     try {
-      await base44.functions.invoke('syncLeadToCRM', { lead_ids: [] });
-      setHubspotConnected(true);
-    } catch (err) {
-      const msg = err?.response?.data?.error || '';
-      setHubspotConnected(!msg.includes('not connected'));
+      const res = await base44.functions.invoke('checkHubSpotConnection', {});
+      setHubspotConnected(res.data?.connected === true);
+    } catch {
+      setHubspotConnected(false);
     }
   }, []);
 
