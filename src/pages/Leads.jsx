@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle } from 'lucide-react';
+import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
+import HubSpotConnectBanner from '@/components/leads/HubSpotConnectBanner';
+
+const HUBSPOT_CONNECTOR_ID = '6a19b113175aa6149bf214b0';
 
 // Helper function to extract phone from notes field
 function extractPhoneFromNotes(notes) {
@@ -204,13 +207,30 @@ export default function Leads() {
   const [showDedupeModal, setShowDedupeModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [hubspotConnected, setHubspotConnected] = useState(false);
+  const [syncingIds, setSyncingIds] = useState(new Set());
+  const [syncingAll, setSyncingAll] = useState(false);
   const queryClient = useQueryClient();
+
+  const checkHubSpotConnection = useCallback(async () => {
+    try {
+      await base44.functions.invoke('syncLeadToCRM', { lead_ids: [] });
+      setHubspotConnected(true);
+    } catch (err) {
+      const msg = err?.response?.data?.error || '';
+      setHubspotConnected(!msg.includes('not connected'));
+    }
+  }, []);
 
   useEffect(() => {
     base44.auth.me()
-      .then(setUser)
+      .then(u => { setUser(u); })
       .catch(() => base44.auth.redirectToLogin('/Leads'));
   }, []);
+
+  useEffect(() => {
+    if (user) checkHubSpotConnection();
+  }, [user, checkHubSpotConnection]);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads', user?.email],
@@ -235,6 +255,28 @@ export default function Leads() {
     setDeleting(false);
     setShowDedupeModal(false);
     queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
+  };
+
+  const handleSyncLead = async (leadId) => {
+    setSyncingIds(prev => new Set([...prev, leadId]));
+    try {
+      await base44.functions.invoke('syncLeadToCRM', { lead_id: leadId });
+      queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
+    } finally {
+      setSyncingIds(prev => { const n = new Set(prev); n.delete(leadId); return n; });
+    }
+  };
+
+  const handleSyncAll = async () => {
+    const unsynced = leads.filter(l => !l.crm_synced);
+    if (unsynced.length === 0) return;
+    setSyncingAll(true);
+    try {
+      await base44.functions.invoke('syncLeadToCRM', { lead_ids: unsynced.map(l => l.id) });
+      queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
+    } finally {
+      setSyncingAll(false);
+    }
   };
 
   const handleClearAll = async () => {
@@ -294,17 +336,28 @@ export default function Leads() {
       />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
             <p className="text-gray-500 mt-1">Contacts collected via your Digital Business Cards</p>
           </div>
           {leads.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
+              {hubspotConnected && (
+                <Button
+                  variant="outline"
+                  onClick={handleSyncAll}
+                  disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
+                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
+                  {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
+                </Button>
+              )}
               {dupeEmailCount > 0 && (
                 <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
                   <FilterX className="w-4 h-4 mr-2" />
-                  Review Dupes ({dupeEmailCount} email{dupeEmailCount !== 1 ? 's' : ''})
+                  Review Dupes ({dupeEmailCount})
                 </Button>
               )}
               <Button variant="outline" onClick={handleExport}>
@@ -325,6 +378,8 @@ export default function Leads() {
             </div>
           )}
         </div>
+
+        <HubSpotConnectBanner connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
 
         {!hasExported && leads.length > 0 && (
           <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
@@ -364,7 +419,8 @@ export default function Leads() {
                         <th className="pb-3 pr-4 font-medium">Source Card</th>
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
                         <th className="pb-3 pr-4 font-medium">Notes</th>
-                        <th className="pb-3 font-medium">Date</th>
+                        <th className="pb-3 pr-4 font-medium">Date</th>
+                        {hubspotConnected && <th className="pb-3 font-medium">HubSpot</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -372,6 +428,7 @@ export default function Leads() {
                         const phoneFromNotes = extractPhoneFromNotes(lead.notes);
                         const displayPhone = lead.lead_phone || phoneFromNotes;
                         const cleanedNotes = cleanNotes(lead.notes);
+                        const isSyncing = syncingIds.has(lead.id);
                         return (
                         <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
                           <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
@@ -401,10 +458,33 @@ export default function Leads() {
                               <span className="text-xs line-clamp-2" title={cleanedNotes}>{cleanedNotes}</span>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
-                          <td className="py-3 text-gray-400 flex items-center gap-1">
+                          <td className="py-3 pr-4 text-gray-400 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
                           </td>
+                          {hubspotConnected && (
+                            <td className="py-3">
+                              {lead.crm_synced ? (
+                                <span className="flex items-center gap-1 text-xs text-green-600">
+                                  <CheckCircle className="w-3.5 h-3.5" /> Synced
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleSyncLead(lead.id)}
+                                  disabled={isSyncing}
+                                  className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 disabled:opacity-50"
+                                >
+                                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                  {isSyncing ? 'Syncing' : 'Sync'}
+                                </button>
+                              )}
+                              {lead.crm_sync_error && (
+                                <span title={lead.crm_sync_error} className="flex items-center gap-1 text-xs text-red-500 mt-0.5">
+                                  <XCircle className="w-3 h-3" /> Error
+                                </span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                         );
                       })}
@@ -415,24 +495,39 @@ export default function Leads() {
                 {/* Mobile cards */}
                 <div className="md:hidden space-y-3">
                   {leads.map(lead => {
-                    const phoneFromNotes = extractPhoneFromNotes(lead.notes);
-                    const displayPhone = lead.lead_phone || phoneFromNotes;
-                    const cleanedNotes = cleanNotes(lead.notes);
-                    return (
-                    <div key={lead.id} className="rounded-xl border border-border bg-gray-50/50 p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-semibold text-gray-900">{lead.lead_name}</p>
-                          {lead.lead_tag && (
-                            <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded mt-1">
-                              {lead.lead_tag}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-400 shrink-0">
-                          {lead.created_date ? format(new Date(lead.created_date), 'MMM d') : ''}
-                        </p>
-                      </div>
+                  const phoneFromNotes = extractPhoneFromNotes(lead.notes);
+                  const displayPhone = lead.lead_phone || phoneFromNotes;
+                  const cleanedNotes = cleanNotes(lead.notes);
+                  const isSyncing = syncingIds.has(lead.id);
+                  return (
+                  <div key={lead.id} className="rounded-xl border border-border bg-gray-50/50 p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{lead.lead_name}</p>
+                      {lead.lead_tag && (
+                        <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded mt-1">
+                          {lead.lead_tag}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {hubspotConnected && (
+                        lead.crm_synced ? (
+                          <span className="flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle className="w-3.5 h-3.5" /> Synced
+                          </span>
+                        ) : (
+                          <button onClick={() => handleSyncLead(lead.id)} disabled={isSyncing} className="flex items-center gap-1 text-xs text-orange-600 disabled:opacity-50">
+                            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                            {isSyncing ? 'Syncing' : 'Sync'}
+                          </button>
+                        )
+                      )}
+                      <p className="text-xs text-gray-400">
+                        {lead.created_date ? format(new Date(lead.created_date), 'MMM d') : ''}
+                      </p>
+                    </div>
+                  </div>
                       <a href={`mailto:${lead.lead_email}`} className="flex items-center gap-1.5 text-sm text-primary">
                         <Mail className="w-3.5 h-3.5" />
                         {lead.lead_email}

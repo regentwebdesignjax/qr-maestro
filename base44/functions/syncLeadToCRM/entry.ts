@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const HUBSPOT_CONNECTOR_ID = '6a19b113175aa6149bf214b0';
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -15,12 +17,6 @@ Deno.serve(async (req) => {
     const ids = lead_ids || (lead_id ? [lead_id] : []);
     if (ids.length === 0) {
       return Response.json({ error: 'lead_id or lead_ids required' }, { status: 400 });
-    }
-
-    // Get the HubSpot connector ID from env (injected at runtime)
-    const HUBSPOT_CONNECTOR_ID = Deno.env.get('HUBSPOT_CONNECTOR_ID');
-    if (!HUBSPOT_CONNECTOR_ID) {
-      return Response.json({ error: 'HubSpot connector not configured' }, { status: 500 });
     }
 
     // Get user's HubSpot access token
@@ -59,12 +55,10 @@ Deno.serve(async (req) => {
         hs_lead_status: 'NEW',
       };
 
-      // Map lead_tag as a note in the description
       if (lead.lead_tag) {
         properties.description = `Source Tag: ${lead.lead_tag}`;
       }
 
-      // Map notes
       if (lead.notes) {
         const cleanedNotes = lead.notes.replace(/^\[PHONE:\s*[^\]]+\]\s*/, '').trim();
         if (cleanedNotes) {
@@ -74,7 +68,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Map source card name as company if available
       if (lead.qr_code_name) {
         properties.company = lead.qr_code_name;
       }
@@ -92,11 +85,7 @@ Deno.serve(async (req) => {
       const hsData = await hsRes.json();
 
       if (hsRes.ok) {
-        // Mark lead as synced
-        await base44.asServiceRole.entities.Lead.update(id, {
-          crm_synced: true,
-          crm_sync_error: '',
-        });
+        await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
         results.push({ id, success: true, hubspot_id: hsData.id });
       } else if (hsRes.status === 409) {
         // Contact already exists — update it
@@ -111,10 +100,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({ properties }),
           });
           if (updateRes.ok) {
-            await base44.asServiceRole.entities.Lead.update(id, {
-              crm_synced: true,
-              crm_sync_error: '',
-            });
+            await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
             results.push({ id, success: true, hubspot_id: existingId, updated: true });
           } else {
             const errData = await updateRes.json();
