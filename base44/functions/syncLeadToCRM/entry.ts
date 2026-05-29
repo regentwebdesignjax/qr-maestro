@@ -28,6 +28,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'HubSpot not connected. Please connect your HubSpot account.' }, { status: 400 });
     }
 
+    // Check if a custom 'lead_tag' property exists in HubSpot
+    let leadTagPropertyExists = false;
+    try {
+      const propRes = await fetch('https://api.hubapi.com/crm/v3/properties/contacts/lead_tag', {
+        headers: { 'Authorization': `Bearer ${accessToken}` },
+      });
+      leadTagPropertyExists = propRes.ok;
+    } catch {
+      leadTagPropertyExists = false;
+    }
+
     const results = [];
 
     for (const id of ids) {
@@ -55,8 +66,9 @@ Deno.serve(async (req) => {
         hs_lead_status: 'NEW',
       };
 
-      if (lead.lead_tag) {
-        properties.jobtitle = lead.lead_tag;
+      // Only include lead_tag if the custom property exists in HubSpot
+      if (lead.lead_tag && leadTagPropertyExists) {
+        properties.lead_tag = lead.lead_tag;
       }
 
       if (lead.qr_code_name) {
