@@ -56,16 +56,7 @@ Deno.serve(async (req) => {
       };
 
       if (lead.lead_tag) {
-        properties.description = `Source Tag: ${lead.lead_tag}`;
-      }
-
-      if (lead.notes) {
-        const cleanedNotes = lead.notes.replace(/^\[PHONE:\s*[^\]]+\]\s*/, '').trim();
-        if (cleanedNotes) {
-          properties.description = properties.description
-            ? `${properties.description} | Notes: ${cleanedNotes}`
-            : `Notes: ${cleanedNotes}`;
-        }
+        properties.jobtitle = lead.lead_tag;
       }
 
       if (lead.qr_code_name) {
