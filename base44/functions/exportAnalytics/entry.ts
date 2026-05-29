@@ -125,7 +125,8 @@ async function buildPDF(qrName, dateLabel, scans, stats) {
     const logoUrl = 'https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png';
     const logoRes = await fetch(logoUrl);
     const logoBuffer = await logoRes.arrayBuffer();
-    const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoBuffer)));
+    const logoBytes = new Uint8Array(logoBuffer);
+    const logoBase64 = btoa(new TextDecoder('iso-8859-1').decode(logoBytes));
     const logoDataUrl = `data:image/png;base64,${logoBase64}`;
     doc.addImage(logoDataUrl, 'PNG', margin, 7, 52, 20);
   } catch (_) {
