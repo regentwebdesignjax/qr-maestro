@@ -478,8 +478,12 @@ export default function Leads() {
                                 </button>
                               )}
                               {lead.crm_sync_error && (
-                                <span title={lead.crm_sync_error} className="flex items-center gap-1 text-xs text-red-500 mt-0.5">
-                                  <XCircle className="w-3 h-3" /> Error
+                                <span className="flex items-center gap-1 text-xs text-red-500 mt-0.5 cursor-help group relative">
+                                  <XCircle className="w-3 h-3 shrink-0" />
+                                  <span>Sync failed</span>
+                                  <span className="absolute left-0 top-full mt-1 z-10 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-3 py-2 w-64 shadow-lg whitespace-normal leading-relaxed">
+                                    {lead.crm_sync_error}
+                                  </span>
                                 </span>
                               )}
                             </td>
@@ -511,16 +515,28 @@ export default function Leads() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {hubspotConnected && (
-                        lead.crm_synced ? (
-                          <span className="flex items-center gap-1 text-xs text-green-600">
-                            <CheckCircle className="w-3.5 h-3.5" /> Synced
-                          </span>
-                        ) : (
-                          <button onClick={() => handleSyncLead(lead.id)} disabled={isSyncing} className="flex items-center gap-1 text-xs text-orange-600 disabled:opacity-50">
-                            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                            {isSyncing ? 'Syncing' : 'Sync'}
-                          </button>
-                        )
+                        <div className="flex flex-col items-end gap-0.5">
+                          {lead.crm_synced ? (
+                            <span className="flex items-center gap-1 text-xs text-green-600">
+                              <CheckCircle className="w-3.5 h-3.5" /> Synced
+                            </span>
+                          ) : (
+                            <button onClick={() => handleSyncLead(lead.id)} disabled={isSyncing} className="flex items-center gap-1 text-xs text-orange-600 disabled:opacity-50">
+                              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                              {isSyncing ? 'Syncing' : 'Sync'}
+                            </button>
+                          )}
+                          {lead.crm_sync_error && (
+                            <span className="flex items-center gap-1 text-xs text-red-500">
+                              <XCircle className="w-3 h-3 shrink-0" /> Sync failed
+                            </span>
+                          )}
+                          {lead.crm_sync_error && (
+                            <span className="text-xs text-red-400 max-w-[160px] text-right leading-snug">
+                              {lead.crm_sync_error}
+                            </span>
+                          )}
+                        </div>
                       )}
                       <p className="text-xs text-gray-400">
                         {lead.created_date ? format(new Date(lead.created_date), 'MMM d') : ''}
