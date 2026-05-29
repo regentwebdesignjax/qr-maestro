@@ -90,11 +90,23 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
         results.push({ id, success: true, hubspot_id: hsData.id });
       } else if (hsRes.status === 409) {
-        // Contact already exists — update it via upsert by email
-        const existingId = hsData.message?.match(/ID: (\d+)/)?.[1]
-          || hsData.message?.match(/exists with ID (\d+)/)?.[1]
-          || hsData.id
-          || hsData.error === 'CONTACT_EXISTS' && hsData.message?.match(/[\d]+/)?.[0];
+        // Contact already exists — search by email to get the numeric ID, then PATCH
+        const searchRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            filterGroups: [{
+              filters: [{ propertyName: 'email', operator: 'EQ', value: lead.lead_email }]
+            }],
+            properties: ['email'],
+            limit: 1,
+          }),
+        });
+        const searchData = await searchRes.json();
+        const existingId = searchData.results?.[0]?.id;
         if (existingId) {
           const updateRes = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${existingId}`, {
             method: 'PATCH',
@@ -114,24 +126,9 @@ Deno.serve(async (req) => {
             results.push({ id, success: false, error: errMsg });
           }
         } else {
-          // Fallback: upsert by email using idProperty
-          const upsertRes = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(lead.lead_email)}?idProperty=email`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ properties }),
-          });
-          if (upsertRes.ok) {
-            await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
-            results.push({ id, success: true, updated: true });
-          } else {
-            const errData = await upsertRes.json();
-            const errMsg = errData.message || 'Duplicate contact, could not resolve ID';
-            await base44.asServiceRole.entities.Lead.update(id, { crm_sync_error: errMsg });
-            results.push({ id, success: false, error: errMsg });
-          }
+          const errMsg = searchData.message || 'Contact not found in HubSpot search';
+          await base44.asServiceRole.entities.Lead.update(id, { crm_sync_error: errMsg });
+          results.push({ id, success: false, error: errMsg });
         }
       } else {
         const errMsg = hsData.message || 'HubSpot sync failed';
