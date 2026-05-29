@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Check, Zap, Users, Globe } from 'lucide-react';
+import { Check, Zap, Users, Globe, MousePointerClick, BarChart2, Puzzle, TrendingUp } from 'lucide-react';
 
 export default function Pricing() {
   const [user, setUser] = useState(null);
@@ -393,43 +393,46 @@ export default function Pricing() {
           </Card>
         </div>
 
-        {/* FAQ or Additional Info */}
-        <div className="mt-16 text-center max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            All paid plans include:
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4 text-left">
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>High-quality QR code generation</span>
+        {/* Why Choose QR Sensei */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Why Choose QR Sensei?</h2>
+          <p className="text-gray-500 text-center mb-10">Everything you need to connect, track, and grow — in one platform.</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5 shadow-card">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <MousePointerClick className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Simple & Intuitive</h3>
+                <p className="text-sm text-gray-500">Create stunning QR codes, digital business cards, and linkpages in minutes — no design experience needed.</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>High-resolution PNG and SVG export</span>
+            <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5 shadow-card">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Built for Growth</h3>
+                <p className="text-sm text-gray-500">Scale from a solo operator to a full team. Add digital business card seats as your business expands.</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>Digital Business Cards</span>
+            <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5 shadow-card">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <BarChart2 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Data-Driven Decisions</h3>
+                <p className="text-sm text-gray-500">Real-time scan analytics with device, location, and time-of-day insights so you always know what's working.</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>Linkpages</span>
-            </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>Static & Dynamic QR code types</span>
-            </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>Quick & Easy QR customization</span>
-            </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>Real-time analytics & scan tracking</span>
-            </div>
-            <div className="flex items-start">
-              <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-              <span>One monthly (or annual) price – No hidden fees or charges</span>
+            <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5 shadow-card">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Puzzle className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Seamless Integrations</h3>
+                <p className="text-sm text-gray-500">Connect your HubSpot CRM to automatically sync leads captured from your digital business cards — no manual export needed.</p>
+              </div>
             </div>
           </div>
         </div>
