@@ -22,9 +22,9 @@ export default function Pricing() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
       } catch (error) {
+
         // User not logged in
-      }
-    };
+      }};
     fetchUser();
   }, []);
 
@@ -45,7 +45,7 @@ export default function Pricing() {
     setLoading(true);
     base44.analytics.track({
       eventName: 'upgrade_checkout_initiated',
-      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats },
+      properties: { plan: 'black_belt', period, user_email: user.email, total_seats: totalSeats }
     });
     try {
       const response = await base44.functions.invoke('createCheckoutSession', {
@@ -53,7 +53,7 @@ export default function Pricing() {
         user_id: user.id,
         email: user.email,
         total_seats: totalSeats,
-        include_custom_domain: includeCustomDomain,
+        include_custom_domain: includeCustomDomain
       });
 
       if (response.data.url) {
@@ -71,7 +71,7 @@ export default function Pricing() {
     setLoading(true);
     try {
       const response = await base44.functions.invoke('createPortalSession', {
-        customer_id: user.stripe_customer_id,
+        customer_id: user.stripe_customer_id
       });
 
       if (response.data.url) {
@@ -128,15 +128,15 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {user ? (
-                  <Button variant="outline" className="w-full" disabled>
+                {user ?
+                <Button variant="outline" className="w-full" disabled>
                     {isPro ? 'Downgrade' : 'Current Plan'}
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
+                  </Button> :
+
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200" onClick={() => base44.auth.redirectToLogin('/Dashboard')}>
                     Get Started
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -153,9 +153,9 @@ export default function Pricing() {
                 <span className="text-4xl font-bold">${monthlyTotal}</span>
                 <span className="text-gray-600">/month</span>
               </div>
-              {extraSeats > 0 && (
-                <p className="text-xs text-gray-500 mt-1">$29 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $3</p>
-              )}
+              {extraSeats > 0 &&
+              <p className="text-xs text-gray-500 mt-1">$29 base + {extraSeats} extra DBC{extraSeats > 1 ? 's' : ''} × $3</p>
+              }
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
               {/* DBC Seat Selector */}
@@ -166,22 +166,22 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                   type="number"
-                   min={10}
-                   value={inputSeats}
-                   onChange={(e) => {
-                     const raw = e.target.value;
-                     setInputSeats(raw);
-                     const parsed = Math.max(10, parseInt(raw) || 10);
-                     setTotalSeats(parsed);
-                   }}
-                   onBlur={() => {
-                     const val = Math.max(10, parseInt(inputSeats) || 10);
-                     setInputSeats(String(val));
-                     setTotalSeats(val);
-                   }}
-                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
-                  />
+                    type="number"
+                    min={10}
+                    value={inputSeats}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setInputSeats(raw);
+                      const parsed = Math.max(10, parseInt(raw) || 10);
+                      setTotalSeats(parsed);
+                    }}
+                    onBlur={() => {
+                      const val = Math.max(10, parseInt(inputSeats) || 10);
+                      setInputSeats(String(val));
+                      setTotalSeats(val);
+                    }}
+                    className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]" />
+                  
                   <span className="text-sm text-gray-500">
                    {extraSeats > 0 ? `+${extraSeats} extra @ $3/mo each` : 'First 10 included'}
                   </span>
@@ -190,16 +190,16 @@ export default function Pricing() {
               {/* Custom Domain Add-On */}
               <div
                 className={`border rounded-lg p-3 cursor-pointer transition-colors ${includeCustomDomain ? 'bg-primary/5 border-primary/40' : 'bg-white border-gray-200 hover:border-primary/30'}`}
-                onClick={() => setIncludeCustomDomain(v => !v)}
-              >
+                onClick={() => setIncludeCustomDomain((v) => !v)}>
+                
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={includeCustomDomain}
                     onChange={(e) => setIncludeCustomDomain(e.target.checked)}
                     className="mt-1 accent-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                    onClick={(e) => e.stopPropagation()} />
+                  
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 font-semibold text-sm text-gray-800">
                       <Globe className="w-4 h-4 text-primary" />
@@ -235,7 +235,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">HubSpot CRM Integration</span>
+                  <span className="font-semibold">HubSpot CRM Lead Sync</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -251,16 +251,16 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {isPro && user?.subscription_period === 'monthly' ? (
-                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                {isPro && user?.subscription_period === 'monthly' ?
+                <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || (isPro && user?.subscription_period === 'annual')}>
+                  </Button> :
+
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || isPro && user?.subscription_period === 'annual'}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -277,13 +277,13 @@ export default function Pricing() {
                 <span className="text-4xl font-bold">${annualTotal}</span>
                 <span className="text-gray-600">/year</span>
               </div>
-              {extraSeats > 0 || includeCustomDomain ? (
-                <p className="text-xs text-gray-500 mt-1">
+              {extraSeats > 0 || includeCustomDomain ?
+              <p className="text-xs text-gray-500 mt-1">
                   $249 base{extraSeats > 0 ? ` + ${extraSeats} DBC${extraSeats > 1 ? 's' : ''} × $36` : ''}{includeCustomDomain ? ' + $190 custom domain' : ''}
-                </p>
-              ) : (
-                <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
-              )}
+                </p> :
+
+              <p className="text-sm text-green-600 font-medium">Just ${(annualTotal / 12).toFixed(2)}/month</p>
+              }
             </CardHeader>
             <CardContent className="flex flex-col flex-1 space-y-4">
               {/* DBC Seat Selector */}
@@ -294,22 +294,22 @@ export default function Pricing() {
                 </Label>
                 <div className="flex items-center gap-3">
                   <Input
-                   type="number"
-                   min={10}
-                   value={inputSeats}
-                   onChange={(e) => {
-                     const raw = e.target.value;
-                     setInputSeats(raw);
-                     const parsed = Math.max(10, parseInt(raw) || 10);
-                     setTotalSeats(parsed);
-                   }}
-                   onBlur={() => {
-                     const val = Math.max(10, parseInt(inputSeats) || 10);
-                     setInputSeats(String(val));
-                     setTotalSeats(val);
-                   }}
-                   className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]"
-                  />
+                    type="number"
+                    min={10}
+                    value={inputSeats}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setInputSeats(raw);
+                      const parsed = Math.max(10, parseInt(raw) || 10);
+                      setTotalSeats(parsed);
+                    }}
+                    onBlur={() => {
+                      const val = Math.max(10, parseInt(inputSeats) || 10);
+                      setInputSeats(String(val));
+                      setTotalSeats(val);
+                    }}
+                    className="w-24 text-center font-semibold focus:ring-2 focus:ring-[#BB3F27]" />
+                  
                   <span className="text-sm text-gray-500">
                    {extraSeats > 0 ? `+${extraSeats} extra @ $36/yr each` : 'First 10 included'}
                   </span>
@@ -318,16 +318,16 @@ export default function Pricing() {
               {/* Custom Domain Add-On */}
               <div
                 className={`border rounded-lg p-3 cursor-pointer transition-colors ${includeCustomDomain ? 'bg-green-50 border-green-400' : 'bg-white border-gray-200 hover:border-green-300'}`}
-                onClick={() => setIncludeCustomDomain(v => !v)}
-              >
+                onClick={() => setIncludeCustomDomain((v) => !v)}>
+                
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={includeCustomDomain}
                     onChange={(e) => setIncludeCustomDomain(e.target.checked)}
                     className="mt-1 accent-green-600"
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                    onClick={(e) => e.stopPropagation()} />
+                  
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 font-semibold text-sm text-gray-800">
                       <Globe className="w-4 h-4 text-green-600" />
@@ -363,7 +363,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">HubSpot CRM Integration</span>
+                  <span className="font-semibold">HubSpot CRM Lead Sync</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -379,16 +379,16 @@ export default function Pricing() {
                 </li>
               </ul>
               <div className="pt-2">
-                {isPro && user?.subscription_period === 'annual' ? (
-                  <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
+                {isPro && user?.subscription_period === 'annual' ?
+                <Button variant="outline" className="w-full" onClick={handleManageSubscription} disabled={loading}>
                     Manage Subscription
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('annual')} disabled={loading || (isPro && user?.subscription_period === 'monthly')}>
+                  </Button> :
+
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('annual')} disabled={loading || isPro && user?.subscription_period === 'monthly'}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -438,6 +438,6 @@ export default function Pricing() {
           </div>
         </div>
       </Container>
-    </div>
-  );
+    </div>);
+
 }
