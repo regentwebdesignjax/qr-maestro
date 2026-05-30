@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import QRCodeForm from '../components/qr/QRCodeForm';
@@ -121,7 +122,7 @@ export default function CreateQR() {
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="w-full mx-auto px-4 sm:px-6">
+      <Container>
         <Link to="/Dashboard">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -183,7 +184,7 @@ export default function CreateQR() {
             </Card>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

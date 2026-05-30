@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import {
   Accordion,
   AccordionContent,
@@ -62,7 +63,7 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full mx-auto px-4 sm:px-6 py-16">
+      <Container className="py-16">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
@@ -75,7 +76,7 @@ export default function FAQ() {
         </div>
 
         {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto mb-16">
+        <div className="mb-16">
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem 
@@ -95,7 +96,7 @@ export default function FAQ() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center bg-white rounded-2xl shadow-lg p-12 max-w-3xl mx-auto">
+        <div className="text-center bg-white rounded-2xl shadow-lg p-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
              The Path Unclear?
            </h2>
@@ -116,7 +117,7 @@ export default function FAQ() {
             </Link>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

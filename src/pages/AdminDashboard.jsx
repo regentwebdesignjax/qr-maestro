@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -141,7 +142,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full mx-auto px-4 sm:px-6 py-8">
+      <Container className="py-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Shield className="w-8 h-8 text-primary" />
@@ -384,7 +385,7 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </div>
   );
 }

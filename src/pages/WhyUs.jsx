@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Zap, BarChart3, Palette, Cloud, Headphones } from 'lucide-react';
 
@@ -40,7 +41,7 @@ export default function WhyUs() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full mx-auto px-4 sm:px-6 py-16">
+      <Container className="py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
@@ -109,7 +110,7 @@ export default function WhyUs() {
             </Link>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }
