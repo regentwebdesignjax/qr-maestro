@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Container } from '@/components/ui/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -206,7 +205,7 @@ export default function MyQRCodes() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Container className="py-6 md:py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 py-6 md:py-8">
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-6">
           <div>
@@ -439,7 +438,7 @@ export default function MyQRCodes() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
     </div>
   );
 }
