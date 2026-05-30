@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import { Zap, BarChart3, Palette, Contact, Users, LineChart } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -76,8 +77,8 @@ export default function Home() {
       <PathToMastery />
 
       {/* Feature Ribbon 1: Dynamic QR Codes */}
-      <div className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
-        <div className="max-w-6xl mx-auto">
+      <div className="w-full py-16 sm:py-24" style={{ backgroundColor: '#F9F9F8' }}>
+        <Container>
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="flex items-center justify-center order-2 md:order-1">
               <img
@@ -104,12 +105,12 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Feature Ribbon 2: Real-Time Analytics */}
-      <div className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#142024' }}>
-        <div className="max-w-6xl mx-auto">
+      <div className="w-full py-16 sm:py-24" style={{ backgroundColor: '#142024' }}>
+        <Container>
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="order-2 rounded-xl p-4 sm:p-6 bg-white/10 backdrop-blur-md border border-white/20 shadow-card-hover">
               <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-4">Live Scan Activity — Last 7 Days</p>
@@ -141,12 +142,12 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Feature Ribbon 3: Custom Design */}
-      <div className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#F9F9F8' }}>
-        <div className="max-w-6xl mx-auto">
+      <div className="w-full py-16 sm:py-24" style={{ backgroundColor: '#F9F9F8' }}>
+        <Container>
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="flex items-center justify-center order-2 md:order-1">
               <img
@@ -173,12 +174,12 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Digital Business Card Feature — Black Belt Bonus */}
-      <div className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#f3f0ec', borderTop: '1px solid #e5e0d8', borderBottom: '1px solid #e5e0d8' }}>
-        <div className="max-w-6xl mx-auto">
+      <div className="w-full py-16 sm:py-24" style={{ backgroundColor: '#f3f0ec', borderTop: '1px solid #e5e0d8', borderBottom: '1px solid #e5e0d8' }}>
+        <Container>
           {/* Badge */}
           <div className="flex justify-center mb-8">
             <span className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full border border-primary/20">
@@ -274,7 +275,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Testimonials */}
@@ -284,8 +285,8 @@ export default function Home() {
       <BentoFeatures />
 
       {/* Final CTA */}
-      <div className="w-full py-16 sm:py-24 px-4 sm:px-[5vw]" style={{ backgroundColor: '#ffffff' }}>
-        <div className="max-w-3xl mx-auto text-center">
+      <div className="w-full py-16 sm:py-24" style={{ backgroundColor: '#ffffff' }}>
+        <Container className="text-center">
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-6 font-poppins">
             Ready to Get Started?
           </h2>
@@ -299,7 +300,7 @@ export default function Home() {
 
             Create Your First QR Code
           </Button>
-        </div>
+        </Container>
       </div>
     </div>);
 

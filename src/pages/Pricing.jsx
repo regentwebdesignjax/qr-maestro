@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/Container';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -86,7 +87,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background py-16">
-      <div className="w-full mx-auto px-4 sm:px-6">
+      <Container>
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choosing Your Rank
@@ -436,7 +437,7 @@ export default function Pricing() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }
