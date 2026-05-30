@@ -274,7 +274,7 @@ export default function Layout({ children, currentPageName }) {
             <img
               src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
               alt="QR Sensei"
-              className="h-7 w-auto opacity-70" />
+              className="h-7 w-auto opacity-100" />
             
           </div>
           <p>&copy; 2026 QR Sensei. All rights reserved.</p>
