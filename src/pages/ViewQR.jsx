@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ScanLine, ExternalLink } from 'lucide-react';
-import ScanLocationChart from '../components/qr/ScanLocationChart';
 import QRCodePreview from '../components/qr/QRCodePreview';
 
 const CONTENT_TYPE_LABELS = {
@@ -162,7 +161,6 @@ function normalizeQRCode(raw) {
 
 export default function ViewQR() {
   const [qrCode, setQrCode] = useState(null);
-  const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [customDomainBase, setCustomDomainBase] = useState(null);
 
@@ -212,11 +210,6 @@ export default function ViewQR() {
         }
 
         setQrCode(qr);
-
-        if (qr.type === 'dynamic') {
-          const scanResponse = await base44.functions.invoke('getScans', { qr_code_id: qr.id });
-          setScans(scanResponse.data?.scans || []);
-        }
       } catch (error) {
         console.error('Error fetching QR code:', error);
       } finally {
@@ -352,25 +345,18 @@ export default function ViewQR() {
 
               {/* Actions */}
               {qrCode.type === 'dynamic' && (
-                <div className="pt-4 space-y-4">
+                <div className="pt-4 flex flex-wrap gap-4 md:gap-5">
                   <Link to={'/EditQR?id=' + qrCode.id}>
-                    <Button className="w-full">Edit Dynamic QR</Button>
+                    <Button>Edit Dynamic QR</Button>
                   </Link>
                   <Link to={'/Analytics?id=' + qrCode.id}>
-                    <Button variant="outline" className="w-full">View Full Analytics</Button>
+                    <Button variant="outline">View Full Analytics</Button>
                   </Link>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Scan Location Chart — dynamic QR codes only */}
-        {qrCode.type === 'dynamic' && (
-          <div className="mt-8">
-            <ScanLocationChart scans={scans} />
-          </div>
-        )}
       </div>
     </div>
   );
