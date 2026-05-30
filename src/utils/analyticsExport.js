@@ -31,17 +31,25 @@ const OS_RGB = {
   Unknown:       [209, 213, 219],
 };
 
-async function fetchB64(url) {
+async function fetchImg(url) {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error('fetch failed');
     const blob = await res.blob();
-    return await new Promise((resolve, reject) => {
+    const b64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload  = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+    // Determine natural aspect ratio via an Image element (browser only)
+    const aspect = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload  = () => resolve(img.naturalWidth / img.naturalHeight);
+      img.onerror = () => resolve(null);
+      img.src = b64;
+    });
+    return { b64, aspect };
   } catch {
     return null;
   }
@@ -58,12 +66,15 @@ function heatColor(intensity) {
 
 // ─── Layout helpers ───────────────────────────────────────────────────────────
 
-function drawHeader(doc, logoB64, generatedAt) {
+function drawHeader(doc, logo, generatedAt) {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, PAGE_W, SEPARATOR_Y + 2, 'F');
 
-  if (logoB64) {
-    doc.addImage(logoB64, 'PNG', MARGIN, 7, 52, 15);
+  if (logo) {
+    const logoW = 50;
+    const logoH = logo.aspect ? logoW / logo.aspect : 15;
+    const logoY = 7 + Math.max(0, (15 - logoH) / 2); // vertically centre in the 15mm header zone
+    doc.addImage(logo.b64, 'PNG', MARGIN, logoY, logoW, logoH);
   }
 
   doc.setFont('helvetica', 'bold');
@@ -81,7 +92,7 @@ function drawHeader(doc, logoB64, generatedAt) {
   doc.line(MARGIN, SEPARATOR_Y, PAGE_W - MARGIN, SEPARATOR_Y);
 }
 
-function drawFooter(doc, senseiB64) {
+function drawFooter(doc, sensei) {
   doc.setFillColor(...C_BLACK);
   doc.rect(0, FOOTER_TOP, PAGE_W, FOOTER_H - ACCENT_H, 'F');
 
@@ -90,19 +101,21 @@ function drawFooter(doc, senseiB64) {
   doc.setTextColor(255, 255, 255);
   doc.text('Powered by QR Sensei', MARGIN, FOOTER_TOP + 13);
 
-  if (senseiB64) {
-    doc.addImage(senseiB64, 'PNG', PAGE_W - 32, FOOTER_TOP - 7, 24, 30);
+  if (sensei) {
+    const charH = 28;
+    const charW = sensei.aspect ? charH * sensei.aspect : 24;
+    doc.addImage(sensei.b64, 'PNG', PAGE_W - MARGIN - charW, FOOTER_TOP - 7, charW, charH);
   }
 
   doc.setFillColor(...C_RED);
   doc.rect(0, PAGE_H - ACCENT_H, PAGE_W, ACCENT_H, 'F');
 }
 
-function maybePageBreak(doc, y, neededH, logoB64, generatedAt, senseiB64) {
+function maybePageBreak(doc, y, neededH, logo, generatedAt, sensei) {
   if (y + neededH > CONTENT_END_Y) {
-    drawFooter(doc, senseiB64);
+    drawFooter(doc, sensei);
     doc.addPage();
-    drawHeader(doc, logoB64, generatedAt);
+    drawHeader(doc, logo, generatedAt);
     return CONTENT_START_Y;
   }
   return y;
@@ -451,16 +464,16 @@ export async function generateAnalyticsPDF({
   dateRangeLabel,
   dateRange,
 }) {
-  const [logoB64, senseiB64] = await Promise.all([
-    fetchB64(LOGO_URL),
-    fetchB64(CHAR_URL),
+  const [logo, sensei] = await Promise.all([
+    fetchImg(LOGO_URL),
+    fetchImg(CHAR_URL),
   ]);
 
   const generatedAt = format(new Date(), "MMM d, yyyy 'at' h:mm a");
   const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
 
   // Page 1 header
-  drawHeader(doc, logoB64, generatedAt);
+  drawHeader(doc, logo, generatedAt);
 
   // QR name + period label
   let y = CONTENT_START_Y;
@@ -477,34 +490,34 @@ export async function generateAnalyticsPDF({
   y += 10;
 
   // Summary stats
-  y = maybePageBreak(doc, y, 28, logoB64, generatedAt, senseiB64);
+  y = maybePageBreak(doc, y, 28, logo, generatedAt, sensei);
   y = drawSummaryStats(doc, filteredScans.length, uniqueScanners, dateRangeLabel, y);
 
   // Scans over time
   const chartData = computeChartData(filteredScans, dateRange);
-  y = maybePageBreak(doc, y, chartData.length > 0 ? 58 : 18, logoB64, generatedAt, senseiB64);
+  y = maybePageBreak(doc, y, chartData.length > 0 ? 58 : 18, logo, generatedAt, sensei);
   y = drawScansOverTime(doc, filteredScans, dateRange, y);
 
   // OS breakdown
   const osCount = Object.keys(osStats).length;
-  y = maybePageBreak(doc, y, osCount * 11 + 22, logoB64, generatedAt, senseiB64);
+  y = maybePageBreak(doc, y, osCount * 11 + 22, logo, generatedAt, sensei);
   y = drawOSBars(doc, osStats, filteredScans.length, y);
 
   // Time of day heatmap
   const heatH = 24 * 2.3 + 20;
-  y = maybePageBreak(doc, y, heatH, logoB64, generatedAt, senseiB64);
+  y = maybePageBreak(doc, y, heatH, logo, generatedAt, sensei);
   y = drawHeatmap(doc, filteredScans, y);
 
   // Locations table
   const locs = aggregateLocations(filteredScans);
   if (locs.length > 0) {
     const locH = Math.min(locs.length, 10) * 7 + 24;
-    y = maybePageBreak(doc, y, locH, logoB64, generatedAt, senseiB64);
+    y = maybePageBreak(doc, y, locH, logo, generatedAt, sensei);
     drawLocationsTable(doc, filteredScans, y);
   }
 
   // Footer on final page
-  drawFooter(doc, senseiB64);
+  drawFooter(doc, sensei);
 
   const safeName = (qrCode.name || 'analytics').replace(/[^a-z0-9_-]/gi, '_');
   doc.save(`${safeName}_analytics.pdf`);
