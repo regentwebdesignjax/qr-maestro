@@ -10,8 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger } from
+'@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
 
@@ -80,14 +80,14 @@ export default function Layout({ children, currentPageName }) {
               <img
                 src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
                 alt="QR Sensei"
-                className="h-8 sm:h-9 w-auto"
-              />
+                className="h-8 sm:h-9 w-auto" />
+              
             </Link>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-4 lg:gap-6 flex-1 px-8 justify-center">
-              {user ? (
-                <>
+              {user ?
+              <>
                   <Link to="/MyQRCodes" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
                     <QrCode className="w-4 h-4 shrink-0" />
                     My QR Codes
@@ -96,27 +96,27 @@ export default function Layout({ children, currentPageName }) {
                     <QrCode className="w-4 h-4 shrink-0" />
                     Create QR
                   </Link>
-                  {(user?.subscription_tier === 'pro' || user?.role === 'admin') && (
-                    <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                  {(user?.subscription_tier === 'pro' || user?.role === 'admin') &&
+                <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
                       <Users className="w-4 h-4 shrink-0" />
                       Leads
                     </Link>
-                  )}
-                  {user?.custom_domain_addon && (
-                    <Link to="/CustomDomains" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                }
+                  {user?.custom_domain_addon &&
+                <Link to="/CustomDomains" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
                       <Globe className="w-4 h-4 shrink-0" />
                       Custom Domain
                     </Link>
-                  )}
-                  {user?.role === 'admin' && (
-                    <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
+                }
+                  {user?.role === 'admin' &&
+                <Link to="/AdminDashboard" className="text-primary hover:text-primary/80 transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
                       <Shield className="w-4 h-4 shrink-0" />
                       Admin
                     </Link>
-                  )}
-                </>
-              ) : (
-                <>
+                }
+                </> :
+
+              <>
                   <Link to="/" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     Home
                   </Link>
@@ -130,24 +130,24 @@ export default function Layout({ children, currentPageName }) {
                     Pricing
                   </Link>
                 </>
-              )}
+              }
             </nav>
 
             {/* Auth Buttons / User Menu */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
-              {loading ? (
-                <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
-              ) : user ? (
-                <>
+              {loading ?
+              <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div> :
+              user ?
+              <>
                   {/* Desktop: Upgrade + Dropdown */}
                   <div className="hidden md:flex items-center gap-3">
-                    {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
-                      <Link to="/Pricing">
+                    {user.role !== 'admin' && user.subscription_tier !== 'pro' &&
+                  <Link to="/Pricing">
                         <Button variant="outline" className="font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                           Upgrade Rank
                         </Button>
                       </Link>
-                    )}
+                  }
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="flex items-center gap-2">
@@ -162,14 +162,14 @@ export default function Layout({ children, currentPageName }) {
                           <CreditCard className="w-4 h-4 mr-2" />
                           Billing & Subscription
                         </DropdownMenuItem>
-                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') && (
-                          <DropdownMenuItem asChild>
+                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') &&
+                      <DropdownMenuItem asChild>
                             <Link to="/CustomDomains" className="flex items-center">
                               <Globe className="w-4 h-4 mr-2" />
                               Custom Domain
                             </Link>
                           </DropdownMenuItem>
-                        )}
+                      }
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
                           <LogOut className="w-4 h-4 mr-2" />
@@ -200,42 +200,42 @@ export default function Layout({ children, currentPageName }) {
                         </div>
                       </SheetHeader>
                       <div className="p-4 space-y-1">
-                        {user.role !== 'admin' && user.subscription_tier !== 'pro' && (
-                          <Link to="/Pricing">
+                        {user.role !== 'admin' && user.subscription_tier !== 'pro' &&
+                      <Link to="/Pricing">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors">
                               <CreditCard className="w-4 h-4" />
                               Upgrade to Black Belt
                             </button>
                           </Link>
-                        )}
+                      }
                         <button
-                          onClick={handleBilling}
-                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm"
-                        >
+                        onClick={handleBilling}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">
+                        
                           <CreditCard className="w-4 h-4 text-gray-400" />
                           Billing & Subscription
                         </button>
-                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') && (
-                          <Link to="/CustomDomains">
+                        {(user?.custom_domain_addon || user?.subscription_tier === 'pro') &&
+                      <Link to="/CustomDomains">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">
                               <Globe className="w-4 h-4 text-gray-400" />
                               Custom Domain
                             </button>
                           </Link>
-                        )}
-                        {user.role === 'admin' && (
-                          <Link to="/AdminDashboard">
+                      }
+                        {user.role === 'admin' &&
+                      <Link to="/AdminDashboard">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary hover:bg-primary/5 transition-colors text-sm">
                               <Shield className="w-4 h-4" />
                               Admin Dashboard
                             </button>
                           </Link>
-                        )}
+                      }
                         <div className="pt-2 border-t mt-2">
                           <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors text-sm"
-                          >
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors text-sm">
+                          
                             <LogOut className="w-4 h-4" />
                             Log Out
                           </button>
@@ -243,9 +243,9 @@ export default function Layout({ children, currentPageName }) {
                       </div>
                     </SheetContent>
                   </Sheet>
-                </>
-              ) : (
-                <>
+                </> :
+
+              <>
                   <Button variant="ghost" onClick={handleLogin} className="font-semibold transition-colors duration-200 text-foreground hover:text-primary">
                     Login
                   </Button>
@@ -253,7 +253,7 @@ export default function Layout({ children, currentPageName }) {
                     Get Started
                   </Button>
                 </>
-              )}
+              }
             </div>
           </div>
         </div>
@@ -274,11 +274,11 @@ export default function Layout({ children, currentPageName }) {
             <img
               src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
               alt="QR Sensei"
-              className="h-7 w-auto opacity-70"
-            />
+              className="h-7 w-auto opacity-70" />
+            
           </div>
           <p>&copy; 2026 QR Sensei. All rights reserved.</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Forged with discipline in Jacksonville, FL.</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Forged with discipline in Jacksonville, Florida USA</p>
           <div className="flex justify-center gap-6 mt-4 text-xs font-poppins">
             <Link to="/PrivacyPolicy" className="text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy
@@ -289,6 +289,6 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
