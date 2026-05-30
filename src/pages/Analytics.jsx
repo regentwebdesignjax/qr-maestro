@@ -192,24 +192,34 @@ export default function Analytics() {
     setPreset(value);
   };
 
-  const handleExport = async (format) => {
+  const handleExport = async (exportFormat) => {
     setExporting(true);
     try {
+      if (exportFormat === 'pdf') {
+        const { generateAnalyticsPDF } = await import('../utils/analyticsExport');
+        await generateAnalyticsPDF({
+          qrCode,
+          filteredScans,
+          osStats,
+          uniqueScanners,
+          dateRangeLabel,
+          dateRange,
+        });
+        return;
+      }
+      // CSV: backend path unchanged
       const response = await base44.functions.invoke('exportAnalytics', {
         qr_code_id: qrCode.id,
         start_date: dateRange.from.toISOString(),
         end_date: (dateRange.to || dateRange.from).toISOString(),
-        format,
+        format: exportFormat,
         date_label: dateRangeLabel,
       });
-      const blob = new Blob(
-        [response.data],
-        { type: format === 'pdf' ? 'application/pdf' : 'text/csv' }
-      );
+      const blob = new Blob([response.data], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${(qrCode.name || 'analytics').replace(/[^a-z0-9_\-]/gi, '_')}_analytics.${format}`;
+      a.download = `${(qrCode.name || 'analytics').replace(/[^a-z0-9_\-]/gi, '_')}_analytics.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
