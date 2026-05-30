@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
-import HubSpotConnectBanner from '@/components/leads/HubSpotConnectBanner';
+import HubSpotConnectButton from '@/components/leads/HubSpotConnectBanner';
 
 const HUBSPOT_CONNECTOR_ID = '6a19b113175aa6149bf214b0';
 
@@ -340,45 +340,46 @@ export default function Leads() {
             <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
             <p className="text-gray-500 mt-1">Contacts collected via your Digital Business Cards</p>
           </div>
-          {leads.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {hubspotConnected && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {leads.length > 0 && (
+              <>
+                {hubspotConnected && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSyncAll}
+                    disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
+                    className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
+                    {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
+                  </Button>
+                )}
+                {dupeEmailCount > 0 && (
+                  <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
+                    <FilterX className="w-4 h-4 mr-2" />
+                    Review Dupes ({dupeEmailCount})
+                  </Button>
+                )}
+                <Button variant="outline" onClick={handleExport}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
                 <Button
                   variant="outline"
-                  onClick={handleSyncAll}
-                  disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
-                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                  onClick={() => hasExported && setShowClearModal(true)}
+                  title={!hasExported ? 'Export the list first to enable this' : 'Permanently delete all leads'}
+                  className={hasExported
+                    ? 'border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400'
+                    : 'border-gray-200 text-gray-400 cursor-not-allowed'}
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
-                  {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear All {!hasExported && <span className="text-xs ml-1">(export first)</span>}
                 </Button>
-              )}
-              {dupeEmailCount > 0 && (
-                <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
-                  <FilterX className="w-4 h-4 mr-2" />
-                  Review Dupes ({dupeEmailCount})
-                </Button>
-              )}
-              <Button variant="outline" onClick={handleExport}>
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => hasExported && setShowClearModal(true)}
-                title={!hasExported ? 'Export the list first to enable this' : 'Permanently delete all leads'}
-                className={hasExported
-                  ? 'border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400'
-                  : 'border-gray-200 text-gray-400 cursor-not-allowed'}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear All {!hasExported && <span className="text-xs ml-1">(export first)</span>}
-              </Button>
-            </div>
-          )}
+              </>
+            )}
+            <HubSpotConnectButton connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
+          </div>
         </div>
-
-        <HubSpotConnectBanner connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
 
         {!hasExported && leads.length > 0 && (
           <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
