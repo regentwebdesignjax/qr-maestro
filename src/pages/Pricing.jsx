@@ -97,7 +97,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+        <div className="grid md:grid-cols-3 gap-8 items-stretch">
           {/* Free Plan */}
           <Card className="border-2 flex flex-col">
             <CardHeader>
