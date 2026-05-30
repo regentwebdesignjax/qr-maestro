@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Container } from '@/components/ui/Container';
 
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full mx-auto px-4 sm:px-6 py-16">
+      <Container className="py-16">
         <article className="prose prose-sm max-w-none font-poppins">
           {/* Header */}
           <div className="mb-12">
@@ -108,7 +109,7 @@ export default function TermsOfService() {
             </Link>
           </div>
         </article>
-      </div>
+      </Container>
     </div>
   );
 }
