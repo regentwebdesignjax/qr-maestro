@@ -33,7 +33,7 @@ export default {
     // Media storage proxy — intercept /storage/* on qr-sensei.com and stream
     // the file from media.base44.com so the base44 domain never appears in
     // the browser address bar or in response headers visible to the end user.
-    if ((host === 'qr-sensei.com' || host.endsWith('.qr-sensei.com')) && url.pathname.startsWith('/storage/')) {
+    if (host === 'qr-sensei.com' && url.pathname.startsWith('/storage/')) {
       const upstreamPath = url.pathname.slice('/storage'.length); // preserve leading /
       const upstreamUrl = `https://media.base44.com${upstreamPath}${url.search}`;
 
@@ -71,8 +71,10 @@ export default {
       }
     }
 
-    // Pass through all qr-sensei.com zone traffic to the normal origin (React app)
-    if (host === 'qr-sensei.com' || host.endsWith('.qr-sensei.com')) {
+    // Pass through only the main domain (and www) to the React app.
+    // Any other subdomain of qr-sensei.com (e.g. scan.qr-sensei.com) is a
+    // customer custom hostname and falls through to the short_code redirect below.
+    if (host === 'qr-sensei.com' || host === 'www.qr-sensei.com') {
       return fetch(request);
     }
 
