@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { maskUrl } from '@/lib/maskUrl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wifi, User, FileText, Share2, Tag, Image, Music, Phone, MessageCircle, Link as LinkIcon } from 'lucide-react';
+import { Wifi, User, FileText, Share2, Music, CheckCircle, Copy, Check, ExternalLink, Facebook, Instagram, Linkedin, Youtube } from 'lucide-react';
 import BrandedLayout from '@/components/qr/BrandedLayout';
 import BusinessCardDisplay from '@/components/qr/BusinessCardDisplay';
 import TicketCouponDisplay from '@/components/qr/TicketCouponDisplay';
@@ -47,97 +47,108 @@ function parseVCard(content) {
   return result;
 }
 
+function IconBadge({ children, branded, className = '' }) {
+  return (
+    <div className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 ${branded ? 'branded-icon-bg' : 'bg-[#BB3F27]'} ${className}`}>
+      <div className={branded ? 'branded-icon' : 'text-white'}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ActionButton({ href, onClick, children, branded, className = '' }) {
+  const base = `w-full py-3 px-4 rounded-xl font-semibold text-sm tracking-wide transition-opacity hover:opacity-90 flex items-center justify-center gap-2 ${className}`;
+  const colorClass = branded ? 'lp-btn' : 'bg-[#BB3F27] text-white';
+  if (href) return <a href={href} target="_blank" rel="noopener noreferrer" className={`${base} ${colorClass}`}>{children}</a>;
+  return <button onClick={onClick} className={`${base} ${colorClass}`}>{children}</button>;
+}
+
 function WifiDisplay({ content, branded }) {
   const wifi = parseWifi(content);
+  const [copied, setCopied] = useState(false);
+
+  const copyPassword = () => {
+    navigator.clipboard.writeText(wifi.password || '').then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-blue-50'}`}>
-            <Wifi className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-blue-600'}`} />
+    <Card className="w-full max-w-sm rounded-2xl shadow-md border-0">
+      <CardContent className="pt-6 pb-6 space-y-5">
+        <div className="flex items-center gap-4">
+          <IconBadge branded={branded}>
+            <Wifi className="w-7 h-7" />
+          </IconBadge>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">WiFi Network</p>
+            <p className="text-xl font-bold text-[#142024]">{wifi.ssid || 'Network'}</p>
           </div>
-          <CardTitle>WiFi Network</CardTitle>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {wifi.ssid && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Network Name</p>
-            <p className="text-lg font-semibold">{wifi.ssid}</p>
-          </div>
-        )}
-        {wifi.password && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Password</p>
-            <p className="text-lg font-mono bg-gray-100 px-3 py-1 rounded">{wifi.password}</p>
-          </div>
-        )}
+
         {wifi.encryption && wifi.encryption !== 'nopass' && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Security</p>
-            <p className="font-medium">{wifi.encryption === 'WPA' ? 'WPA/WPA2' : wifi.encryption}</p>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="font-medium">Security:</span>
+            <span className="bg-gray-100 rounded px-2 py-0.5 font-mono text-xs">{wifi.encryption === 'WPA' ? 'WPA/WPA2' : wifi.encryption}</span>
           </div>
         )}
-        <p className="text-xs text-gray-400 pt-2">Go to Settings → WiFi to connect manually</p>
+
+        {wifi.password && (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Password</p>
+            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3">
+              <span className="flex-1 font-mono text-sm text-[#142024] break-all">{wifi.password}</span>
+              <button
+                onClick={copyPassword}
+                className="shrink-0 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                title="Copy password"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-400" />}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {wifi.password && (
+          <ActionButton onClick={copyPassword} branded={branded}>
+            {copied ? <><Check className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Password</>}
+          </ActionButton>
+        )}
+
+        <p className="text-xs text-gray-400 text-center pt-1">Open Settings → Wi-Fi to connect manually</p>
       </CardContent>
     </Card>
   );
 }
 
-function VCardDisplay({ content, branded }) {
+function VCardConfirmation({ content, branded }) {
   const vc = parseVCard(content);
-  
-  const handleSaveContact = () => {
+
+  const handleSaveAgain = () => {
+    const blob = new Blob([content], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = 'data:text/vcard;base64,' + btoa(content);
+    link.href = url;
     link.download = `${vc.fn || 'contact'}.vcf`;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-purple-50'}`}>
-            <User className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-purple-600'}`} />
-          </div>
-          <CardTitle>Contact Info</CardTitle>
+    <Card className="w-full max-w-sm rounded-2xl shadow-md border-0">
+      <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-4">
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center ${branded ? 'branded-icon-bg' : 'bg-[#BB3F27]'}`}>
+          <CheckCircle className={`w-8 h-8 ${branded ? 'branded-icon' : 'text-white'}`} />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {vc.fn && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Name</p>
-            <p className="text-lg font-semibold">{vc.fn}</p>
-          </div>
-        )}
-        {vc.tel && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Phone</p>
-            <a href={`tel:${vc.tel}`} className="text-blue-600 font-medium">{vc.tel}</a>
-          </div>
-        )}
-        {vc.email && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Email</p>
-            <a href={`mailto:${vc.email}`} className="text-blue-600 font-medium">{vc.email}</a>
-          </div>
-        )}
-        {vc.org && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Company</p>
-            <p className="font-medium">{vc.org}</p>
-          </div>
-        )}
-        {vc.url && (
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Website</p>
-            <a href={vc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-medium hover:underline">{vc.url}</a>
-          </div>
-        )}
-        <button onClick={handleSaveContact} className={`w-full px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity mt-4 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
-          Save Contact
-        </button>
+        <div>
+          <p className="text-xl font-bold text-[#142024]">Contact Saved!</p>
+          {vc.fn && <p className="text-gray-500 text-sm mt-1">{vc.fn} has been added to your contacts.</p>}
+        </div>
+        <ActionButton onClick={handleSaveAgain} branded={branded} className="mt-2">
+          <User className="w-4 h-4" /> Save Again
+        </ActionButton>
       </CardContent>
     </Card>
   );
@@ -145,41 +156,25 @@ function VCardDisplay({ content, branded }) {
 
 function TextDisplay({ content, name, branded }) {
   return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-green-50'}`}>
-            <FileText className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-green-600'}`} />
+    <Card className="w-full max-w-sm rounded-2xl shadow-md border-0">
+      <CardContent className="pt-6 pb-6 space-y-5">
+        <div className="flex items-center gap-4">
+          <IconBadge branded={branded}>
+            <FileText className="w-7 h-7" />
+          </IconBadge>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Message</p>
+            <p className="text-xl font-bold text-[#142024]">{name || 'Note'}</p>
           </div>
-          <CardTitle>{name || 'Message'}</CardTitle>
         </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-700 whitespace-pre-wrap">{content}</p>
+        <div className="bg-gray-50 rounded-xl px-4 py-4">
+          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">{content}</p>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function PDFDisplay({ content, name, branded }) {
-  return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-red-50'}`}>
-            <FileText className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-red-600'}`} />
-          </div>
-          <CardTitle>PDF Document</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <a href={content} target="_blank" rel="noopener noreferrer" className={`inline-block px-4 py-2 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
-          Open PDF
-        </a>
-      </CardContent>
-    </Card>
-  );
-}
 
 function SocialDisplay({ content, branded }) {
   const parseSocial = (text) => {
@@ -197,12 +192,8 @@ function SocialDisplay({ content, branded }) {
   };
 
   const getUrl = (platform, handle) => {
-    if (handle.startsWith('http://') || handle.startsWith('https://')) {
-      return handle;
-    }
-    // Remove @ prefix if present for platforms that use it
+    if (handle.startsWith('http://') || handle.startsWith('https://')) return handle;
     const cleanHandle = handle.replace(/^@/, '');
-    
     const platformUrls = {
       facebook: `https://facebook.com/${cleanHandle}`,
       instagram: `https://instagram.com/${cleanHandle}`,
@@ -220,45 +211,56 @@ function SocialDisplay({ content, branded }) {
     return platformUrls[platform] || `https://${platform}.com/${cleanHandle}`;
   };
 
-  const KNOWN_PLATFORMS = ['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'tiktok', 'threads', 'telegram', 'rss', 'podcast', 'website', 'blog'];
+  const PLATFORM_META = {
+    facebook: { label: 'Facebook', icon: Facebook, color: '#1877F2' },
+    instagram: { label: 'Instagram', icon: Instagram, color: '#E1306C' },
+    linkedin: { label: 'LinkedIn', icon: Linkedin, color: '#0A66C2' },
+    youtube: { label: 'YouTube', icon: Youtube, color: '#FF0000' },
+    x: { label: 'X (Twitter)', icon: null, color: '#000000' },
+    tiktok: { label: 'TikTok', icon: null, color: '#010101' },
+    threads: { label: 'Threads', icon: null, color: '#000000' },
+    telegram: { label: 'Telegram', icon: null, color: '#0088CC' },
+  };
+
   const social = parseSocial(content);
 
   return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-blue-50'}`}>
-            <Share2 className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-blue-600'}`} />
+    <Card className="w-full max-w-sm rounded-2xl shadow-md border-0">
+      <CardContent className="pt-6 pb-6 space-y-5">
+        <div className="flex items-center gap-4">
+          <IconBadge branded={branded}>
+            <Share2 className="w-7 h-7" />
+          </IconBadge>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Follow Us</p>
+            <p className="text-xl font-bold text-[#142024]">Social Links</p>
           </div>
-          <CardTitle>Social Links</CardTitle>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {Object.entries(social).map(([platform, handle]) => {
-          const isCustom = platform.startsWith('custom_');
-          const displayLabel = isCustom ? platform.replace('custom_', '') : platform;
-          const displayUrl = isCustom ? handle : getUrl(platform, handle);
-          const isKnown = KNOWN_PLATFORMS.includes(platform);
-          return (
-            <a
-              key={platform}
-              href={displayUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              {(!isKnown || isCustom) && (
-                <LinkIcon className="w-4 h-4 text-gray-400 shrink-0" />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 capitalize font-medium">{displayLabel}</p>
-                <p className="text-sm text-gray-700 hover:text-primary font-medium break-words">
-                  {handle.replace(/^https?:\/\/(www\.)?/, '')}
-                </p>
-              </div>
-            </a>
-          );
-        })}
+        <div className="space-y-2.5">
+          {Object.entries(social).map(([platform, handle]) => {
+            const isCustom = platform.startsWith('custom_');
+            const displayLabel = isCustom ? platform.replace('custom_', '') : (PLATFORM_META[platform]?.label || platform);
+            const displayUrl = isCustom ? handle : getUrl(platform, handle);
+            const meta = PLATFORM_META[platform];
+            const IconComp = meta?.icon;
+            const accentColor = branded ? undefined : (meta?.color || '#BB3F27');
+            return (
+              <a
+                key={platform}
+                href={displayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90 ${branded ? 'lp-btn' : 'text-white'}`}
+                style={branded ? undefined : { backgroundColor: accentColor }}
+              >
+                {IconComp
+                  ? <IconComp className="w-5 h-5 shrink-0" />
+                  : <ExternalLink className="w-5 h-5 shrink-0" />}
+                <span className="capitalize">{displayLabel}</span>
+              </a>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -281,88 +283,40 @@ function CouponDisplay({ content, branded, design_config }) {
   return <TicketCouponDisplay couponData={couponData} branded={branded} design_config={design_config} />;
 }
 
-function ImageDisplay({ content, branded }) {
+
+function MP3Display({ content, branded, design_config = {} }) {
   const safeUrl = maskUrl(content);
+  const accentColor = design_config.landing_theme_color || '#BB3F27';
   return (
-    <Card className="max-w-md w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-purple-50'}`}>
-            <Image className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-purple-600'}`} />
+    <Card className="w-full max-w-sm rounded-2xl shadow-md border-0">
+      <CardContent className="pt-6 pb-6 space-y-5">
+        <div className="flex items-center gap-4">
+          <IconBadge branded={branded}>
+            <Music className="w-7 h-7" />
+          </IconBadge>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Audio Track</p>
+            <p className="text-xl font-bold text-[#142024]">Listen</p>
           </div>
-          <CardTitle>Image</CardTitle>
         </div>
-      </CardHeader>
-      <CardContent>
-        <img src={safeUrl} alt="Shared" className="w-full rounded-lg" />
+        <div
+          className="rounded-xl p-4"
+          style={{ backgroundColor: `${accentColor}18` }}
+        >
+          <audio
+            controls
+            className="w-full"
+            style={{ accentColor }}
+          >
+            <source src={safeUrl} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function MP3Display({ content, branded }) {
-  const safeUrl = maskUrl(content);
-  return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-indigo-50'}`}>
-            <Music className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-indigo-600'}`} />
-          </div>
-          <CardTitle>Audio</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <audio controls className="w-full">
-          <source src={safeUrl} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
-      </CardContent>
-    </Card>
-  );
-}
-
-function CallDisplay({ content, branded }) {
-  return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-green-50'}`}>
-            <Phone className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-green-600'}`} />
-          </div>
-          <CardTitle>Call</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-gray-600 mb-3">Tap to call</p>
-        <a href={`tel:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
-          {content}
-        </a>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SMSDisplay({ content, branded }) {
-  return (
-    <Card className="max-w-sm w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg ${branded ? 'branded-icon-bg' : 'bg-blue-50'}`}>
-            <MessageCircle className={`w-6 h-6 ${branded ? 'branded-icon' : 'text-blue-600'}`} />
-          </div>
-          <CardTitle>Send SMS</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-gray-600 mb-3">Tap to send a text message</p>
-        <a href={`sms:${content}`} className={`inline-block px-6 py-3 rounded-lg font-medium hover:opacity-90 ${branded ? 'lp-btn' : 'bg-primary text-white'}`}>
-          {content}
-        </a>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function Redirect() {
   const [state, setState] = useState({ status: 'loading', data: null });
@@ -406,6 +360,39 @@ export default function Redirect() {
 
         if (data.content_type === 'inactive') {
           setState({ status: 'inactive', data });
+          return;
+        }
+
+        // Direct redirects — no landing page needed
+        if (data.content_type === 'pdf') {
+          window.location.href = maskUrl(data.content);
+          return;
+        }
+        if (data.content_type === 'image') {
+          window.location.href = maskUrl(data.content);
+          return;
+        }
+        if (data.content_type === 'call') {
+          window.location.href = `tel:${data.content.trim()}`;
+          return;
+        }
+        if (data.content_type === 'sms') {
+          window.location.href = `sms:${data.content.trim()}`;
+          return;
+        }
+        if (data.content_type === 'vcard') {
+          // Auto-download the .vcf then show confirmation screen
+          const vc = parseVCard(data.content);
+          const blob = new Blob([data.content], { type: 'text/vcard' });
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = `${vc.fn || 'contact'}.vcf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+          setState({ status: 'display', data });
           return;
         }
 
@@ -508,15 +495,11 @@ export default function Redirect() {
     <BrandedLayout designConfig={dc}>
       <style>{`.lp-btn { background-color: ${btnBg} !important; color: ${btnText} !important; } .lp-btn:hover { background-color: ${darkenHex(btnBg)} !important; }`}</style>
       {data.content_type === 'wifi' && <WifiDisplay content={data.content} branded={branded} />}
-      {data.content_type === 'vcard' && <VCardDisplay content={data.content} branded={branded} />}
+      {data.content_type === 'vcard' && <VCardConfirmation content={data.content} branded={branded} />}
       {data.content_type === 'text' && <TextDisplay content={data.content} name={data.name} branded={branded} />}
-      {data.content_type === 'pdf' && <PDFDisplay content={data.content} name={data.name} branded={branded} />}
       {data.content_type === 'social' && <SocialDisplay content={data.content} branded={branded} />}
       {data.content_type === 'coupon' && <CouponDisplay content={data.content} branded={branded} design_config={dc} />}
-      {data.content_type === 'image' && <ImageDisplay content={data.content} branded={branded} />}
-      {data.content_type === 'mp3' && <MP3Display content={data.content} branded={branded} />}
-      {data.content_type === 'call' && <CallDisplay content={data.content} branded={branded} />}
-      {data.content_type === 'sms' && <SMSDisplay content={data.content} branded={branded} />}
+      {data.content_type === 'mp3' && <MP3Display content={data.content} branded={branded} design_config={dc} />}
     </BrandedLayout>
   );
 }
