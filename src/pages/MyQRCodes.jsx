@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,8 @@ export default function MyQRCodes() {
   const [showFolders, setShowFolders] = useState(false);
   const [customDomainBase, setCustomDomainBase] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
   const [pageSize, setPageSize] = useState(() => {
     const saved = localStorage.getItem(PAGE_SIZE_KEY);
     return saved ? parseInt(saved, 10) : 25;
@@ -170,9 +172,52 @@ export default function MyQRCodes() {
     ? qrCodes
     : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
 
-  const totalPages = Math.max(1, Math.ceil(filteredQrCodes.length / pageSize));
+  const handleSort = (column) => {
+    if (sortColumn !== column) {
+      setSortColumn(column);
+      setSortDirection('asc');
+    } else if (sortDirection === 'asc') {
+      setSortDirection('desc');
+    } else {
+      setSortColumn(null);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const sortedQrCodes = useMemo(() => {
+    if (!sortColumn) return filteredQrCodes;
+    return [...filteredQrCodes].sort((a, b) => {
+      let aVal, bVal;
+      switch (sortColumn) {
+        case 'name':
+          aVal = a.name.toLowerCase(); bVal = b.name.toLowerCase(); break;
+        case 'type':
+          aVal = a.type; bVal = b.type; break;
+        case 'content_type':
+          aVal = a.content_type; bVal = b.content_type; break;
+        case 'folder': {
+          const aFolder = folders.find(f => f.id === qrFolderMap[a.id]);
+          const bFolder = folders.find(f => f.id === qrFolderMap[b.id]);
+          aVal = (aFolder?.name || '').toLowerCase();
+          bVal = (bFolder?.name || '').toLowerCase();
+          break;
+        }
+        case 'scans':
+          aVal = a.scan_count || 0; bVal = b.scan_count || 0; break;
+        case 'created':
+          aVal = new Date(a.created_date); bVal = new Date(b.created_date); break;
+        default: return 0;
+      }
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filteredQrCodes, sortColumn, sortDirection, folders, qrFolderMap]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedQrCodes.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
-  const visibleQrCodes = filteredQrCodes.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const visibleQrCodes = sortedQrCodes.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const handlePageSizeChange = (val) => {
     const newSize = parseInt(val, 10);
@@ -348,8 +393,11 @@ export default function MyQRCodes() {
                       onDelete={(id) => deleteQRMutation.mutate(id)}
                       onMoveToFolder={handleMoveToFolder}
                       customDomainBase={customDomainBase}
+                      sortColumn={sortColumn}
+                      sortDirection={sortDirection}
+                      onSort={handleSort}
                     />
-                    {filteredQrCodes.length > 25 && (
+                    {sortedQrCodes.length > 25 && (
                       <div className="flex items-center justify-between pt-4 mt-2 border-t">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <span>Show</span>
@@ -408,7 +456,7 @@ export default function MyQRCodes() {
                       customDomainBase={customDomainBase}
                     />
                   ))}
-                  {filteredQrCodes.length > 25 && (
+                  {sortedQrCodes.length > 25 && (
                     <div className="flex items-center justify-between pt-2">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
