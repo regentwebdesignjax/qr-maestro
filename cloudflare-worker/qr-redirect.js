@@ -19,7 +19,7 @@
  *   2. DNS → delete any A/CNAME for "customers", add:
  *        Type: AAAA  Name: customers  IPv6: 100::  Proxy: Proxied
  *   3. Workers & Pages → qr-redirect → Settings → Domains & Routes → Add Route
- *        Pattern: */*   Zone: qr-sensei.com
+ *        Pattern: all paths   Zone: qr-sensei.com
  *   4. SSL/TLS → Custom Hostnames → Fallback Origin: customers.qr-sensei.com
  *
  * Deploy: Workers & Pages → qr-redirect → Edit Code → paste this file → Deploy
