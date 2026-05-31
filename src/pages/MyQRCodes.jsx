@@ -347,6 +347,7 @@ export default function MyQRCodes() {
                       qrFolderMap={qrFolderMap}
                       onDelete={(id) => deleteQRMutation.mutate(id)}
                       onMoveToFolder={handleMoveToFolder}
+                      customDomainBase={customDomainBase}
                     />
                     {filteredQrCodes.length > 25 && (
                       <div className="flex items-center justify-between pt-4 mt-2 border-t">
