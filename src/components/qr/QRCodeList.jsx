@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,20 @@ import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, Fold
 import { format } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { downloadQRPng, downloadQRSvg } from '@/utils/qrExport';
+import { downloadQRPng, downloadQRSvg, renderQR } from '@/utils/qrExport';
+
+function MiniQR({ qr, customDomainBase }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const effectiveQr = (customDomainBase && qr.type === 'dynamic' && !qr.redirect_base_url)
+      ? { ...qr, redirect_base_url: customDomainBase }
+      : qr;
+    renderQR(canvas, effectiveQr, 200).catch(() => {});
+  }, [qr, customDomainBase]);
+  return <canvas ref={canvasRef} className="rounded border" style={{ width: 48, height: 48 }} />;
+}
 
 const formatContentType = (type) => ({
   url: 'URL',
@@ -33,7 +46,7 @@ const formatContentType = (type) => ({
   business_page: 'Business Page'
 }[type] || type);
 
-export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder }) {
+export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder, customDomainBase }) {
   const [selected, setSelected] = useState(new Set());
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
@@ -101,6 +114,7 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
               <TableHead className="w-10">
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </TableHead>
+              <TableHead className="w-16" />
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Content Type</TableHead>
@@ -119,6 +133,9 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
                 <TableRow key={qr.id} className={selected.has(qr.id) ? 'bg-primary/5' : ''}>
                   <TableCell>
                     <Checkbox checked={selected.has(qr.id)} onCheckedChange={() => toggleOne(qr.id)} />
+                  </TableCell>
+                  <TableCell>
+                    <MiniQR qr={qr} customDomainBase={customDomainBase} />
                   </TableCell>
                   <TableCell className="font-medium">
                     {editingId === qr.id ? (
