@@ -37,11 +37,20 @@
     "crm_synced": {
       "type": "boolean",
       "default": false,
-      "description": "Whether this lead has been synced to the user's CRM"
+      "description": "Whether this lead has been synced to HubSpot"
     },
     "crm_sync_error": {
       "type": "string",
-      "description": "Last sync error message, if any"
+      "description": "Last HubSpot sync error message, if any"
+    },
+    "sf_synced": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this lead has been synced to Salesforce"
+    },
+    "sf_sync_error": {
+      "type": "string",
+      "description": "Last Salesforce sync error message, if any"
     }
   },
   "required": [
