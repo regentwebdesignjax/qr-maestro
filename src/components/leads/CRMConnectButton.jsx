@@ -26,15 +26,22 @@ const SALESFORCE_CONNECTOR_ID = '68e14191f0b0a5a83d54d9b5';
 export default function CRMConnectButton({ hubspotConnected, salesforceConnected, onConnectionChange }) {
   const [isLoading, setIsLoading] = useState(null); // 'hubspot' | 'salesforce' | null
   const [disconnectTarget, setDisconnectTarget] = useState(null); // 'hubspot' | 'salesforce' | null
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleConnect = async (crm) => {
     setIsLoading(crm);
+    setErrorMsg(null);
     try {
       const connectorId = crm === 'hubspot' ? HUBSPOT_CONNECTOR_ID : SALESFORCE_CONNECTOR_ID;
       const url = await base44.connectors.connectAppUser(connectorId);
       const popup = window.open(url, '_blank');
+      if (!popup) {
+        // Popup blocked — navigate in current tab as fallback
+        window.location.href = url;
+        return;
+      }
       const timer = setInterval(() => {
-        if (!popup || popup.closed) {
+        if (popup.closed) {
           clearInterval(timer);
           setIsLoading(null);
           onConnectionChange();
@@ -42,6 +49,8 @@ export default function CRMConnectButton({ hubspotConnected, salesforceConnected
       }, 500);
     } catch (error) {
       setIsLoading(null);
+      const label = crm === 'hubspot' ? 'HubSpot' : 'Salesforce';
+      setErrorMsg(`Could not connect ${label}: ${error?.message || 'Unknown error'}`);
       console.error(`Failed to connect ${crm}:`, error);
     }
   };
@@ -155,6 +164,9 @@ export default function CRMConnectButton({ hubspotConnected, salesforceConnected
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      {errorMsg && (
+        <p className="text-xs text-red-500 mt-1 max-w-[260px] text-right">{errorMsg}</p>
+      )}
     </>
   );
 }
