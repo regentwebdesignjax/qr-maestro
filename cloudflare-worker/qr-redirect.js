@@ -30,6 +30,41 @@ export default {
     const url = new URL(request.url);
     const host = url.hostname;
 
+    // Media storage proxy — intercept /storage/* on qr-sensei.com and stream
+    // the file from media.base44.com so the base44 domain never appears in
+    // the browser address bar or in response headers visible to the end user.
+    if ((host === 'qr-sensei.com' || host.endsWith('.qr-sensei.com')) && url.pathname.startsWith('/storage/')) {
+      const upstreamPath = url.pathname.slice('/storage'.length); // preserve leading /
+      const upstreamUrl = `https://media.base44.com${upstreamPath}${url.search}`;
+
+      // Check Cloudflare's edge cache first
+      const cache = caches.default;
+      const cacheKey = new Request(upstreamUrl, { method: 'GET' });
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached;
+
+      const upstream = await fetch(upstreamUrl, {
+        cf: { cacheTtl: 86400, cacheEverything: true },
+      });
+
+      // Forward the response with clean headers (no base44 server fingerprints)
+      const headers = new Headers(upstream.headers);
+      headers.delete('x-powered-by');
+      headers.delete('server');
+
+      const proxyResponse = new Response(upstream.body, {
+        status: upstream.status,
+        statusText: upstream.statusText,
+        headers,
+      });
+
+      if (upstream.ok) {
+        await cache.put(cacheKey, proxyResponse.clone());
+      }
+
+      return proxyResponse;
+    }
+
     // Pass through all qr-sensei.com zone traffic to the normal origin (React app)
     if (host === 'qr-sensei.com' || host.endsWith('.qr-sensei.com')) {
       return fetch(request);
