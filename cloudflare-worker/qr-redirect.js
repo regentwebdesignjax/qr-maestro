@@ -10,8 +10,8 @@
  *   2. Worker Route (all paths) on the qr-sensei.com zone routes ALL zone traffic
  *      here, including CF for SaaS custom hostname requests.
  *   3. This Worker checks the Host header:
- *      - qr-sensei.com / *.qr-sensei.com → pass through to normal origin (app)
- *      - anything else (customer custom hostname) → 302 redirect
+ *      - qr-sensei.com and subdomains pass through to normal origin (app)
+ *      - anything else (customer custom hostname) gets a 302 redirect
  *
  * Cloudflare Dashboard setup (one-time):
  *   1. Workers & Pages → qr-redirect → Settings → Domains & Routes
