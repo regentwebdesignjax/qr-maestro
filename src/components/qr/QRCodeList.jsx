@@ -26,7 +26,7 @@ function MiniQR({ qr, customDomainBase }) {
       : qr;
     renderQR(canvas, effectiveQr, 200).catch(() => {});
   }, [qr, customDomainBase]);
-  return <canvas ref={canvasRef} className="rounded border" style={{ width: 48, height: 48 }} />;
+  return <canvas ref={canvasRef} className="rounded border" style={{ width: 64, height: 64 }} />;
 }
 
 const formatContentType = (type) => ({
@@ -114,7 +114,7 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
               <TableHead className="w-10">
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </TableHead>
-              <TableHead className="w-16" />
+              <TableHead className="w-20" />
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Content Type</TableHead>
