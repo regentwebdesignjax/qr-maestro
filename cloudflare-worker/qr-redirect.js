@@ -7,7 +7,7 @@
  *   1. customers.qr-sensei.com is the CF for SaaS fallback origin.
  *      Its DNS record is AAAA 100:: (originless, proxied) — it is never
  *      TCP-connected; the Worker Route intercepts before any connection is made.
- *   2. Worker Route */* on the qr-sensei.com zone routes ALL zone traffic
+ *   2. Worker Route (all paths) on the qr-sensei.com zone routes ALL zone traffic
  *      here, including CF for SaaS custom hostname requests.
  *   3. This Worker checks the Host header:
  *      - qr-sensei.com / *.qr-sensei.com → pass through to normal origin (app)
@@ -37,32 +37,38 @@ export default {
       const upstreamPath = url.pathname.slice('/storage'.length); // preserve leading /
       const upstreamUrl = `https://media.base44.com${upstreamPath}${url.search}`;
 
-      // Check Cloudflare's edge cache first
-      const cache = caches.default;
-      const cacheKey = new Request(upstreamUrl, { method: 'GET' });
-      const cached = await cache.match(cacheKey);
-      if (cached) return cached;
+      try {
+        // Check Cloudflare's edge cache first
+        const cache = caches.default;
+        const cacheKey = new Request(upstreamUrl, { method: 'GET' });
+        const cached = await cache.match(cacheKey);
+        if (cached) return cached;
 
-      const upstream = await fetch(upstreamUrl, {
-        cf: { cacheTtl: 86400, cacheEverything: true },
-      });
+        const upstream = await fetch(upstreamUrl, {
+          redirect: 'follow', // follow any CDN hops at the origin level
+          cf: { cacheTtl: 86400, cacheEverything: true },
+        });
 
-      // Forward the response with clean headers (no base44 server fingerprints)
-      const headers = new Headers(upstream.headers);
-      headers.delete('x-powered-by');
-      headers.delete('server');
+        // Forward the response with clean headers (no base44 server fingerprints)
+        const headers = new Headers(upstream.headers);
+        headers.delete('x-powered-by');
+        headers.delete('server');
 
-      const proxyResponse = new Response(upstream.body, {
-        status: upstream.status,
-        statusText: upstream.statusText,
-        headers,
-      });
+        const proxyResponse = new Response(upstream.body, {
+          status: upstream.status,
+          statusText: upstream.statusText,
+          headers,
+        });
 
-      if (upstream.ok) {
-        await cache.put(cacheKey, proxyResponse.clone());
+        if (upstream.ok) {
+          await cache.put(cacheKey, proxyResponse.clone());
+        }
+
+        return proxyResponse;
+      } catch (err) {
+        // On proxy error fall back to a direct redirect so the file still opens
+        return Response.redirect(`https://media.base44.com${upstreamPath}${url.search}`, 302);
       }
-
-      return proxyResponse;
     }
 
     // Pass through all qr-sensei.com zone traffic to the normal origin (React app)
