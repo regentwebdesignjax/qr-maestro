@@ -10,7 +10,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, FolderInput, Folder, FileImage, FileCode2 } from 'lucide-react';
+import { Edit, Trash2, BarChart3, ExternalLink, Download, Pencil, Check, X, FolderInput, Folder, FileImage, FileCode2, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,6 +27,24 @@ function MiniQR({ qr, customDomainBase }) {
     renderQR(canvas, effectiveQr, 200).catch(() => {});
   }, [qr, customDomainBase]);
   return <canvas ref={canvasRef} className="rounded border" style={{ width: 64, height: 64 }} />;
+}
+
+function SortableHead({ column, label, sortColumn, sortDirection, onSort, className }) {
+  const isActive = sortColumn === column;
+  const Icon = isActive && sortDirection === 'asc' ? ChevronUp
+    : isActive && sortDirection === 'desc' ? ChevronDown
+    : ChevronsUpDown;
+  return (
+    <TableHead className={className}>
+      <button
+        onClick={() => onSort(column)}
+        className={`flex items-center gap-1 hover:text-foreground transition-colors ${isActive ? 'text-primary font-semibold' : ''}`}
+      >
+        {label}
+        <Icon className="w-3.5 h-3.5 shrink-0" />
+      </button>
+    </TableHead>
+  );
 }
 
 const formatContentType = (type) => ({
@@ -46,7 +64,7 @@ const formatContentType = (type) => ({
   business_page: 'Business Page'
 }[type] || type);
 
-export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder, customDomainBase }) {
+export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete, folders = [], qrFolderMap = {}, onMoveToFolder, customDomainBase, sortColumn, sortDirection, onSort }) {
   const [selected, setSelected] = useState(new Set());
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
@@ -115,12 +133,12 @@ export default function QRCodeList({ qrCodes, isPro, subActive = true, onDelete,
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </TableHead>
               <TableHead className="w-20" />
-              <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Content Type</TableHead>
-              <TableHead>Folder</TableHead>
-              <TableHead>Scans</TableHead>
-              <TableHead>Created</TableHead>
+              <SortableHead column="name" label="Name" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+              <SortableHead column="type" label="Type" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+              <SortableHead column="content_type" label="Content Type" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+              <SortableHead column="folder" label="Folder" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+              <SortableHead column="scans" label="Scans" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+              <SortableHead column="created" label="Created" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
