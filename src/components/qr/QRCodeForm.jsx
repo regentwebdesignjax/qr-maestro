@@ -1258,7 +1258,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
             )}
 
             {/* Landing Page Branding — for dynamic types that have a landing page (not url/business_card which redirect directly) */}
-            {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.content_type !== 'linkpages' && formData.content_type !== 'pdf' && formData.content_type !== 'image' && formData.type === 'dynamic' && (
+            {formData.content_type !== 'business_card' && formData.content_type !== 'url' && formData.content_type !== 'linkpages' && formData.content_type !== 'pdf' && formData.content_type !== 'image' && formData.content_type !== 'call' && formData.content_type !== 'sms' && formData.type === 'dynamic' && (
               <div className="border rounded-xl p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="font-semibold text-sm">Landing Page Branding</Label>
