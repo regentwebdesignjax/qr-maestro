@@ -154,16 +154,8 @@ export default function MyQRCodes() {
     moveToFolderMutation.mutate({ qrIds, folderId });
   };
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
-  const subActive = user.role === 'admin' || user.subscription_tier !== 'pro' || user.subscription_status === 'active';
+  const isPro = user ? (user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active')) : false;
+  const subActive = user ? (user.role === 'admin' || user.subscription_tier !== 'pro' || user.subscription_status === 'active') : false;
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
   const canCreateStatic = isPro || staticCount < 10;
@@ -214,6 +206,14 @@ export default function MyQRCodes() {
       return 0;
     });
   }, [filteredQrCodes, sortColumn, sortDirection, folders, qrFolderMap]);
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const totalPages = Math.max(1, Math.ceil(sortedQrCodes.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
