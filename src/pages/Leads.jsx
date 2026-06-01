@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
-import CRMConnectButton from '@/components/leads/CRMConnectButton';
+import HubSpotConnectButton from '@/components/leads/HubSpotConnectBanner';
+
+const HUBSPOT_CONNECTOR_ID = '6a19b113175aa6149bf214b0';
 
 // Helper function to extract phone from notes field
 function extractPhoneFromNotes(notes) {
@@ -206,11 +208,8 @@ export default function Leads() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [hubspotConnected, setHubspotConnected] = useState(false);
-  const [salesforceConnected, setSalesforceConnected] = useState(false);
   const [syncingIds, setSyncingIds] = useState(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
-  const [syncingIdsSF, setSyncingIdsSF] = useState(new Set());
-  const [syncingAllSF, setSyncingAllSF] = useState(false);
   const queryClient = useQueryClient();
 
   const checkHubSpotConnection = useCallback(async () => {
@@ -222,15 +221,6 @@ export default function Leads() {
     }
   }, []);
 
-  const checkSalesforceConnection = useCallback(async () => {
-    try {
-      const res = await base44.functions.invoke('checkSalesforceConnection', {});
-      setSalesforceConnected(res.data?.connected === true);
-    } catch {
-      setSalesforceConnected(false);
-    }
-  }, []);
-
   useEffect(() => {
     base44.auth.me()
       .then(u => { setUser(u); })
@@ -238,11 +228,8 @@ export default function Leads() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      checkHubSpotConnection();
-      checkSalesforceConnection();
-    }
-  }, [user, checkHubSpotConnection, checkSalesforceConnection]);
+    if (user) checkHubSpotConnection();
+  }, [user, checkHubSpotConnection]);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads', user?.email],
@@ -288,28 +275,6 @@ export default function Leads() {
       queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
     } finally {
       setSyncingAll(false);
-    }
-  };
-
-  const handleSyncLeadSF = async (leadId) => {
-    setSyncingIdsSF(prev => new Set([...prev, leadId]));
-    try {
-      await base44.functions.invoke('syncLeadToSalesforce', { lead_id: leadId });
-      queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
-    } finally {
-      setSyncingIdsSF(prev => { const n = new Set(prev); n.delete(leadId); return n; });
-    }
-  };
-
-  const handleSyncAllSF = async () => {
-    const unsynced = leads.filter(l => !l.sf_synced);
-    if (unsynced.length === 0) return;
-    setSyncingAllSF(true);
-    try {
-      await base44.functions.invoke('syncLeadToSalesforce', { lead_ids: unsynced.map(l => l.id) });
-      queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
-    } finally {
-      setSyncingAllSF(false);
     }
   };
 
@@ -389,17 +354,6 @@ export default function Leads() {
                     {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
                   </Button>
                 )}
-                {salesforceConnected && (
-                  <Button
-                    variant="outline"
-                    onClick={handleSyncAllSF}
-                    disabled={syncingAllSF || leads.filter(l => !l.sf_synced).length === 0}
-                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${syncingAllSF ? 'animate-spin' : ''}`} />
-                    {syncingAllSF ? 'Syncing...' : `Sync to Salesforce (${leads.filter(l => !l.sf_synced).length})`}
-                  </Button>
-                )}
                 {dupeEmailCount > 0 && (
                   <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
                     <FilterX className="w-4 h-4 mr-2" />
@@ -423,16 +377,7 @@ export default function Leads() {
                 </Button>
               </>
             )}
-            <CRMConnectButton
-              hubspotConnected={hubspotConnected}
-              salesforceConnected={salesforceConnected}
-              onConnectionChange={() => {
-                setHubspotConnected(false);
-                setSalesforceConnected(false);
-                checkHubSpotConnection();
-                checkSalesforceConnection();
-              }}
-            />
+            <HubSpotConnectButton connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
           </div>
         </div>
 
@@ -475,8 +420,7 @@ export default function Leads() {
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
                         <th className="pb-3 pr-4 font-medium">Notes</th>
                         <th className="pb-3 pr-4 font-medium">Date</th>
-                        {hubspotConnected && <th className="pb-3 pr-4 font-medium">HubSpot</th>}
-                        {salesforceConnected && <th className="pb-3 font-medium">Salesforce</th>}
+                        {hubspotConnected && <th className="pb-3 font-medium">HubSpot</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -485,7 +429,6 @@ export default function Leads() {
                         const displayPhone = lead.lead_phone || phoneFromNotes;
                         const cleanedNotes = cleanNotes(lead.notes);
                         const isSyncing = syncingIds.has(lead.id);
-                        const isSyncingSF = syncingIdsSF.has(lead.id);
                         return (
                         <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
                           <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
@@ -520,7 +463,7 @@ export default function Leads() {
                             {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
                           </td>
                           {hubspotConnected && (
-                            <td className="py-3 pr-4">
+                            <td className="py-3">
                               {lead.crm_synced ? (
                                 <span className="flex items-center gap-1 text-xs text-green-600">
                                   <CheckCircle className="w-3.5 h-3.5" /> Synced
@@ -546,33 +489,6 @@ export default function Leads() {
                               )}
                             </td>
                           )}
-                          {salesforceConnected && (
-                            <td className="py-3">
-                              {lead.sf_synced ? (
-                                <span className="flex items-center gap-1 text-xs text-green-600">
-                                  <CheckCircle className="w-3.5 h-3.5" /> Synced
-                                </span>
-                              ) : (
-                                <button
-                                  onClick={() => handleSyncLeadSF(lead.id)}
-                                  disabled={isSyncingSF}
-                                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
-                                >
-                                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSF ? 'animate-spin' : ''}`} />
-                                  {isSyncingSF ? 'Syncing' : 'Sync'}
-                                </button>
-                              )}
-                              {lead.sf_sync_error && (
-                                <span className="flex items-center gap-1 text-xs text-red-500 mt-0.5 cursor-help group relative">
-                                  <XCircle className="w-3 h-3 shrink-0" />
-                                  <span>Sync failed</span>
-                                  <span className="absolute left-0 top-full mt-1 z-10 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-3 py-2 w-64 shadow-lg whitespace-normal leading-relaxed">
-                                    {lead.sf_sync_error}
-                                  </span>
-                                </span>
-                              )}
-                            </td>
-                          )}
                         </tr>
                         );
                       })}
@@ -587,7 +503,6 @@ export default function Leads() {
                   const displayPhone = lead.lead_phone || phoneFromNotes;
                   const cleanedNotes = cleanNotes(lead.notes);
                   const isSyncing = syncingIds.has(lead.id);
-                  const isSyncingSF = syncingIdsSF.has(lead.id);
                   return (
                   <div key={lead.id} className="rounded-xl border border-border bg-gray-50/50 p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -620,30 +535,6 @@ export default function Leads() {
                           {lead.crm_sync_error && (
                             <span className="text-xs text-red-400 max-w-[160px] text-right leading-snug">
                               {lead.crm_sync_error}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {salesforceConnected && (
-                        <div className="flex flex-col items-end gap-0.5">
-                          {lead.sf_synced ? (
-                            <span className="flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle className="w-3.5 h-3.5" /> SF Synced
-                            </span>
-                          ) : (
-                            <button onClick={() => handleSyncLeadSF(lead.id)} disabled={isSyncingSF} className="flex items-center gap-1 text-xs text-blue-600 disabled:opacity-50">
-                              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSF ? 'animate-spin' : ''}`} />
-                              {isSyncingSF ? 'Syncing' : 'SF Sync'}
-                            </button>
-                          )}
-                          {lead.sf_sync_error && (
-                            <span className="flex items-center gap-1 text-xs text-red-500">
-                              <XCircle className="w-3 h-3 shrink-0" /> SF Sync failed
-                            </span>
-                          )}
-                          {lead.sf_sync_error && (
-                            <span className="text-xs text-red-400 max-w-[160px] text-right leading-snug">
-                              {lead.sf_sync_error}
                             </span>
                           )}
                         </div>
