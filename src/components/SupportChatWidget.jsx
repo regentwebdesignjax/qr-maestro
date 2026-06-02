@@ -105,16 +105,42 @@ export default function SupportChatWidget() {
     return unsubscribe;
   }, [conversation?.id]);
 
+  const buildUserContext = (u) => {
+    if (!u) return { visitor_type: 'guest', is_authenticated: false };
+    const isPro = u.role === 'admin' || (u.subscription_tier === 'pro' && u.subscription_status === 'active');
+    return {
+      visitor_type: u.role === 'admin' ? 'admin' : isPro ? 'black_belt_customer' : 'white_belt_customer',
+      is_authenticated: true,
+      plan: isPro ? 'Black Belt' : 'White Belt',
+      subscription_tier: u.subscription_tier || 'free',
+      subscription_status: u.subscription_status || 'none',
+      user_name: u.full_name || u.email,
+      user_email: u.email,
+      role: u.role,
+    };
+  };
+
   const initConversation = async () => {
     if (conversation) return;
     setInitializing(true);
     try {
+      const userContext = buildUserContext(user);
       const conv = await base44.agents.createConversation({
         agent_name: AGENT_NAME,
-        metadata: { name: 'Support Chat' },
+        metadata: {
+          name: 'Support Chat',
+          user_context: userContext,
+        },
       });
       setConversation(conv);
       setMessages(conv.messages || []);
+
+      // Inject a hidden system context message so the agent knows who it's speaking to
+      const contextLine = userContext.is_authenticated
+        ? `[SYSTEM CONTEXT — NOT VISIBLE TO USER]: The person chatting is ${userContext.user_name} (${userContext.user_email}), a registered QR Sensei customer on the **${userContext.plan}** plan (status: ${userContext.subscription_status}). ${userContext.plan === 'Black Belt' ? 'They are a paid Black Belt member — treat them as a high-priority customer and offer full feature assistance including creating QR codes on their behalf if requested.' : 'They are on the free White Belt plan — you can helpfully guide them toward upgrading where relevant.'}`
+        : `[SYSTEM CONTEXT — NOT VISIBLE TO USER]: The person chatting is an anonymous visitor or prospect, not yet logged in. They are browsing the QR Sensei website. Focus on answering general questions, explaining features and plans, and guiding them toward signing up.`;
+
+      await base44.agents.addMessage(conv, { role: 'user', content: contextLine });
     } catch (e) {
       console.error('Failed to create conversation', e);
     } finally {
@@ -148,8 +174,9 @@ export default function SupportChatWidget() {
     }
   };
 
+  // Filter out the hidden system context message injected at conversation start
   const visibleMessages = messages.filter(
-    (m) => m.role === 'user' || (m.role === 'assistant' && m.content)
+    (m) => (m.role === 'user' && !m.content?.startsWith('[SYSTEM CONTEXT')) || (m.role === 'assistant' && m.content)
   );
 
   const isStreaming = messages.some(
@@ -240,14 +267,17 @@ export default function SupportChatWidget() {
           {/* Input */}
           <div className="border-t border-border px-3 py-2 shrink-0 flex gap-2 items-end">
             {!user ? (
-              <div className="w-full text-center text-xs text-muted-foreground py-2">
-                <button
-                  onClick={() => base44.auth.redirectToLogin()}
-                  className="text-primary underline font-medium"
-                >
-                  Log in
-                </button>{' '}
-                to chat with the Master Assistant
+              <div className="w-full text-center text-xs text-muted-foreground py-2 space-y-1">
+                <p>You are chatting as a <span className="font-medium text-foreground">guest visitor</span>.</p>
+                <p>
+                  <button
+                    onClick={() => base44.auth.redirectToLogin()}
+                    className="text-primary underline font-medium"
+                  >
+                    Log in
+                  </button>{' '}
+                  to get personalized account help.
+                </p>
               </div>
             ) : (
               <>
