@@ -277,6 +277,9 @@ export default function Layout({ children, currentPageName }) {
       {/* Bottom Nav — mobile only */}
       {user && <BottomNav user={user} />}
 
+      {/* Support Chat Widget */}
+      <SupportChatWidget />
+
       {/* Footer */}
       <footer className="bg-white border-t border-border py-8 mt-auto hidden md:block">
         <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
