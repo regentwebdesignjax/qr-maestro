@@ -58,6 +58,10 @@ export default function FAQ() {
     {
       question: 'Do QR codes expire?',
       answer: 'No. Static QR codes work indefinitely. Dynamic QR codes remain active as long as your account is in good standing and the code has not been deleted from your dashboard.'
+    },
+    {
+      question: 'What is HubSpot integration and how does it work?',
+      answer: 'HubSpot integration is a Black Belt (Pro) feature that automatically syncs leads captured from your Digital Business Cards directly to your HubSpot CRM. When someone scans your QR code and submits their contact information, you can sync that lead to HubSpot with one click. The lead\'s name, email, phone, and tags are transferred to your CRM, helping you organize and automate follow-ups. You can also use custom labels to automatically enroll contacts into HubSpot workflows or dynamic lists for targeted campaigns.'
     }
   ];
 
