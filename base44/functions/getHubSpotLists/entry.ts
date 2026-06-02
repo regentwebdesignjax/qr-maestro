@@ -18,26 +18,37 @@ Deno.serve(async (req) => {
       return Response.json({ connected: false, lists: [] });
     }
 
-    // Fetch static lists using the stable v1 contacts lists API
-    // The v3 lists endpoint's listType filter is not a valid query param and causes 4xx responses
-    const res = await fetch(
-      'https://api.hubapi.com/contacts/v1/lists/static?count=500',
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    const headers = { Authorization: `Bearer ${accessToken}` };
 
-    if (!res.ok) {
-      // Connected but HubSpot API failed (e.g. scope issue) — degrade gracefully
-      console.error('HubSpot lists API error:', res.status, await res.text());
-      return Response.json({ connected: true, lists: [] });
+    // Try v3 lists API first (requires crm.lists.read scope)
+    const v3Res = await fetch('https://api.hubapi.com/crm/v3/lists/?limit=500', { headers });
+    if (v3Res.ok) {
+      const v3Data = await v3Res.json();
+      const lists = (v3Data.lists || [])
+        .filter((l: { listType: string }) => l.listType === 'STATIC')
+        .map((l: { listId: number; name: string }) => ({ id: String(l.listId), name: l.name }));
+      return Response.json({ connected: true, lists });
     }
 
-    const data = await res.json();
-    const lists = (data.lists || []).map((l: { listId: number; name: string }) => ({
-      id: String(l.listId),
-      name: l.name,
-    }));
+    // Fall back to v1 static lists endpoint (requires contacts scope)
+    const v1Res = await fetch('https://api.hubapi.com/contacts/v1/lists/static?count=250', { headers });
+    if (v1Res.ok) {
+      const v1Data = await v1Res.json();
+      const lists = (v1Data.lists || []).map((l: { listId: number; name: string }) => ({
+        id: String(l.listId),
+        name: l.name,
+      }));
+      return Response.json({ connected: true, lists });
+    }
 
-    return Response.json({ connected: true, lists });
+    // Both APIs failed — likely a scope issue on the HubSpot connector
+    const v1ErrText = await v1Res.text().catch(() => '');
+    console.error(`HubSpot list APIs failed. v3: ${v3Res.status}, v1: ${v1Res.status} ${v1ErrText}`);
+    return Response.json({
+      connected: true,
+      lists: [],
+      listsError: `Your HubSpot connection doesn't have list permissions (v3: ${v3Res.status}, v1: ${v1Res.status}). Reconnect HubSpot to grant list access.`,
+    });
   } catch (error) {
     console.error('getHubSpotLists error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });

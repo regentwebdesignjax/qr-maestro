@@ -147,6 +147,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [hubspotLists, setHubspotLists] = useState([]);
   const [hubspotConnected, setHubspotConnected] = useState(false);
   const [loadingHubspotLists, setLoadingHubspotLists] = useState(false);
+  const [hubspotListsError, setHubspotListsError] = useState(null);
 
   // Parse initial data for editing mode
   const parseInitialData = () => {
@@ -350,9 +351,10 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
           const data = res?.data ?? res;
           setHubspotConnected(data?.connected === true);
           setHubspotLists(data?.lists || []);
+          setHubspotListsError(data?.listsError || null);
         }
       })
-      .catch(() => { if (!cancelled) { setHubspotConnected(false); setHubspotLists([]); } })
+      .catch(() => { if (!cancelled) { setHubspotConnected(false); setHubspotLists([]); setHubspotListsError(null); } })
       .finally(() => { if (!cancelled) setLoadingHubspotLists(false); });
     return () => { cancelled = true; };
   }, [formData.content_type]);
@@ -722,6 +724,8 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                           ))}
                         </SelectContent>
                       </Select>
+                    ) : hubspotListsError ? (
+                      <p className="text-xs text-amber-600">{hubspotListsError}</p>
                     ) : (
                       <p className="text-xs text-muted-foreground">
                         {hubspotConnected
