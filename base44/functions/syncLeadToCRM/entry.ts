@@ -28,16 +28,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'HubSpot not connected. Please connect your HubSpot account.' }, { status: 400 });
     }
 
-    // Check if a custom 'lead_tag' property exists in HubSpot
-    let leadTagPropertyExists = false;
-    try {
-      const propRes = await fetch('https://api.hubapi.com/crm/v3/properties/contacts/lead_tag', {
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-      });
-      leadTagPropertyExists = propRes.ok;
-    } catch {
-      leadTagPropertyExists = false;
-    }
+    const authHeader = { 'Authorization': `Bearer ${accessToken}` };
+
+    // Check which custom contact properties exist in HubSpot
+    const [leadTagRes, qrSourceRes] = await Promise.all([
+      fetch('https://api.hubapi.com/crm/v3/properties/contacts/lead_tag', { headers: authHeader }).catch(() => ({ ok: false })),
+      fetch('https://api.hubapi.com/crm/v3/properties/contacts/qr_sensei_source', { headers: authHeader }).catch(() => ({ ok: false })),
+    ]);
+    const leadTagPropertyExists = leadTagRes.ok;
+    const qrSourcePropertyExists = qrSourceRes.ok;
 
     const results = [];
 
@@ -57,26 +56,26 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Look up the source QR code to get an optional HubSpot list target
-      let hubspotListId: string | null = null;
+      // Look up the source QR code for the optional HubSpot segment label
+      let hubspotSegmentLabel: string | null = null;
       if (lead.qr_code_id) {
         try {
           const qrCodes = await base44.asServiceRole.entities.QRCode.filter({ id: lead.qr_code_id });
-          hubspotListId = qrCodes?.[0]?.design_config?.hubspot_list_id || null;
+          const qr = qrCodes?.[0];
+          hubspotSegmentLabel = qr?.design_config?.hubspot_segment_label || null;
         } catch {
-          // Non-fatal — proceed without list assignment
+          // Non-fatal — proceed without segment label
         }
       }
 
       // Build HubSpot contact properties
-      const properties = {
+      const properties: Record<string, string> = {
         email: lead.lead_email,
         firstname: lead.lead_name?.split(' ')[0] || lead.lead_name || '',
         lastname: lead.lead_name?.split(' ').slice(1).join(' ') || '',
         phone: lead.lead_phone || '',
       };
 
-      // Only include lead_tag if the custom property exists in HubSpot
       if (lead.lead_tag && leadTagPropertyExists) {
         properties.lead_tag = lead.lead_tag;
       }
@@ -85,32 +84,31 @@ Deno.serve(async (req) => {
         properties.company = lead.qr_code_name;
       }
 
+      // Write the segment label to the qr_sensei_source property so customers can
+      // use active (dynamic) HubSpot lists filtered on this field — the Lists API
+      // membership endpoints reject user-level OAuth tokens, so a property-based
+      // approach is the only option without a private-app token.
+      if (hubspotSegmentLabel && qrSourcePropertyExists) {
+        properties.qr_sensei_source = hubspotSegmentLabel;
+      }
+
       // Upsert contact in HubSpot (creates or updates by email)
       const hsRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { ...authHeader, 'Content-Type': 'application/json' },
         body: JSON.stringify({ properties }),
       });
 
       const hsData = await hsRes.json();
 
-      let contactId: string | null = null;
-
       if (hsRes.ok) {
-        contactId = hsData.id;
         await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
-        results.push({ id, success: true, hubspot_id: contactId });
+        results.push({ id, success: true, hubspot_id: hsData.id });
       } else if (hsRes.status === 409) {
         // Contact already exists — search by email to get the numeric ID, then PATCH
         const searchRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { ...authHeader, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             filterGroups: [{
               filters: [{ propertyName: 'email', operator: 'EQ', value: lead.lead_email }]
@@ -124,16 +122,12 @@ Deno.serve(async (req) => {
         if (existingId) {
           const updateRes = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${existingId}`, {
             method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { ...authHeader, 'Content-Type': 'application/json' },
             body: JSON.stringify({ properties }),
           });
           if (updateRes.ok) {
-            contactId = existingId;
             await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
-            results.push({ id, success: true, hubspot_id: contactId, updated: true });
+            results.push({ id, success: true, hubspot_id: existingId, updated: true });
           } else {
             const errData = await updateRes.json();
             const errMsg = errData.message || 'HubSpot update failed';
@@ -149,28 +143,6 @@ Deno.serve(async (req) => {
         const errMsg = hsData.message || 'HubSpot sync failed';
         await base44.asServiceRole.entities.Lead.update(id, { crm_sync_error: errMsg });
         results.push({ id, success: false, error: errMsg });
-      }
-
-      // Add contact to the target HubSpot static list (non-fatal if it fails).
-      // Uses the v3 Lists API (requires crm.lists.write). The legacy v1 lists API
-      // was sunset by HubSpot on 2026-04-30, so there is no usable fallback.
-      if (contactId && hubspotListId) {
-        try {
-          const v3ListRes = await fetch(`https://api.hubapi.com/crm/v3/lists/${hubspotListId}/memberships/add-from-ids`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ recordIdsToAdd: [contactId] }),
-          });
-          if (!v3ListRes.ok) {
-            const errText = await v3ListRes.text().catch(() => '');
-            console.error(`v3 list add failed for contact ${contactId}: status=${v3ListRes.status} body=${errText}`);
-          }
-        } catch (listErr) {
-          console.error(`List membership add failed for contact ${contactId}:`, listErr.message);
-        }
       }
     }
 
