@@ -27,12 +27,20 @@ ${message}
 Submitted via QR Sensei contact form.
     `.trim();
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: 'qrsensei@regentmediagroup.com',
-      from_name: 'QR Sensei Contact Form',
-      subject: `[QR Sensei] ${reason} — from ${name}`,
-      body: emailBody,
-    });
+    // Platform SendEmail only works for registered app users.
+    // Route notification to all admin users.
+    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+    if (admins.length === 0) {
+      console.warn('No admin users found to receive contact form submission.');
+    }
+    await Promise.all(admins.map(admin =>
+      base44.asServiceRole.integrations.Core.SendEmail({
+        to: admin.email,
+        from_name: 'QR Sensei Contact Form',
+        subject: `[QR Sensei Contact] ${reason} — from ${name} <${email}>`,
+        body: emailBody,
+      })
+    ));
 
     return Response.json({ success: true });
   } catch (error) {
