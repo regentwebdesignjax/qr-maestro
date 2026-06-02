@@ -12,6 +12,7 @@ import BulkCreate from './pages/BulkCreate';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import LinkpageLanding from './pages/LinkpageLanding';
+import Contact from './pages/Contact';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -92,6 +93,7 @@ function App() {
             {/* Linkpage landing route — no auth, no layout */}
             <Route path="/linkpage/:slug" element={<LinkpageLanding />} />
             <Route path="/BulkCreate" element={<LayoutWrapper currentPageName="BulkCreate"><BulkCreate /></LayoutWrapper>} />
+            <Route path="/Contact" element={<LayoutWrapper currentPageName="Contact"><Contact /></LayoutWrapper>} />
             {/* All other routes go through auth */}
             <Route path="/*" element={<AuthenticatedApp />} />
           </Routes>

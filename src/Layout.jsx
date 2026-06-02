@@ -129,6 +129,9 @@ export default function Layout({ children, currentPageName }) {
                   <Link to="/Pricing" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
                     Pricing
                   </Link>
+                  <Link to="/Contact" className="text-foreground/70 hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
+                    Contact
+                  </Link>
                 </>
               }
             </nav>
@@ -285,6 +288,9 @@ export default function Layout({ children, currentPageName }) {
             </Link>
             <Link to="/TermsOfService" className="text-muted-foreground hover:text-primary transition-colors">
               Terms of Service
+            </Link>
+            <Link to="/Contact" className="text-muted-foreground hover:text-primary transition-colors">
+              Contact
             </Link>
           </div>
         </div>
