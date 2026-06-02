@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       const conn = await base44.asServiceRole.connectors.getCurrentAppUserConnection(HUBSPOT_CONNECTOR_ID);
       accessToken = conn.accessToken;
     } catch {
-      return Response.json({ error: 'HubSpot not connected' }, { status: 400 });
+      return Response.json({ connected: false, lists: [] });
     }
 
     // Fetch static lists only — active/smart lists cannot be manually targeted
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       name: l.name,
     }));
 
-    return Response.json({ lists });
+    return Response.json({ connected: true, lists });
   } catch (error) {
     console.error('getHubSpotLists error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
