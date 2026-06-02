@@ -136,7 +136,11 @@
         },
         "hubspot_list_id": {
           "type": "string",
-          "description": "Optional HubSpot static list ID to add synced contacts to"
+          "description": "Deprecated — replaced by hubspot_segment_label. Retained for backward compatibility."
+        },
+        "hubspot_segment_label": {
+          "type": "string",
+          "description": "Label written to the qr_maestro_source contact property in HubSpot. Use this value as the filter condition when creating an active (dynamic) list in HubSpot."
         },
         "cta_button_color": {
           "type": "string",

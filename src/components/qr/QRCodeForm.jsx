@@ -144,10 +144,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
   const [linkpageFormStep, setLinkpageFormStep] = useState(0);
-  const [hubspotLists, setHubspotLists] = useState([]);
-  const [hubspotConnected, setHubspotConnected] = useState(false);
-  const [loadingHubspotLists, setLoadingHubspotLists] = useState(false);
-  const [hubspotListsError, setHubspotListsError] = useState(null);
 
   // Parse initial data for editing mode
   const parseInitialData = () => {
@@ -340,24 +336,6 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     }
   }, [formData.content_type]);
 
-  // Fetch HubSpot static lists when the form is for a business card
-  useEffect(() => {
-    if (formData.content_type !== 'business_card') return;
-    let cancelled = false;
-    setLoadingHubspotLists(true);
-    base44.functions.invoke('getHubSpotLists', {})
-      .then((res) => {
-        if (!cancelled) {
-          const data = res?.data ?? res;
-          setHubspotConnected(data?.connected === true);
-          setHubspotLists(data?.lists || []);
-          setHubspotListsError(data?.listsError || null);
-        }
-      })
-      .catch(() => { if (!cancelled) { setHubspotConnected(false); setHubspotLists([]); setHubspotListsError(null); } })
-      .finally(() => { if (!cancelled) setLoadingHubspotLists(false); });
-    return () => { cancelled = true; };
-  }, [formData.content_type]);
 
   const isPro = user?.role === 'admin' || user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
 
@@ -706,34 +684,18 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     <p className="text-xs text-muted-foreground">Used to track and route leads in your CSV exports.</p>
                   </div>
                   <div className="space-y-1 pt-2">
-                    <Label htmlFor="hubspot-list">HubSpot List <span className="text-gray-400 font-normal">(Optional)</span></Label>
-                    {loadingHubspotLists ? (
-                      <p className="text-xs text-muted-foreground">Loading lists…</p>
-                    ) : hubspotLists.length > 0 ? (
-                      <Select
-                        value={formData.design_config?.hubspot_list_id || ''}
-                        onValueChange={(v) => handleDesignChange('hubspot_list_id', v === 'none' ? '' : v)}
-                      >
-                        <SelectTrigger id="hubspot-list">
-                          <SelectValue placeholder="Select a static list…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {hubspotLists.map((list) => (
-                            <SelectItem key={list.id} value={list.id}>{list.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : hubspotListsError ? (
-                      <p className="text-xs text-amber-600">{hubspotListsError}</p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">
-                        {hubspotConnected
-                          ? 'No static lists found in your HubSpot account. Create one in HubSpot first.'
-                          : 'Connect HubSpot on the Leads page to assign leads to a static list.'}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">Synced leads from this card will be added to the selected list. Only static lists are supported.</p>
+                    <Label htmlFor="hubspot-segment-label">HubSpot Segment Label <span className="text-gray-400 font-normal">(Optional)</span></Label>
+                    <Input
+                      id="hubspot-segment-label"
+                      placeholder="e.g. Trade Show 2026"
+                      value={formData.design_config?.hubspot_segment_label || ''}
+                      onChange={(e) => handleDesignChange('hubspot_segment_label', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This value is written to the <code className="bg-muted px-1 rounded text-xs">qr_maestro_source</code> property on each synced HubSpot contact.
+                      In HubSpot, create a custom contact property named <strong>qr_maestro_source</strong>, then create an{' '}
+                      <strong>active (dynamic) list</strong> filtered where <em>qr_maestro_source = [your label]</em> — contacts will auto-enroll on sync.
+                    </p>
                   </div>
                 </>
               )}
