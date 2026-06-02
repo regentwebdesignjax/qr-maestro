@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     // Check which custom contact properties exist in HubSpot
     const [leadTagRes, qrSourceRes] = await Promise.all([
       fetch('https://api.hubapi.com/crm/v3/properties/contacts/lead_tag', { headers: authHeader }).catch(() => ({ ok: false })),
-      fetch('https://api.hubapi.com/crm/v3/properties/contacts/qr_maestro_source', { headers: authHeader }).catch(() => ({ ok: false })),
+      fetch('https://api.hubapi.com/crm/v3/properties/contacts/qr_sensei_source', { headers: authHeader }).catch(() => ({ ok: false })),
     ]);
     const leadTagPropertyExists = leadTagRes.ok;
     const qrSourcePropertyExists = qrSourceRes.ok;
@@ -84,12 +84,12 @@ Deno.serve(async (req) => {
         properties.company = lead.qr_code_name;
       }
 
-      // Write the segment label to the qr_maestro_source property so customers can
+      // Write the segment label to the qr_sensei_source property so customers can
       // use active (dynamic) HubSpot lists filtered on this field — the Lists API
       // membership endpoints reject user-level OAuth tokens, so a property-based
       // approach is the only option without a private-app token.
       if (hubspotSegmentLabel && qrSourcePropertyExists) {
-        properties.qr_maestro_source = hubspotSegmentLabel;
+        properties.qr_sensei_source = hubspotSegmentLabel;
       }
 
       // Upsert contact in HubSpot (creates or updates by email)

@@ -692,9 +692,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                       onChange={(e) => handleDesignChange('hubspot_segment_label', e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      This value is written to the <code className="bg-muted px-1 rounded text-xs">qr_maestro_source</code> property on each synced HubSpot contact.
-                      In HubSpot, create a custom contact property named <strong>qr_maestro_source</strong>, then create an{' '}
-                      <strong>active (dynamic) list</strong> filtered where <em>qr_maestro_source = [your label]</em> — contacts will auto-enroll on sync.
+                      This value is written to the <code className="bg-muted px-1 rounded text-xs">qr_sensei_source</code> property on each synced HubSpot contact.
+                      In HubSpot, create a custom contact property named <strong>qr_sensei_source</strong>, then create an{' '}
+                      <strong>active (dynamic) list</strong> filtered where <em>qr_sensei_source = [your label]</em> — contacts will auto-enroll on sync.
                     </p>
                   </div>
                 </>
