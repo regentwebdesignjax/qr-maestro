@@ -8,14 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle2, Mail } from 'lucide-react';
 
 const REASONS = [
-  'General Inquiry',
-  'Technical Support',
-  'Billing & Subscription',
-  'Feature Request',
-  'Partnership / Sales',
-  'Report a Bug',
-  'Other',
-];
+'General Inquiry',
+'Technical Support',
+'Billing & Subscription',
+'Feature Request',
+'Partnership / Sales',
+'Report a Bug',
+'Other'];
+
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', org_name: '', reason: '', message: '' });
@@ -23,8 +23,8 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  const handleReason = (val) => setForm(prev => ({ ...prev, reason: val }));
+  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleReason = (val) => setForm((prev) => ({ ...prev, reason: val }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,25 +52,25 @@ export default function Contact() {
             <Mail className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">Contact & Support</h1>
-          <p className="text-white/70 text-base sm:text-lg">
-            Have a question or need help? We typically respond within one business day.
+          <p className="text-white/70 text-base sm:text-lg">Have a question or need help? We typically respond within 1 business day.
+
           </p>
         </div>
       </div>
 
       {/* Form */}
       <div className="max-w-2xl mx-auto px-4 py-12">
-        {submitted ? (
-          <div className="text-center py-16">
+        {submitted ?
+        <div className="text-center py-16">
             <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Message Sent!</h2>
             <p className="text-muted-foreground">Thanks for reaching out. We'll get back to you soon.</p>
-            <Button className="mt-6" onClick={() => { setSubmitted(false); setForm({ name: '', email: '', org_name: '', reason: '', message: '' }); }}>
+            <Button className="mt-6" onClick={() => {setSubmitted(false);setForm({ name: '', email: '', org_name: '', reason: '', message: '' });}}>
               Send Another Message
             </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-card space-y-5">
+          </div> :
+
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-card space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <Label htmlFor="name">Name <span className="text-primary">*</span></Label>
@@ -94,9 +94,9 @@ export default function Contact() {
                   <SelectValue placeholder="Select a reason..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {REASONS.map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
+                  {REASONS.map((r) =>
+                <SelectItem key={r} value={r}>{r}</SelectItem>
+                )}
                 </SelectContent>
               </Select>
             </div>
@@ -104,14 +104,14 @@ export default function Contact() {
             <div className="space-y-1.5">
               <Label htmlFor="message">Message <span className="text-primary">*</span></Label>
               <Textarea
-                id="message"
-                name="message"
-                placeholder="Tell us how we can help..."
-                value={form.message}
-                onChange={handleChange}
-                className="min-h-[140px] resize-y"
-                required
-              />
+              id="message"
+              name="message"
+              placeholder="Tell us how we can help..."
+              value={form.message}
+              onChange={handleChange}
+              className="min-h-[140px] resize-y"
+              required />
+            
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -120,8 +120,8 @@ export default function Contact() {
               {loading ? 'Sending...' : 'Send Message'}
             </Button>
           </form>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
