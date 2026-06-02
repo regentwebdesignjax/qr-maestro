@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
 
     const headers = { Authorization: `Bearer ${accessToken}` };
 
-    // Try v3 lists API first (requires crm.lists.read scope)
+    // Use the v3 lists API (requires crm.lists.read scope).
+    // NOTE: the legacy v1 lists API was sunset by HubSpot on 2026-04-30 and now
+    // returns 403/404, so v3 is the only viable path.
     const v3Res = await fetch('https://api.hubapi.com/crm/v3/lists/?limit=500', { headers });
     if (v3Res.ok) {
       const v3Data = await v3Res.json();
@@ -30,24 +32,40 @@ Deno.serve(async (req) => {
       return Response.json({ connected: true, lists });
     }
 
-    // Fall back to v1 static lists endpoint (requires contacts scope)
-    const v1Res = await fetch('https://api.hubapi.com/contacts/v1/lists/static?count=250', { headers });
-    if (v1Res.ok) {
-      const v1Data = await v1Res.json();
-      const lists = (v1Data.lists || []).map((l: { listId: number; name: string }) => ({
-        id: String(l.listId),
-        name: l.name,
-      }));
-      return Response.json({ connected: true, lists });
+    // Surface HubSpot's actual error category/message so the cause is diagnosable.
+    // 403 + MISSING_SCOPES => the connector's HubSpot app lacks crm.lists.read.
+    // 403 with a user-permission message => the connected user lacks "Lists" access.
+    const v3ErrText = await v3Res.text().catch(() => '');
+    let category = '';
+    let hsMessage = '';
+    try {
+      const parsed = JSON.parse(v3ErrText);
+      category = parsed.category || '';
+      hsMessage = parsed.message || '';
+    } catch {
+      // non-JSON error body — fall through with raw text
+    }
+    console.error(`HubSpot v3 lists failed. status=${v3Res.status} category=${category} message=${hsMessage} raw=${v3ErrText}`);
+
+    let listsError: string;
+    if (v3Res.status === 403 && category === 'MISSING_SCOPES') {
+      listsError = 'The HubSpot connector app is missing the crm.lists.read scope. This must be enabled on the connector itself (Base44 side) before reconnecting will help.';
+    } else if (v3Res.status === 403) {
+      listsError = hsMessage
+        ? `HubSpot denied list access: ${hsMessage}`
+        : 'HubSpot denied list access (403). The connected user may lack "Lists" permission in HubSpot, or the connector app is missing the crm.lists.read scope.';
+    } else {
+      listsError = hsMessage
+        ? `HubSpot list lookup failed (${v3Res.status}): ${hsMessage}`
+        : `HubSpot list lookup failed (${v3Res.status}).`;
     }
 
-    // Both APIs failed — likely a scope issue on the HubSpot connector
-    const v1ErrText = await v1Res.text().catch(() => '');
-    console.error(`HubSpot list APIs failed. v3: ${v3Res.status}, v1: ${v1Res.status} ${v1ErrText}`);
     return Response.json({
       connected: true,
       lists: [],
-      listsError: `Your HubSpot connection doesn't have list permissions (v3: ${v3Res.status}, v1: ${v1Res.status}). Reconnect HubSpot to grant list access.`,
+      listsError,
+      hubspotStatus: v3Res.status,
+      hubspotCategory: category,
     });
   } catch (error) {
     console.error('getHubSpotLists error:', error.message);
