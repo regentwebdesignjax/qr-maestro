@@ -50,6 +50,8 @@ function MessageBubble({ message }) {
 
 export default function SupportChatWidget() {
   const [open, setOpen] = useState(false);
+  const [showNudge, setShowNudge] = useState(false);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [user, setUser] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -70,6 +72,19 @@ export default function SupportChatWidget() {
       }
     });
   }, []);
+
+  // Timed nudge — show after 30 seconds if chat hasn't been opened
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!open && !nudgeDismissed) setShowNudge(true);
+    }, 30000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Hide nudge when chat opens
+  useEffect(() => {
+    if (open) setShowNudge(false);
+  }, [open]);
 
   // Auto-scroll to bottom when messages update
   useEffect(() => {
@@ -143,6 +158,29 @@ export default function SupportChatWidget() {
 
   return (
     <>
+      {/* Nudge prompt */}
+      {showNudge && !open && (
+        <div className="fixed bottom-24 right-6 z-50 w-64 bg-white rounded-2xl shadow-xl border border-border p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <button
+            onClick={() => { setShowNudge(false); setNudgeDismissed(true); }}
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Dismiss"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+          <p className="text-xs font-semibold text-foreground mb-1">👋 Need help?</p>
+          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+            I can answer questions about features, plans, upgrades, and more.
+          </p>
+          <button
+            onClick={() => { setShowNudge(false); setNudgeDismissed(true); handleOpen(); }}
+            className="w-full bg-primary text-primary-foreground text-xs font-semibold rounded-lg py-2 hover:bg-primary/90 transition-colors"
+          >
+            Chat with QR Sensei Master
+          </button>
+        </div>
+      )}
+
       {/* Floating button */}
       <button
         onClick={open ? () => setOpen(false) : handleOpen}
