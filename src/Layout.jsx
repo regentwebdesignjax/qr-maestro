@@ -14,6 +14,7 @@ import {
 '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import BottomNav from '@/components/BottomNav';
+import SupportChatWidget from '@/components/SupportChatWidget';
 
 export default function Layout({ children, currentPageName }) {
   usePageMeta(currentPageName);
