@@ -265,41 +265,35 @@ export default function SupportChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-border px-3 py-2 shrink-0 flex gap-2 items-end">
-            {!user ? (
-              <div className="w-full text-center text-xs text-muted-foreground py-2 space-y-1">
-                <p>You are chatting as a <span className="font-medium text-foreground">guest visitor</span>.</p>
-                <p>
-                  <button
-                    onClick={() => base44.auth.redirectToLogin()}
-                    className="text-primary underline font-medium"
-                  >
-                    Log in
-                  </button>{' '}
-                  to get personalized account help.
-                </p>
-              </div>
-            ) : (
-              <>
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask a question..."
-                  rows={1}
-                  className="flex-1 resize-none text-sm bg-muted rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30 max-h-24 min-h-[36px]"
-                  disabled={sending || initializing}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending || initializing || !conversation}
-                  className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 disabled:opacity-40 hover:bg-primary/90 transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </>
+          <div className="border-t border-border px-3 pt-2 pb-2 shrink-0">
+            {!user && (
+              <p className="text-xs text-muted-foreground mb-1.5">
+                Chatting as <span className="font-medium text-foreground">guest</span> —{' '}
+                <button onClick={() => base44.auth.redirectToLogin()} className="text-primary underline">
+                  log in
+                </button>{' '}
+                for account help.
+              </p>
             )}
+            <div className="flex gap-2 items-end">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask a question..."
+                rows={1}
+                className="flex-1 resize-none text-sm bg-muted rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-primary/30 max-h-24 min-h-[36px]"
+                disabled={sending || initializing}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || sending || initializing || !conversation}
+                className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 disabled:opacity-40 hover:bg-primary/90 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
