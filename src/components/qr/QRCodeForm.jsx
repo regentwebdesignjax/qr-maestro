@@ -145,6 +145,7 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
   const [uploadingBrandLogo, setUploadingBrandLogo] = useState(false);
   const [linkpageFormStep, setLinkpageFormStep] = useState(0);
   const [hubspotLists, setHubspotLists] = useState([]);
+  const [hubspotConnected, setHubspotConnected] = useState(false);
   const [loadingHubspotLists, setLoadingHubspotLists] = useState(false);
 
   // Parse initial data for editing mode
@@ -344,8 +345,14 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
     let cancelled = false;
     setLoadingHubspotLists(true);
     base44.functions.invoke('getHubSpotLists', {})
-      .then((res) => { if (!cancelled) setHubspotLists(res?.lists || []); })
-      .catch(() => { if (!cancelled) setHubspotLists([]); })
+      .then((res) => {
+        if (!cancelled) {
+          const data = res?.data ?? res;
+          setHubspotConnected(data?.connected === true);
+          setHubspotLists(data?.lists || []);
+        }
+      })
+      .catch(() => { if (!cancelled) { setHubspotConnected(false); setHubspotLists([]); } })
       .finally(() => { if (!cancelled) setLoadingHubspotLists(false); });
     return () => { cancelled = true; };
   }, [formData.content_type]);
@@ -717,9 +724,9 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                       </Select>
                     ) : (
                       <p className="text-xs text-muted-foreground">
-                        {hubspotLists.length === 0 && !loadingHubspotLists
-                          ? 'Connect HubSpot to assign leads to a static list.'
-                          : 'No static lists found in your HubSpot account.'}
+                        {hubspotConnected
+                          ? 'No static lists found in your HubSpot account. Create one in HubSpot first.'
+                          : 'Connect HubSpot on the Leads page to assign leads to a static list.'}
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">Synced leads from this card will be added to the selected list. Only static lists are supported.</p>
