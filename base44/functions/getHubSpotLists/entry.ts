@@ -47,8 +47,15 @@ Deno.serve(async (req) => {
     }
     console.error(`HubSpot v3 lists failed. status=${v3Res.status} category=${category} message=${hsMessage} raw=${v3ErrText}`);
 
+    // HubSpot's v3 Lists API rejects user-level OAuth tokens (the only kind a
+    // public-app connector like Base44's can mint). Reconnecting / changing scopes
+    // / super-admin access cannot fix this — it's a token-type restriction.
+    const isUserTokenRejected = /user level oauth token is not allowed/i.test(hsMessage);
+
     let listsError: string;
-    if (v3Res.status === 403 && category === 'MISSING_SCOPES') {
+    if (isUserTokenRejected) {
+      listsError = "HubSpot's Lists API does not accept the connector's user-level OAuth token, so lists can't be loaded. This is a connector-level limitation, not a scope or permission issue — reconnecting won't help.";
+    } else if (v3Res.status === 403 && category === 'MISSING_SCOPES') {
       listsError = 'The HubSpot connector app is missing the crm.lists.read scope. This must be enabled on the connector itself (Base44 side) before reconnecting will help.';
     } else if (v3Res.status === 403) {
       listsError = hsMessage
@@ -66,6 +73,9 @@ Deno.serve(async (req) => {
       listsError,
       hubspotStatus: v3Res.status,
       hubspotCategory: category,
+      // Signals an unfixable-by-user connector limitation so the UI can hide the
+      // "reconnect to grant list access" prompt instead of looping the user.
+      connectorLimitation: isUserTokenRejected,
     });
   } catch (error) {
     console.error('getHubSpotLists error:', error.message);
