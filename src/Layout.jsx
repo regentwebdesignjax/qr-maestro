@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Button } from '@/components/ui/button';
-import { QrCode, Shield, User, CreditCard, LogOut, Users, Menu, Globe } from 'lucide-react';
+import { QrCode, Shield, User, CreditCard, LogOut, Users, Menu, Globe, MessageCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import {
   DropdownMenu,
@@ -161,6 +161,12 @@ export default function Layout({ children, currentPageName }) {
                       <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/Contact" className="flex items-center">
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            Ask Support
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleBilling}>
                           <CreditCard className="w-4 h-4 mr-2" />
                           Billing & Subscription
