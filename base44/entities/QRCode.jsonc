@@ -134,6 +134,10 @@
           "type": "string",
           "description": "Optional tag (e.g. Employee ID or Region Code) to attach to leads captured from this card"
         },
+        "hubspot_list_id": {
+          "type": "string",
+          "description": "Optional HubSpot static list ID to add synced contacts to"
+        },
         "cta_button_color": {
           "type": "string",
           "description": "Background color for CTA buttons on the business card landing page"
