@@ -57,6 +57,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      // Look up the source QR code to get an optional HubSpot list target
+      let hubspotListId: string | null = null;
+      if (lead.qr_code_id) {
+        try {
+          const qrCodes = await base44.asServiceRole.entities.QRCode.filter({ id: lead.qr_code_id });
+          hubspotListId = qrCodes?.[0]?.design_config?.hubspot_list_id || null;
+        } catch {
+          // Non-fatal — proceed without list assignment
+        }
+      }
+
       // Build HubSpot contact properties
       const properties = {
         email: lead.lead_email,
@@ -86,9 +97,12 @@ Deno.serve(async (req) => {
 
       const hsData = await hsRes.json();
 
+      let contactId: string | null = null;
+
       if (hsRes.ok) {
+        contactId = hsData.id;
         await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
-        results.push({ id, success: true, hubspot_id: hsData.id });
+        results.push({ id, success: true, hubspot_id: contactId });
       } else if (hsRes.status === 409) {
         // Contact already exists — search by email to get the numeric ID, then PATCH
         const searchRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
@@ -117,8 +131,9 @@ Deno.serve(async (req) => {
             body: JSON.stringify({ properties }),
           });
           if (updateRes.ok) {
+            contactId = existingId;
             await base44.asServiceRole.entities.Lead.update(id, { crm_synced: true, crm_sync_error: '' });
-            results.push({ id, success: true, hubspot_id: existingId, updated: true });
+            results.push({ id, success: true, hubspot_id: contactId, updated: true });
           } else {
             const errData = await updateRes.json();
             const errMsg = errData.message || 'HubSpot update failed';
@@ -134,6 +149,22 @@ Deno.serve(async (req) => {
         const errMsg = hsData.message || 'HubSpot sync failed';
         await base44.asServiceRole.entities.Lead.update(id, { crm_sync_error: errMsg });
         results.push({ id, success: false, error: errMsg });
+      }
+
+      // Add contact to the target HubSpot static list (non-fatal if it fails)
+      if (contactId && hubspotListId) {
+        try {
+          await fetch(`https://api.hubapi.com/crm/v3/lists/${hubspotListId}/memberships/add-from-ids`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ recordIdsToAdd: [contactId] }),
+          });
+        } catch (listErr) {
+          console.error(`List membership add failed for contact ${contactId}:`, listErr.message);
+        }
       }
     }
 
