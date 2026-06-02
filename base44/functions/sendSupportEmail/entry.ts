@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { Resend } from 'npm:resend@4.0.0';
 
 Deno.serve(async (req) => {
   try {
@@ -12,35 +13,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Name, email, reason, and message are required.' }, { status: 400 });
     }
 
-    const emailBody = `
-New Contact/Support Submission from QR Sensei
+    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
-Name: ${name}
-Email: ${email}
-Organization: ${org_name || 'N/A'}
-Reason: ${reason}
-
-Message:
-${message}
-
----
-Submitted via QR Sensei contact form.
-    `.trim();
-
-    // Platform SendEmail only works for registered app users.
-    // Route notification to all admin users.
-    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-    if (admins.length === 0) {
-      console.warn('No admin users found to receive contact form submission.');
-    }
-    await Promise.all(admins.map(admin =>
-      base44.asServiceRole.integrations.Core.SendEmail({
-        to: admin.email,
-        from_name: 'QR Sensei Contact Form',
-        subject: `[QR Sensei Contact] ${reason} — from ${name} <${email}>`,
-        body: emailBody,
-      })
-    ));
+    await resend.emails.send({
+      from: 'QR Sensei Contact <onboarding@resend.dev>',
+      to: 'qrsensei@regentmediagroup.com',
+      reply_to: email,
+      subject: `[QR Sensei Contact] ${reason} — from ${name}`,
+      text: `New Contact/Support Submission from QR Sensei\n\nName: ${name}\nEmail: ${email}\nOrganization: ${org_name || 'N/A'}\nReason: ${reason}\n\nMessage:\n${message}\n\n---\nReply directly to this email to respond to ${name}.`,
+    });
 
     return Response.json({ success: true });
   } catch (error) {
