@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
 import HubSpotConnectButton from '@/components/leads/HubSpotConnectBanner';
@@ -210,6 +210,7 @@ export default function Leads() {
   const [hubspotConnected, setHubspotConnected] = useState(false);
   const [syncingIds, setSyncingIds] = useState(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null);
   const queryClient = useQueryClient();
 
   const checkHubSpotConnection = useCallback(async () => {
@@ -236,6 +237,22 @@ export default function Leads() {
     queryFn: () => base44.entities.Lead.filter({ user_email: user.email }, '-created_date'),
     enabled: !!user,
   });
+
+  const { data: qrCodes = [] } = useQuery({
+    queryKey: ['qrCodes', user?.email],
+    queryFn: () => base44.entities.QRCode.filter({ owner_email: user.email }),
+    enabled: !!user,
+  });
+
+  const segmentLabelMap = useMemo(() => {
+    const map = {};
+    qrCodes.forEach(qr => {
+      if (qr.design_config?.hubspot_segment_label) {
+        map[qr.id] = qr.design_config.hubspot_segment_label;
+      }
+    });
+    return map;
+  }, [qrCodes]);
 
   const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
   const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
@@ -413,12 +430,12 @@ export default function Leads() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-3 pr-2 w-8"></th>
                         <th className="pb-3 pr-4 font-medium">Name</th>
                         <th className="pb-3 pr-4 font-medium">Email</th>
                         <th className="pb-3 pr-4 font-medium">Phone</th>
                         <th className="pb-3 pr-4 font-medium">Source Card</th>
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
-                        <th className="pb-3 pr-4 font-medium">Notes</th>
                         <th className="pb-3 pr-4 font-medium">Date</th>
                         {hubspotConnected && <th className="pb-3 font-medium">HubSpot</th>}
                       </tr>
@@ -429,8 +446,15 @@ export default function Leads() {
                         const displayPhone = lead.lead_phone || phoneFromNotes;
                         const cleanedNotes = cleanNotes(lead.notes);
                         const isSyncing = syncingIds.has(lead.id);
+                        const isExpanded = expandedRow === lead.id;
+                        const segmentLabel = segmentLabelMap[lead.qr_code_id];
+                        const colSpan = hubspotConnected ? 9 : 8;
                         return (
-                        <tr key={lead.id} className="border-b last:border-0 hover:bg-gray-50">
+                        <React.Fragment key={lead.id}>
+                        <tr className={`border-b hover:bg-gray-50 cursor-pointer ${isExpanded ? 'bg-gray-50' : ''}`} onClick={() => setExpandedRow(isExpanded ? null : lead.id)}>
+                          <td className="py-3 pr-2 pl-2 w-8" onClick={e => { e.stopPropagation(); setExpandedRow(isExpanded ? null : lead.id); }}>
+                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+                          </td>
                           <td className="py-3 pr-4 font-medium text-gray-900">{lead.lead_name}</td>
                           <td className="py-3 pr-4">
                             <a href={`mailto:${lead.lead_email}`} className="text-primary hover:underline flex items-center gap-1">
@@ -451,11 +475,6 @@ export default function Leads() {
                               <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded">
                                 {lead.lead_tag}
                               </span>
-                            ) : <span className="text-gray-300">—</span>}
-                          </td>
-                          <td className="py-3 pr-4 text-gray-600 max-w-[200px]">
-                            {cleanedNotes ? (
-                              <span className="text-xs line-clamp-2" title={cleanedNotes}>{cleanedNotes}</span>
                             ) : <span className="text-gray-300">—</span>}
                           </td>
                           <td className="py-3 pr-4 text-gray-400 flex items-center gap-1">
@@ -490,6 +509,42 @@ export default function Leads() {
                             </td>
                           )}
                         </tr>
+                        {isExpanded && (
+                          <tr className="bg-blue-50/20 border-b">
+                            <td colSpan={colSpan} className="px-8 py-4">
+                              <div className="flex flex-wrap gap-8">
+                                {hubspotConnected && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">HubSpot Segment</p>
+                                    {segmentLabel ? (
+                                      <span className="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                                        {segmentLabel}
+                                      </span>
+                                    ) : (
+                                      <span className="text-sm text-gray-400 italic">No segment label set on this card</span>
+                                    )}
+                                  </div>
+                                )}
+                                {cleanedNotes && (
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Notes</p>
+                                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{cleanedNotes}</p>
+                                  </div>
+                                )}
+                                {lead.crm_sync_error && (
+                                  <div>
+                                    <p className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1.5">Sync Error Details</p>
+                                    <p className="text-sm text-red-500">{lead.crm_sync_error}</p>
+                                  </div>
+                                )}
+                                {!hubspotConnected && !cleanedNotes && !lead.crm_sync_error && (
+                                  <p className="text-sm text-gray-400 italic">No additional details.</p>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        </React.Fragment>
                         );
                       })}
                     </tbody>
