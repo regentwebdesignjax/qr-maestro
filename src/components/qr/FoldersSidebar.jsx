@@ -39,7 +39,11 @@ export default function FoldersSidebar({ folders, activeFolder, onFolderChange, 
       </CardHeader>
       <CardContent className="px-2 pb-4">
         <nav className="space-y-0.5">
-          {folders.map((folder) => {
+          {[...folders].sort((a, b) => {
+            if (a.id === 'all') return -1;
+            if (b.id === 'all') return 1;
+            return a.name.localeCompare(b.name);
+          }).map((folder) => {
             const isActive = activeFolder === folder.id;
             const Icon = folder.id === 'all' || isActive ? FolderOpen : Folder;
 
