@@ -154,7 +154,8 @@ Deno.serve(async (req) => {
       // Add contact to the target HubSpot static list (non-fatal if it fails)
       if (contactId && hubspotListId) {
         try {
-          await fetch(`https://api.hubapi.com/crm/v3/lists/${hubspotListId}/memberships/add-from-ids`, {
+          // Try v3 first (requires crm.lists.write), fall back to v1 (requires only contacts scope)
+          const v3ListRes = await fetch(`https://api.hubapi.com/crm/v3/lists/${hubspotListId}/memberships/add-from-ids`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
@@ -162,6 +163,16 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({ recordIdsToAdd: [contactId] }),
           });
+          if (!v3ListRes.ok) {
+            await fetch(`https://api.hubapi.com/contacts/v1/lists/${hubspotListId}/add`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ vids: [parseInt(contactId, 10)] }),
+            });
+          }
         } catch (listErr) {
           console.error(`List membership add failed for contact ${contactId}:`, listErr.message);
         }
