@@ -151,10 +151,11 @@ Deno.serve(async (req) => {
         results.push({ id, success: false, error: errMsg });
       }
 
-      // Add contact to the target HubSpot static list (non-fatal if it fails)
+      // Add contact to the target HubSpot static list (non-fatal if it fails).
+      // Uses the v3 Lists API (requires crm.lists.write). The legacy v1 lists API
+      // was sunset by HubSpot on 2026-04-30, so there is no usable fallback.
       if (contactId && hubspotListId) {
         try {
-          // Try v3 first (requires crm.lists.write), fall back to v1 (requires only contacts scope)
           const v3ListRes = await fetch(`https://api.hubapi.com/crm/v3/lists/${hubspotListId}/memberships/add-from-ids`, {
             method: 'PUT',
             headers: {
@@ -164,14 +165,8 @@ Deno.serve(async (req) => {
             body: JSON.stringify({ recordIdsToAdd: [contactId] }),
           });
           if (!v3ListRes.ok) {
-            await fetch(`https://api.hubapi.com/contacts/v1/lists/${hubspotListId}/add`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ vids: [parseInt(contactId, 10)] }),
-            });
+            const errText = await v3ListRes.text().catch(() => '');
+            console.error(`v3 list add failed for contact ${contactId}: status=${v3ListRes.status} body=${errText}`);
           }
         } catch (listErr) {
           console.error(`List membership add failed for contact ${contactId}:`, listErr.message);
