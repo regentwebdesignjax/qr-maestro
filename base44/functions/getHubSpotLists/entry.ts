@@ -18,15 +18,17 @@ Deno.serve(async (req) => {
       return Response.json({ connected: false, lists: [] });
     }
 
-    // Fetch static lists only — active/smart lists cannot be manually targeted
+    // Fetch static lists using the stable v1 contacts lists API
+    // The v3 lists endpoint's listType filter is not a valid query param and causes 4xx responses
     const res = await fetch(
-      'https://api.hubapi.com/crm/v3/lists/?listType=STATIC&properties=name,listId&limit=500',
+      'https://api.hubapi.com/contacts/v1/lists/static?count=500',
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
 
     if (!res.ok) {
-      const err = await res.json();
-      return Response.json({ error: err.message || 'Failed to fetch HubSpot lists' }, { status: res.status });
+      // Connected but HubSpot API failed (e.g. scope issue) — degrade gracefully
+      console.error('HubSpot lists API error:', res.status, await res.text());
+      return Response.json({ connected: true, lists: [] });
     }
 
     const data = await res.json();
