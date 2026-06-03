@@ -44,7 +44,7 @@ export default function Login() {
             alt="QR Sensei"
             className="w-56 h-auto mb-4" />
           
-          <p className="text-white font-poppins text-lg font-medium tracking-wide mb-4">Welcome back,</p>
+          <p className="text-white font-poppins text-lg font-medium tracking-wide mb-4">Welcome back, grasshopper!</p>
           <div className="flex items-center gap-2">
             <span className="text-white font-black text-3xl tracking-tight hidden">QR</span>
             <span className="text-white font-black text-3xl tracking-tight hidden">SENSEI</span>
