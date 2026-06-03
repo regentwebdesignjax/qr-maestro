@@ -80,8 +80,8 @@ export default function Register() {
             className="w-48 h-auto mb-6" />
           
           <div className="flex items-center gap-2">
-            <span className="text-white font-black text-3xl tracking-tight hidden">QR</span>
-            <span className="text-white font-black text-3xl tracking-tight hidden">SENSEI</span>
+            
+            
           </div>
         </div>
       </div>
