@@ -11,7 +11,7 @@ import BentoFeatures from '@/components/home/BentoFeatures';
 
 export default function Home() {
   const handleGetStarted = () => {
-    base44.auth.redirectToLogin('/Dashboard');
+    base44.auth.redirectToLogin('/register');
   };
 
   const mockChartData = [
