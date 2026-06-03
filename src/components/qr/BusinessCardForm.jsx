@@ -141,18 +141,7 @@ export default function BusinessCardForm({ data, onChange }) {
         </div>
         <div>
           <Label className="text-xs text-gray-600">Website</Label>
-          <Input
-            className="mt-1"
-            placeholder="sensei.io"
-            value={data.website || ''}
-            onChange={(e) => set('website', e.target.value)}
-            onBlur={(e) => {
-              const v = e.target.value.trim();
-              if (v && !v.startsWith('http://') && !v.startsWith('https://')) {
-                set('website', `https://${v}`);
-              }
-            }}
-          />
+          <Input className="mt-1" placeholder="https://sensei.io" value={data.website || ''} onChange={(e) => set('website', e.target.value)} />
         </div>
 
         {/* Dynamic Social Links */}
@@ -170,14 +159,6 @@ export default function BusinessCardForm({ data, onChange }) {
                 placeholder="URL or handle"
                 value={link.url}
                 onChange={(e) => updateLink(idx, 'url', e.target.value)}
-                onBlur={(e) => {
-                  const v = e.target.value.trim();
-                  const platform = (socialLinks[idx]?.platform || '').toLowerCase().trim();
-                  const socialPlatforms = ['instagram','twitter','x','linkedin','tiktok','facebook','youtube','telegram'];
-                  if (v && !v.startsWith('http://') && !v.startsWith('https://') && !v.startsWith('@') && !socialPlatforms.includes(platform)) {
-                    updateLink(idx, 'url', `https://${v}`);
-                  }
-                }}
                 className="w-full"
               />
               <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center" onClick={() => removeLink(idx)}>

@@ -241,9 +241,9 @@ export default function BusinessCardDisplay({ data }) {
             </a>
           )}
           {data.website && (
-            <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <a href={data.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-              <span className="text-sm text-gray-700 truncate">{data.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+              <span className="text-sm text-gray-700 truncate">{data.website}</span>
             </a>
           )}
 
@@ -261,7 +261,7 @@ export default function BusinessCardDisplay({ data }) {
                 <IconComp className="w-4 h-4 text-gray-400 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-gray-400 capitalize">{link.platform}</p>
-                  <p className="text-sm text-gray-700 truncate">{link.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
+                  <p className="text-sm text-gray-700 truncate">{link.url}</p>
                 </div>
               </a>
             );
