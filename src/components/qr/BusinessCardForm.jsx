@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Upload, X, User, Building2, Link2, Plus, Trash2 } from 'lucide-react';
+import { Upload, X, User, Building2, Link2, Plus, Trash2, MapPin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 function SECTION({ icon: Icon, title, children }) {
@@ -142,6 +142,13 @@ export default function BusinessCardForm({ data, onChange }) {
         <div>
           <Label className="text-xs text-gray-600">Website</Label>
           <Input className="mt-1" placeholder="https://sensei.io" value={data.website || ''} onChange={(e) => set('website', e.target.value)} />
+        </div>
+        <div>
+          <Label className="text-xs text-gray-600 flex items-center gap-1.5">
+            <MapPin className="w-3 h-3" /> Business Address <span className="text-gray-400">(optional)</span>
+          </Label>
+          <Input className="mt-1" placeholder="123 Main St, Jacksonville, FL 32099" value={data.address || ''} onChange={(e) => set('address', e.target.value)} />
+          <p className="text-xs text-gray-400 mt-1">Visitors can tap to open in their GPS app.</p>
         </div>
 
         {/* Dynamic Social Links */}

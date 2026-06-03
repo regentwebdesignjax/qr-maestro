@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video, CheckCircle2 } from 'lucide-react';
+import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video, CheckCircle2, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { maskUrl } from '@/lib/maskUrl';
@@ -158,6 +158,27 @@ export default function BusinessCardDisplay({ data }) {
           {data.bio && (
             <p className="text-sm text-gray-600 mt-3 leading-relaxed">{data.bio}</p>
           )}
+
+          {/* Social Icons Row */}
+          {socialLinks.filter(l => l.platform && l.url).length > 0 && (
+            <div className="flex flex-wrap justify-center gap-3 mt-4">
+              {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
+                const IconComp = getPlatformIcon(link.platform);
+                return (
+                  <a
+                    key={idx}
+                    href={normalizeUrl(link.url, link.platform)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={link.platform}
+                    className="w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md hover:border-gray-300 transition-all"
+                  >
+                    <IconComp className="w-4 h-4 text-gray-600" />
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Action Tier */}
@@ -247,25 +268,16 @@ export default function BusinessCardDisplay({ data }) {
             </a>
           )}
 
-          {/* Dynamic social links */}
-          {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
-            const IconComp = getPlatformIcon(link.platform);
-            return (
-              <a
-                key={idx}
-                href={normalizeUrl(link.url, link.platform)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <IconComp className="w-4 h-4 text-gray-400 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400 capitalize">{link.platform}</p>
-                  <p className="text-sm text-gray-700 truncate">{link.url}</p>
-                </div>
-              </a>
-            );
-          })}
+          {/* Address */}
+          {data.address && (
+            <a
+              href={`geo:0,0?q=${encodeURIComponent(data.address)}`}
+              className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-sm text-gray-700">{data.address}</span>
+            </a>
+          )}
         </div>
       </div>
     </div>

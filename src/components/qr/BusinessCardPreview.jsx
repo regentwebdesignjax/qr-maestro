@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, Link, Music, MessageCircle, Video } from 'lucide-react';
+import { User, Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, Link, Music, MessageCircle, Video, MapPin } from 'lucide-react';
 
 const PLATFORM_ICONS = {
   linkedin: Linkedin,
@@ -91,6 +91,20 @@ export default function BusinessCardPreview({ data = {} }) {
               </div>
             )}
             {data.bio && <p className="text-xs text-gray-500 mt-2 leading-relaxed line-clamp-3">{data.bio}</p>}
+
+            {/* Social Icons Row */}
+            {socialLinks.filter(l => l.platform && l.url).length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mt-3">
+                {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
+                  const IconComp = getPlatformIcon(link.platform);
+                  return (
+                    <div key={idx} className="w-7 h-7 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center">
+                      <IconComp className="w-3 h-3 text-gray-600" />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Action buttons */}
@@ -123,18 +137,12 @@ export default function BusinessCardPreview({ data = {} }) {
                 <span className="text-xs text-gray-700 truncate">{data.website}</span>
               </div>
             )}
-            {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
-              const IconComp = getPlatformIcon(link.platform);
-              return (
-                <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
-                  <IconComp className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 capitalize leading-none">{link.platform}</p>
-                    <span className="text-xs text-gray-700 truncate block">{link.url}</span>
-                  </div>
-                </div>
-              );
-            })}
+            {data.address && (
+              <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100">
+                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs text-gray-700 truncate">{data.address}</span>
+              </div>
+            )}
           </div>
         </div>
 
