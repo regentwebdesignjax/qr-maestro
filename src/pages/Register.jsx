@@ -71,35 +71,35 @@ export default function Register() {
       {/* Left Panel */}
       <div
         className="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #BB3F27 0%, #142024 100%)" }}
-      >
+        style={{ background: "linear-gradient(135deg, #BB3F27 0%, #142024 100%)" }}>
+        
         <div className="flex flex-col items-center text-center px-10">
           <img
             src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/9240fa714_sensei-qr-login-v2.png"
             alt="QR Sensei"
-            className="w-68 h-auto mb-6"
-          />
+            className="w-68 h-auto mb-6" />
+          
           <div className="flex items-center gap-2">
-            <span className="text-white font-black text-3xl tracking-tight">QR</span>
-            <span className="text-white font-black text-3xl tracking-tight">SENSEI</span>
+            
+            
           </div>
         </div>
       </div>
 
       {/* Right Panel */}
       <div className="flex-1 flex flex-col items-center justify-center bg-[#F5F0EB] px-6 py-12 min-h-screen">
-        {showOtp ? (
-          <div className="w-full max-w-md">
+        {showOtp ?
+        <div className="w-full max-w-md">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-black text-[#BB3F27] leading-tight mb-2">Verify your<br />email</h1>
               <p className="text-foreground/70 text-base">We sent a code to <span className="font-semibold text-foreground">{email}</span></p>
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error &&
+          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                 {error}
               </div>
-            )}
+          }
 
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-border/40">
               <div className="flex justify-center mb-6">
@@ -115,11 +115,11 @@ export default function Register() {
                 </InputOTP>
               </div>
               <Button
-                className="w-full h-12 font-semibold text-base rounded-xl"
-                style={{ backgroundColor: "#BB3F27" }}
-                onClick={handleVerify}
-                disabled={loading || otpCode.length < 6}
-              >
+              className="w-full h-12 font-semibold text-base rounded-xl"
+              style={{ backgroundColor: "#BB3F27" }}
+              onClick={handleVerify}
+              disabled={loading || otpCode.length < 6}>
+              
                 {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying...</> : "Verify"}
               </Button>
             </div>
@@ -130,9 +130,9 @@ export default function Register() {
                 Resend
               </button>
             </p>
-          </div>
-        ) : (
-          <div className="w-full max-w-md">
+          </div> :
+
+        <div className="w-full max-w-md">
             {/* Heading */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-black text-[#BB3F27] leading-tight mb-2">Create your<br />account</h1>
@@ -144,18 +144,18 @@ export default function Register() {
               {/* OAuth Buttons */}
               <div className="space-y-3 mb-6">
                 <Button
-                  variant="outline"
-                  className="w-full h-12 text-sm font-medium rounded-xl border-border"
-                  onClick={handleGoogle}
-                >
+                variant="outline"
+                className="w-full h-12 text-sm font-medium rounded-xl border-border"
+                onClick={handleGoogle}>
+                
                   <GoogleIcon className="w-5 h-5 mr-2" />
                   Continue with Google
                 </Button>
                 <Button
-                  variant="outline"
-                  className="w-full h-12 text-sm font-medium rounded-xl border-border"
-                  onClick={handleApple}
-                >
+                variant="outline"
+                className="w-full h-12 text-sm font-medium rounded-xl border-border"
+                onClick={handleApple}>
+                
                   <AppleIcon className="w-5 h-5 mr-2" />
                   Continue with Apple
                 </Button>
@@ -171,11 +171,11 @@ export default function Register() {
                 </div>
               </div>
 
-              {error && (
-                <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              {error &&
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                   {error}
                 </div>
-              )}
+            }
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -184,16 +184,16 @@ export default function Register() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      autoFocus
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
-                      required
-                    />
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    autoFocus
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
+                    required />
+                  
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -201,15 +201,15 @@ export default function Register() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="password"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
-                      required
-                    />
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
+                    required />
+                  
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -217,23 +217,23 @@ export default function Register() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      id="confirm"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
-                      required
-                    />
+                    id="confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
+                    required />
+                  
                   </div>
                 </div>
                 <Button
-                  type="submit"
-                  className="w-full h-12 font-semibold text-base rounded-xl mt-2"
-                  style={{ backgroundColor: "#BB3F27" }}
-                  disabled={loading}
-                >
+                type="submit"
+                className="w-full h-12 font-semibold text-base rounded-xl mt-2"
+                style={{ backgroundColor: "#BB3F27" }}
+                disabled={loading}>
+                
                   {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating account...</> : "Create account"}
                 </Button>
               </form>
@@ -247,8 +247,8 @@ export default function Register() {
               </Link>
             </p>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
