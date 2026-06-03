@@ -42,8 +42,9 @@ export default function Login() {
           <img
             src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/9240fa714_sensei-qr-login-v2.png"
             alt="QR Sensei"
-            className="w-56 h-auto mb-6"
+            className="w-56 h-auto mb-4"
           />
+          <p className="text-white font-poppins text-lg font-medium tracking-wide mb-4">Welcome to the Dojo.</p>
           <div className="flex items-center gap-2">
             <span className="text-white font-black text-3xl tracking-tight">QR</span>
             <span className="text-white font-black text-3xl tracking-tight">SENSEI</span>
