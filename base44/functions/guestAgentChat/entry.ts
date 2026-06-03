@@ -33,6 +33,14 @@ Deno.serve(async (req) => {
       return Response.json(conv);
     }
 
+    if (action === 'get_messages') {
+      if (!conversation_id) {
+        return Response.json({ error: 'conversation_id required' }, { status: 400 });
+      }
+      const conv = await base44.asServiceRole.agents.getConversation(conversation_id);
+      return Response.json({ messages: conv.messages || [] });
+    }
+
     return Response.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

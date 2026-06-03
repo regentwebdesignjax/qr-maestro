@@ -96,14 +96,31 @@ export default function SupportChatWidget() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  // Subscribe to conversation updates
+  // Subscribe to conversation updates (authenticated users use real-time, guests use polling)
   useEffect(() => {
     if (!conversation?.id) return;
-    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
-    });
-    return unsubscribe;
-  }, [conversation?.id]);
+
+    if (user) {
+      const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
+        setMessages(data.messages || []);
+      });
+      return unsubscribe;
+    } else {
+      // Guest: poll every 2 seconds for new messages
+      const poll = async () => {
+        try {
+          const res = await base44.functions.invoke('guestAgentChat', {
+            action: 'get_messages',
+            conversation_id: conversation.id,
+          });
+          setMessages(res.data?.messages || []);
+        } catch (_) {}
+      };
+      poll(); // immediate first fetch
+      const interval = setInterval(poll, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [conversation?.id, user]);
 
   const buildUserContext = (u) => {
     if (!u) return { visitor_type: 'guest', is_authenticated: false };
