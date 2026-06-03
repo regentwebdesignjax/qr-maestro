@@ -35,22 +35,19 @@ export default function Login() {
     <div className="min-h-screen flex font-poppins">
       {/* Left Panel */}
       <div
-        className="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col items-center justify-center relative overflow-hidden"
-        style={{ backgroundColor: "#142024" }}
+        className="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #BB3F27 0%, #142024 100%)" }}
       >
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('https://media.base44.com/images/public/697bd26bb993b44c81affe97/ab47a2381_sensei-qr.png')` }}
-        />
-        <div className="relative z-10 flex flex-col items-center text-center px-10">
+        <div className="flex flex-col items-center text-center px-10">
           <img
-            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/af65437e0_qr-sensei-logo-v1.png"
+            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/2a8529d73_Group106.png"
             alt="QR Sensei"
-            className="h-12 w-auto mb-4 brightness-0 invert"
+            className="w-48 h-auto mb-6"
           />
-          <p className="text-white/60 text-base font-medium leading-snug">
-            Master your audience,<br />pixel by pixel
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-white font-black text-3xl tracking-tight">QR</span>
+            <span className="text-white font-black text-3xl tracking-tight">SENSEI</span>
+          </div>
         </div>
       </div>
 
