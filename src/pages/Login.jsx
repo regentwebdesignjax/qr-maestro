@@ -40,7 +40,7 @@ export default function Login() {
       >
         <div className="flex flex-col items-center text-center px-10">
           <img
-            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/2a8529d73_Group106.png"
+            src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/9240fa714_sensei-qr-login-v2.png"
             alt="QR Sensei"
             className="w-48 h-auto mb-6"
           />
