@@ -74,8 +74,8 @@ export default function Register() {
         style={{ backgroundColor: "#142024" }}
       >
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-80"
-          style={{ backgroundImage: `url('https://media.base44.com/images/public/697bd26bb993b44c81affe97/9486b710c_generated_image.png')` }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('https://media.base44.com/images/public/697bd26bb993b44c81affe97/ab47a2381_sensei-qr.png')` }}
         />
         <div className="relative z-10 flex flex-col items-center text-center px-10">
           <img
