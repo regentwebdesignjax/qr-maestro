@@ -271,7 +271,7 @@ export default function BusinessCardDisplay({ data }) {
           {/* Address */}
           {data.address && (
             <a
-              href={`geo:0,0?q=${encodeURIComponent(data.address)}`}
+              href={`https://maps.apple.com/?q=${encodeURIComponent(data.address)}`}
               className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
             >
               <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
