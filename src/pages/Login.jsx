@@ -36,18 +36,18 @@ export default function Login() {
       {/* Left Panel */}
       <div
         className="hidden lg:flex lg:w-5/12 xl:w-2/5 flex-col items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #BB3F27 0%, #142024 100%)" }}
-      >
+        style={{ background: "linear-gradient(135deg, #BB3F27 0%, #142024 100%)" }}>
+        
         <div className="flex flex-col items-center text-center px-10">
           <img
             src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/9240fa714_sensei-qr-login-v2.png"
             alt="QR Sensei"
-            className="w-56 h-auto mb-4"
-          />
-          <p className="text-white font-poppins text-lg font-medium tracking-wide mb-4">Welcome to the Dojo.</p>
+            className="w-56 h-auto mb-4" />
+          
+          <p className="text-white font-poppins text-lg font-medium tracking-wide mb-4">Welcome back,</p>
           <div className="flex items-center gap-2">
-            <span className="text-white font-black text-3xl tracking-tight">QR</span>
-            <span className="text-white font-black text-3xl tracking-tight">SENSEI</span>
+            <span className="text-white font-black text-3xl tracking-tight hidden">QR</span>
+            <span className="text-white font-black text-3xl tracking-tight hidden">SENSEI</span>
           </div>
         </div>
       </div>
@@ -68,16 +68,16 @@ export default function Login() {
               <Button
                 variant="outline"
                 className="w-full h-12 text-sm font-medium rounded-xl border-border"
-                onClick={handleGoogle}
-              >
+                onClick={handleGoogle}>
+                
                 <GoogleIcon className="w-5 h-5 mr-2" />
                 Continue with Google
               </Button>
               <Button
                 variant="outline"
                 className="w-full h-12 text-sm font-medium rounded-xl border-border"
-                onClick={handleApple}
-              >
+                onClick={handleApple}>
+                
                 <AppleIcon className="w-5 h-5 mr-2" />
                 Continue with Apple
               </Button>
@@ -93,11 +93,11 @@ export default function Login() {
               </div>
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            {error &&
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
                 {error}
               </div>
-            )}
+            }
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -114,8 +114,8 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
-                    required
-                  />
+                    required />
+                  
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -135,16 +135,16 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 h-12 rounded-xl border-border focus-visible:ring-[#BB3F27]/30"
-                    required
-                  />
+                    required />
+                  
                 </div>
               </div>
               <Button
                 type="submit"
                 className="w-full h-12 font-semibold text-base rounded-xl mt-2"
                 style={{ backgroundColor: "#BB3F27" }}
-                disabled={loading}
-              >
+                disabled={loading}>
+                
                 {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Logging in...</> : "Log in"}
               </Button>
             </form>
@@ -159,6 +159,6 @@ export default function Login() {
           </p>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
