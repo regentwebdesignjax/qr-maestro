@@ -109,11 +109,15 @@ export default function SupportChatWidget() {
       // Guest: poll every 2 seconds for new messages
       const poll = async () => {
         try {
-          const res = await base44.functions.invoke('guestAgentChat', {
-            action: 'get_messages',
-            conversation_id: conversation.id,
+          const res = await base44.functions.fetch('/guestAgentChat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_messages', conversation_id: conversation.id }),
           });
-          setMessages(res.data?.messages || []);
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(data?.messages || []);
+          }
         } catch (_) {}
       };
       poll(); // immediate first fetch
@@ -138,8 +142,13 @@ export default function SupportChatWidget() {
   };
 
   const proxyCall = async (payload) => {
-    const res = await base44.functions.invoke('guestAgentChat', payload);
-    return res.data;
+    const res = await base44.functions.fetch('/guestAgentChat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`guestAgentChat error: ${res.status}`);
+    return res.json();
   };
 
   const initConversation = async () => {
