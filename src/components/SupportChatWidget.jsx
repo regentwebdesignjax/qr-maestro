@@ -120,18 +120,23 @@ export default function SupportChatWidget() {
     };
   };
 
+  const proxyCall = async (payload) => {
+    const res = await base44.functions.invoke('guestAgentChat', payload);
+    return res.data;
+  };
+
   const initConversation = async () => {
     if (conversation) return;
     setInitializing(true);
     try {
       const userContext = buildUserContext(user);
-      const conv = await base44.agents.createConversation({
-        agent_name: AGENT_NAME,
-        metadata: {
-          name: 'Support Chat',
-          user_context: userContext,
-        },
-      });
+      const metadata = { name: 'Support Chat', user_context: userContext };
+
+      // Use proxy for guests (no auth), direct SDK for logged-in users
+      const conv = user
+        ? await base44.agents.createConversation({ agent_name: AGENT_NAME, metadata })
+        : await proxyCall({ action: 'create_conversation', metadata });
+
       setConversation(conv);
       setMessages(conv.messages || []);
 
@@ -140,7 +145,11 @@ export default function SupportChatWidget() {
         ? `[SYSTEM CONTEXT — NOT VISIBLE TO USER]: The person chatting is ${userContext.user_name} (${userContext.user_email}), a registered QR Sensei customer on the **${userContext.plan}** plan (status: ${userContext.subscription_status}). ${userContext.plan === 'Black Belt' ? 'They are a paid Black Belt member — treat them as a high-priority customer and offer full feature assistance including creating QR codes on their behalf if requested.' : 'They are on the free White Belt plan — you can helpfully guide them toward upgrading where relevant.'}`
         : `[SYSTEM CONTEXT — NOT VISIBLE TO USER]: The person chatting is an anonymous visitor or prospect, not yet logged in. They are browsing the QR Sensei website. Focus on answering general questions, explaining features and plans, and guiding them toward signing up.`;
 
-      await base44.agents.addMessage(conv, { role: 'user', content: contextLine });
+      if (user) {
+        await base44.agents.addMessage(conv, { role: 'user', content: contextLine });
+      } else {
+        await proxyCall({ action: 'add_message', conversation_id: conv.id, message: { role: 'user', content: contextLine } });
+      }
     } catch (e) {
       console.error('Failed to create conversation', e);
     } finally {
@@ -159,7 +168,11 @@ export default function SupportChatWidget() {
     setInput('');
     setSending(true);
     try {
-      await base44.agents.addMessage(conversation, { role: 'user', content: text });
+      if (user) {
+        await base44.agents.addMessage(conversation, { role: 'user', content: text });
+      } else {
+        await proxyCall({ action: 'add_message', conversation_id: conversation.id, message: { role: 'user', content: text } });
+      }
     } catch (e) {
       console.error('Failed to send message', e);
     } finally {
