@@ -4,10 +4,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle, RefreshCw, CheckCircle, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { useRef } from 'react';
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
-import HubSpotConnectButton from '@/components/leads/HubSpotConnectBanner';
-import SalesforceConnectButton from '@/components/leads/SalesforceConnectButton';
+import CRMConnectDropdown from '@/components/leads/CRMConnectDropdown';
 
 // Helper function to extract phone from notes field
 function extractPhoneFromNotes(notes) {
@@ -211,6 +211,8 @@ export default function Leads() {
   const [syncingIds, setSyncingIds] = useState(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [syncDropdownOpen, setSyncDropdownOpen] = useState(false);
+  const syncDropdownRef = useRef(null);
   const queryClient = useQueryClient();
 
   const checkHubSpotConnection = useCallback(async () => {
@@ -374,28 +376,43 @@ export default function Leads() {
           <div className="flex items-center gap-2 flex-wrap">
             {leads.length > 0 && (
               <>
-                {hubspotConnected && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSyncAll('hubspot')}
-                    disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
-                    className="border-orange-300 text-orange-700 hover:bg-orange-50"
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
-                    {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
-                  </Button>
-                )}
-                {salesforceConnected && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSyncAll('salesforce')}
-                    disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
-                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
-                    {syncingAll ? 'Syncing...' : `Sync to Salesforce (${leads.filter(l => !l.crm_synced).length})`}
-                  </Button>
-                )}
+                {(hubspotConnected || salesforceConnected) && (() => {
+                  const unsyncedCount = leads.filter(l => !l.crm_synced).length;
+                  return (
+                    <div className="relative" ref={syncDropdownRef}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSyncDropdownOpen(o => !o)}
+                        disabled={syncingAll || unsyncedCount === 0}
+                        className="border-primary/40 text-primary hover:bg-primary/5 flex items-center gap-2"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${syncingAll ? 'animate-spin' : ''}`} />
+                        {syncingAll ? 'Syncing...' : `Sync to CRM (${unsyncedCount})`}
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${syncDropdownOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                      {syncDropdownOpen && !syncingAll && (
+                        <div className="absolute left-0 mt-1.5 w-48 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+                          {hubspotConnected && (
+                            <button
+                              onClick={() => { setSyncDropdownOpen(false); handleSyncAll('hubspot'); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center gap-2"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" /> Sync to HubSpot
+                            </button>
+                          )}
+                          {salesforceConnected && (
+                            <button
+                              onClick={() => { setSyncDropdownOpen(false); handleSyncAll('salesforce'); }}
+                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" /> Sync to Salesforce
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 {dupeEmailCount > 0 && (
                   <Button variant="outline" onClick={() => setShowDedupeModal(true)}>
                     <FilterX className="w-4 h-4 mr-2" />
@@ -419,8 +436,11 @@ export default function Leads() {
                 </Button>
               </>
             )}
-            <HubSpotConnectButton connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
-            <SalesforceConnectButton connected={salesforceConnected} onConnectionChange={() => { setSalesforceConnected(false); checkSalesforceConnection(); }} />
+            <CRMConnectDropdown
+              hubspotConnected={hubspotConnected}
+              salesforceConnected={salesforceConnected}
+              onConnectionChange={() => { checkHubSpotConnection(); checkSalesforceConnection(); }}
+            />
           </div>
         </div>
 
