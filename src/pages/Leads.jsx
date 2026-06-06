@@ -7,8 +7,7 @@ import { Download, Users, Mail, Phone, Calendar, FilterX, Trash2, AlertTriangle,
 import { format } from 'date-fns';
 import { formatPhone } from '@/lib/formatPhone';
 import HubSpotConnectButton from '@/components/leads/HubSpotConnectBanner';
-
-const HUBSPOT_CONNECTOR_ID = '6a19b113175aa6149bf214b0';
+import SalesforceConnectButton from '@/components/leads/SalesforceConnectButton';
 
 // Helper function to extract phone from notes field
 function extractPhoneFromNotes(notes) {
@@ -208,6 +207,7 @@ export default function Leads() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [hubspotConnected, setHubspotConnected] = useState(false);
+  const [salesforceConnected, setSalesforceConnected] = useState(false);
   const [syncingIds, setSyncingIds] = useState(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
@@ -222,6 +222,15 @@ export default function Leads() {
     }
   }, []);
 
+  const checkSalesforceConnection = useCallback(async () => {
+    try {
+      const res = await base44.functions.invoke('checkSalesforceConnection', {});
+      setSalesforceConnected(res.data?.connected === true);
+    } catch {
+      setSalesforceConnected(false);
+    }
+  }, []);
+
   useEffect(() => {
     base44.auth.me()
       .then(u => { setUser(u); })
@@ -229,8 +238,11 @@ export default function Leads() {
   }, []);
 
   useEffect(() => {
-    if (user) checkHubSpotConnection();
-  }, [user, checkHubSpotConnection]);
+    if (user) {
+      checkHubSpotConnection();
+      checkSalesforceConnection();
+    }
+  }, [user, checkHubSpotConnection, checkSalesforceConnection]);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads', user?.email],
@@ -273,22 +285,24 @@ export default function Leads() {
     queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
   };
 
-  const handleSyncLead = async (leadId) => {
+  const handleSyncLead = async (leadId, crm = 'hubspot') => {
     setSyncingIds(prev => new Set([...prev, leadId]));
     try {
-      await base44.functions.invoke('syncLeadToCRM', { lead_id: leadId });
+      const fn = crm === 'salesforce' ? 'syncLeadToSalesforce' : 'syncLeadToCRM';
+      await base44.functions.invoke(fn, { lead_id: leadId });
       queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
     } finally {
       setSyncingIds(prev => { const n = new Set(prev); n.delete(leadId); return n; });
     }
   };
 
-  const handleSyncAll = async () => {
+  const handleSyncAll = async (crm = 'hubspot') => {
     const unsynced = leads.filter(l => !l.crm_synced);
     if (unsynced.length === 0) return;
     setSyncingAll(true);
     try {
-      await base44.functions.invoke('syncLeadToCRM', { lead_ids: unsynced.map(l => l.id) });
+      const fn = crm === 'salesforce' ? 'syncLeadToSalesforce' : 'syncLeadToCRM';
+      await base44.functions.invoke(fn, { lead_ids: unsynced.map(l => l.id) });
       queryClient.invalidateQueries({ queryKey: ['leads', user?.email] });
     } finally {
       setSyncingAll(false);
@@ -363,12 +377,23 @@ export default function Leads() {
                 {hubspotConnected && (
                   <Button
                     variant="outline"
-                    onClick={handleSyncAll}
+                    onClick={() => handleSyncAll('hubspot')}
                     disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
                     className="border-orange-300 text-orange-700 hover:bg-orange-50"
                   >
                     <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
                     {syncingAll ? 'Syncing...' : `Sync to HubSpot (${leads.filter(l => !l.crm_synced).length})`}
+                  </Button>
+                )}
+                {salesforceConnected && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSyncAll('salesforce')}
+                    disabled={syncingAll || leads.filter(l => !l.crm_synced).length === 0}
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${syncingAll ? 'animate-spin' : ''}`} />
+                    {syncingAll ? 'Syncing...' : `Sync to Salesforce (${leads.filter(l => !l.crm_synced).length})`}
                   </Button>
                 )}
                 {dupeEmailCount > 0 && (
@@ -395,6 +420,7 @@ export default function Leads() {
               </>
             )}
             <HubSpotConnectButton connected={hubspotConnected} onConnectionChange={() => { setHubspotConnected(false); checkHubSpotConnection(); }} />
+            <SalesforceConnectButton connected={salesforceConnected} onConnectionChange={() => { setSalesforceConnected(false); checkSalesforceConnection(); }} />
           </div>
         </div>
 
@@ -437,7 +463,7 @@ export default function Leads() {
                         <th className="pb-3 pr-4 font-medium">Source Card</th>
                         <th className="pb-3 pr-4 font-medium">Lead Tag</th>
                         <th className="pb-3 pr-4 font-medium">Date</th>
-                        {hubspotConnected && <th className="pb-3 font-medium">HubSpot</th>}
+                        {(hubspotConnected || salesforceConnected) && <th className="pb-3 font-medium">CRM</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -448,7 +474,7 @@ export default function Leads() {
                         const isSyncing = syncingIds.has(lead.id);
                         const isExpanded = expandedRow === lead.id;
                         const segmentLabel = segmentLabelMap[lead.qr_code_id];
-                        const colSpan = hubspotConnected ? 9 : 8;
+                        const colSpan = (hubspotConnected || salesforceConnected) ? 9 : 8;
                         return (
                         <React.Fragment key={lead.id}>
                         <tr className={`border-b hover:bg-gray-50 cursor-pointer ${isExpanded ? 'bg-gray-50' : ''}`} onClick={() => setExpandedRow(isExpanded ? null : lead.id)}>
@@ -481,21 +507,35 @@ export default function Leads() {
                             <Calendar className="w-3 h-3" />
                             {lead.created_date ? format(new Date(lead.created_date), 'MMM d, yyyy') : '—'}
                           </td>
-                          {hubspotConnected && (
+                          {(hubspotConnected || salesforceConnected) && (
                             <td className="py-3">
                               {lead.crm_synced ? (
                                 <span className="flex items-center gap-1 text-xs text-green-600">
                                   <CheckCircle className="w-3.5 h-3.5" /> Synced
                                 </span>
                               ) : (
-                                <button
-                                  onClick={() => handleSyncLead(lead.id)}
-                                  disabled={isSyncing}
-                                  className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 disabled:opacity-50"
-                                >
-                                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                                  {isSyncing ? 'Syncing' : 'Sync'}
-                                </button>
+                                <div className="flex flex-col gap-1">
+                                  {hubspotConnected && (
+                                    <button
+                                      onClick={() => handleSyncLead(lead.id, 'hubspot')}
+                                      disabled={isSyncing}
+                                      className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 disabled:opacity-50"
+                                    >
+                                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                      {isSyncing ? 'Syncing' : 'HubSpot'}
+                                    </button>
+                                  )}
+                                  {salesforceConnected && (
+                                    <button
+                                      onClick={() => handleSyncLead(lead.id, 'salesforce')}
+                                      disabled={isSyncing}
+                                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                                    >
+                                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                      {isSyncing ? 'Syncing' : 'Salesforce'}
+                                    </button>
+                                  )}
+                                </div>
                               )}
                               {lead.crm_sync_error && (
                                 <span className="flex items-center gap-1 text-xs text-red-500 mt-0.5 cursor-help group relative">
@@ -513,7 +553,7 @@ export default function Leads() {
                           <tr className="bg-blue-50/20 border-b">
                             <td colSpan={colSpan} className="px-8 py-4">
                               <div className="flex flex-wrap gap-8">
-                                {hubspotConnected && (
+                                {(hubspotConnected || salesforceConnected) && (
                                   <div>
                                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">HubSpot Segment</p>
                                     {segmentLabel ? (
@@ -537,7 +577,7 @@ export default function Leads() {
                                     <p className="text-sm text-red-500">{lead.crm_sync_error}</p>
                                   </div>
                                 )}
-                                {!hubspotConnected && !cleanedNotes && !lead.crm_sync_error && (
+                                {!hubspotConnected && !salesforceConnected && !cleanedNotes && !lead.crm_sync_error && (
                                   <p className="text-sm text-gray-400 italic">No additional details.</p>
                                 )}
                               </div>
@@ -570,17 +610,27 @@ export default function Leads() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {hubspotConnected && (
+                      {(hubspotConnected || salesforceConnected) && (
                         <div className="flex flex-col items-end gap-0.5">
                           {lead.crm_synced ? (
                             <span className="flex items-center gap-1 text-xs text-green-600">
                               <CheckCircle className="w-3.5 h-3.5" /> Synced
                             </span>
                           ) : (
-                            <button onClick={() => handleSyncLead(lead.id)} disabled={isSyncing} className="flex items-center gap-1 text-xs text-orange-600 disabled:opacity-50">
-                              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                              {isSyncing ? 'Syncing' : 'Sync'}
-                            </button>
+                            <>
+                              {hubspotConnected && (
+                                <button onClick={() => handleSyncLead(lead.id, 'hubspot')} disabled={isSyncing} className="flex items-center gap-1 text-xs text-orange-600 disabled:opacity-50">
+                                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                  {isSyncing ? 'Syncing' : 'HubSpot'}
+                                </button>
+                              )}
+                              {salesforceConnected && (
+                                <button onClick={() => handleSyncLead(lead.id, 'salesforce')} disabled={isSyncing} className="flex items-center gap-1 text-xs text-blue-600 disabled:opacity-50">
+                                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                  {isSyncing ? 'Syncing' : 'Salesforce'}
+                                </button>
+                              )}
+                            </>
                           )}
                           {lead.crm_sync_error && (
                             <span className="flex items-center gap-1 text-xs text-red-500">
