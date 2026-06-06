@@ -43,6 +43,7 @@ export default function CRMConnectDropdown({ hubspotConnected, salesforceConnect
   };
 
   const anyConnected = hubspotConnected || salesforceConnected;
+  const bothConnected = hubspotConnected && salesforceConnected;
 
   return (
     <div className="relative" ref={ref}>
@@ -53,68 +54,42 @@ export default function CRMConnectDropdown({ hubspotConnected, salesforceConnect
       >
         <Link2 className="w-4 h-4" />
         {anyConnected ? 'CRM Connected' : 'Connect to CRM'}
+        {/* Status dot on main button */}
+        <span className={`w-2 h-2 rounded-full shrink-0 ${bothConnected ? 'bg-green-500' : anyConnected ? 'bg-yellow-400' : 'bg-red-400'}`} />
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </Button>
 
       {open && (
         <div className="absolute right-0 mt-1.5 w-56 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden">
-          {/* HubSpot */}
-          <div className="px-3 py-2 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-800">HubSpot</span>
-                {hubspotConnected && (
-                  <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Connected</span>
-                )}
-              </div>
-              {hubspotConnected ? (
-                <button
-                  onClick={() => disconnectCRM('hubspot')}
-                  disabled={loadingCrm === 'hubspot'}
-                  className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-                >
-                  {loadingCrm === 'hubspot' ? '...' : 'Disconnect'}
-                </button>
-              ) : (
-                <button
-                  onClick={() => connectCRM('hubspot')}
-                  disabled={!!loadingCrm}
-                  className="text-xs text-primary hover:text-primary/80 font-medium disabled:opacity-50"
-                >
-                  {loadingCrm === 'hubspot' ? 'Connecting...' : 'Connect'}
-                </button>
-              )}
+          {/* HubSpot — full row is clickable */}
+          <button
+            className="w-full px-4 py-3 border-b flex items-center justify-between hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => hubspotConnected ? disconnectCRM('hubspot') : connectCRM('hubspot')}
+            disabled={!!loadingCrm}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${hubspotConnected ? 'bg-green-500' : 'bg-red-400'}`} />
+              <span className="text-sm font-medium text-gray-800">HubSpot</span>
             </div>
-          </div>
+            <span className={`text-xs font-medium ${hubspotConnected ? 'text-red-500' : 'text-primary'}`}>
+              {loadingCrm === 'hubspot' ? (hubspotConnected ? 'Disconnecting...' : 'Connecting...') : hubspotConnected ? 'Disconnect' : 'Connect'}
+            </span>
+          </button>
 
-          {/* Salesforce */}
-          <div className="px-3 py-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-800">Salesforce</span>
-                {salesforceConnected && (
-                  <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Connected</span>
-                )}
-              </div>
-              {salesforceConnected ? (
-                <button
-                  onClick={() => disconnectCRM('salesforce')}
-                  disabled={loadingCrm === 'salesforce'}
-                  className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-                >
-                  {loadingCrm === 'salesforce' ? '...' : 'Disconnect'}
-                </button>
-              ) : (
-                <button
-                  onClick={() => connectCRM('salesforce')}
-                  disabled={!!loadingCrm}
-                  className="text-xs text-primary hover:text-primary/80 font-medium disabled:opacity-50"
-                >
-                  {loadingCrm === 'salesforce' ? 'Connecting...' : 'Connect'}
-                </button>
-              )}
+          {/* Salesforce — full row is clickable */}
+          <button
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => salesforceConnected ? disconnectCRM('salesforce') : connectCRM('salesforce')}
+            disabled={!!loadingCrm}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${salesforceConnected ? 'bg-green-500' : 'bg-red-400'}`} />
+              <span className="text-sm font-medium text-gray-800">Salesforce</span>
             </div>
-          </div>
+            <span className={`text-xs font-medium ${salesforceConnected ? 'text-red-500' : 'text-primary'}`}>
+              {loadingCrm === 'salesforce' ? (salesforceConnected ? 'Disconnecting...' : 'Connecting...') : salesforceConnected ? 'Disconnect' : 'Connect'}
+            </span>
+          </button>
         </div>
       )}
     </div>
