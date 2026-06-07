@@ -23,6 +23,8 @@ export default function CRMConnectDropdown({ hubspotConnected, salesforceConnect
     setOpen(false);
     const connectorId = crm === 'hubspot' ? HUBSPOT_CONNECTOR_ID : SALESFORCE_CONNECTOR_ID;
     const url = await base44.connectors.connectAppUser(connectorId);
+    // Log full OAuth URL so redirect_uri parameter can be inspected in DevTools → Console
+    console.log(`[CRM Debug] OAuth URL for ${crm}:`, url);
     const popup = window.open(url, '_blank');
     const timer = setInterval(() => {
       if (!popup || popup.closed) {
