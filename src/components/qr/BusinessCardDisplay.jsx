@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, UserPlus, ArrowRight, Link, Music, MessageCircle, Video, CheckCircle2, MapPin } from 'lucide-react';
+import { Phone, Mail, Globe, UserPlus, ArrowRight, Link, CheckCircle2, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { maskUrl } from '@/lib/maskUrl';
 import { formatPhone } from '@/lib/formatPhone';
+import { getSocialIcon } from '@/components/qr/SocialIcons';
 
 function buildVCard(data) {
   const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
@@ -16,28 +17,6 @@ function buildVCard(data) {
   if (data.website) lines.push(`URL:${data.website}`);
   lines.push('END:VCARD');
   return lines.join('\n');
-}
-
-const PLATFORM_ICONS = {
-  linkedin: Linkedin,
-  instagram: Instagram,
-  twitter: Twitter,
-  x: Twitter,
-  youtube: Youtube,
-  facebook: Facebook,
-  tiktok: Music,
-  telegram: MessageCircle,
-  whatsapp: MessageCircle,
-  zoom: Video,
-  phone: Phone,
-  email: Mail,
-  website: Globe,
-  globe: Globe,
-};
-
-function getPlatformIcon(platform) {
-  const key = platform.toLowerCase().trim();
-  return PLATFORM_ICONS[key] || Link;
 }
 
 function normalizeUrl(url, platform) {
@@ -163,7 +142,7 @@ export default function BusinessCardDisplay({ data }) {
           {socialLinks.filter(l => l.platform && l.url).length > 0 && (
             <div className="flex flex-wrap justify-center gap-3 mt-4">
               {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
-                const IconComp = getPlatformIcon(link.platform);
+                const IconComp = getSocialIcon(link.platform);
                 return (
                   <a
                     key={idx}
@@ -171,9 +150,12 @@ export default function BusinessCardDisplay({ data }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={link.platform}
-                    className="w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center hover:shadow-md hover:border-gray-300 transition-all"
+                    className="w-11 h-11 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center active:scale-95 transition-transform"
                   >
-                    <IconComp className="w-4 h-4 text-gray-600" />
+                    {IconComp
+                      ? <IconComp className="w-5 h-5" />
+                      : <Link className="w-4 h-4 text-gray-500" />
+                    }
                   </a>
                 );
               })}

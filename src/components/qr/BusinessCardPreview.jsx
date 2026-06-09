@@ -1,26 +1,6 @@
-import React from 'react';
-import { User, Phone, Mail, Globe, Linkedin, Instagram, Twitter, Youtube, Facebook, Link, Music, MessageCircle, Video, MapPin } from 'lucide-react';
-
-const PLATFORM_ICONS = {
-  linkedin: Linkedin,
-  instagram: Instagram,
-  twitter: Twitter,
-  x: Twitter,
-  youtube: Youtube,
-  facebook: Facebook,
-  tiktok: Music,
-  telegram: MessageCircle,
-  whatsapp: MessageCircle,
-  zoom: Video,
-  phone: Phone,
-  email: Mail,
-  website: Globe,
-  globe: Globe,
-};
-
-function getPlatformIcon(platform) {
-  return PLATFORM_ICONS[platform.toLowerCase().trim()] || Link;
-}
+import React, { useState, useEffect } from 'react';
+import { User, Phone, Mail, Globe, Link, MapPin } from 'lucide-react';
+import { getSocialIcon } from '@/components/qr/SocialIcons';
 
 export default function BusinessCardPreview({ data = {} }) {
   const [headshotError, setHeadshotError] = React.useState(false);
@@ -96,10 +76,13 @@ export default function BusinessCardPreview({ data = {} }) {
             {socialLinks.filter(l => l.platform && l.url).length > 0 && (
               <div className="flex flex-wrap justify-center gap-2 mt-3">
                 {socialLinks.filter(l => l.platform && l.url).map((link, idx) => {
-                  const IconComp = getPlatformIcon(link.platform);
+                  const IconComp = getSocialIcon(link.platform);
                   return (
                     <div key={idx} className="w-7 h-7 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center">
-                      <IconComp className="w-3 h-3 text-gray-600" />
+                      {IconComp
+                        ? <IconComp className="w-4 h-4" />
+                        : <Link className="w-3 h-3 text-gray-500" />
+                      }
                     </div>
                   );
                 })}

@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Upload, X, User, Building2, Link2, Plus, Trash2, MapPin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { SOCIAL_PLATFORMS, getSocialIcon } from '@/components/qr/SocialIcons';
 
 function SECTION({ icon: Icon, title, children }) {
   return (
@@ -154,25 +155,39 @@ export default function BusinessCardForm({ data, onChange }) {
         {/* Dynamic Social Links */}
         <div className="space-y-2">
           <Label className="text-xs text-gray-600">Social Links</Label>
-          {socialLinks.map((link, idx) => (
-            <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-              <Input
-                placeholder="Platform (e.g. LinkedIn)"
-                value={link.platform}
-                onChange={(e) => updateLink(idx, 'platform', e.target.value)}
-                className="w-full sm:w-32 sm:shrink-0"
-              />
-              <Input
-                placeholder="URL or handle"
-                value={link.url}
-                onChange={(e) => updateLink(idx, 'url', e.target.value)}
-                className="w-full"
-              />
-              <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center" onClick={() => removeLink(idx)}>
-                <Trash2 className="w-4 h-4 text-gray-400" />
-              </Button>
-            </div>
-          ))}
+          {socialLinks.map((link, idx) => {
+            const IconComp = getSocialIcon(link.platform);
+            return (
+              <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                <div className="relative w-full sm:w-40 sm:shrink-0">
+                  <select
+                    value={link.platform}
+                    onChange={(e) => updateLink(idx, 'platform', e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none pr-8"
+                  >
+                    <option value="">Select platform</option>
+                    {SOCIAL_PLATFORMS.map(p => (
+                      <option key={p.key} value={p.key}>{p.label}</option>
+                    ))}
+                  </select>
+                  {IconComp && (
+                    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
+                      <IconComp className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+                <Input
+                  placeholder="URL or handle"
+                  value={link.url}
+                  onChange={(e) => updateLink(idx, 'url', e.target.value)}
+                  className="w-full"
+                />
+                <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center" onClick={() => removeLink(idx)}>
+                  <Trash2 className="w-4 h-4 text-gray-400" />
+                </Button>
+              </div>
+            );
+          })}
           <Button type="button" variant="outline" size="sm" onClick={addLink}>
             <Plus className="w-3 h-3 mr-1" /> Add Link
           </Button>
