@@ -21,6 +21,7 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [guestMenuOpen, setGuestMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -257,7 +258,7 @@ export default function Layout({ children, currentPageName }) {
 
               <>
                   {/* Mobile: Hamburger Sheet for unauthenticated users */}
-                  <Sheet>
+                  <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                     <SheetTrigger asChild>
                       <Button variant="outline" size="icon" className="md:hidden h-10 w-10">
                         <Menu className="w-5 h-5" />
@@ -268,24 +269,24 @@ export default function Layout({ children, currentPageName }) {
                         <SheetTitle className="text-left">Menu</SheetTitle>
                       </SheetHeader>
                       <div className="p-4 space-y-1">
-                        <Link to="/">
+                        <Link to="/" onClick={() => setGuestMenuOpen(false)}>
                           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Home</button>
                         </Link>
-                        <Link to="/WhyUs">
+                        <Link to="/WhyUs" onClick={() => setGuestMenuOpen(false)}>
                           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Why Us?</button>
                         </Link>
-                        <Link to="/FAQ">
+                        <Link to="/FAQ" onClick={() => setGuestMenuOpen(false)}>
                           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">FAQ</button>
                         </Link>
-                        <Link to="/Pricing">
+                        <Link to="/Pricing" onClick={() => setGuestMenuOpen(false)}>
                           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Pricing</button>
                         </Link>
-                        <Link to="/Contact">
+                        <Link to="/Contact" onClick={() => setGuestMenuOpen(false)}>
                           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Contact</button>
                         </Link>
                         <div className="pt-2 border-t mt-2 space-y-1">
-                          <button onClick={handleLogin} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium">Login</button>
-                          <button onClick={handleLogin} className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-semibold">Get Started</button>
+                          <button onClick={() => { setGuestMenuOpen(false); handleLogin(); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium">Login</button>
+                          <button onClick={() => { setGuestMenuOpen(false); handleLogin(); }} className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-semibold">Get Started</button>
                         </div>
                       </div>
                     </SheetContent>
