@@ -1049,8 +1049,47 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
               onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
               }
                 {formData.content_type === 'sms' &&
-              <Input id="content" placeholder="+1 (555) 123-4567" value={formData.content}
-              onChange={(e) => {handleChange('content', e.target.value);triggerPreview({ content: e.target.value });}} />
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-gray-500">Phone Number *</Label>
+                  <Input
+                    placeholder="+1 (555) 123-4567"
+                    value={(() => {
+                      const c = formData.content || '';
+                      const match = c.match(/^sms:([^?]*)/);
+                      return match ? match[1] : c;
+                    })()}
+                    onChange={(e) => {
+                      const phone = e.target.value;
+                      const bodyMatch = (formData.content || '').match(/\?body=(.*)/);
+                      const body = bodyMatch ? decodeURIComponent(bodyMatch[1]) : '';
+                      const next = body ? `sms:${phone}?body=${encodeURIComponent(body)}` : `sms:${phone}`;
+                      handleChange('content', next);
+                      triggerPreview({ content: next });
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Pre-composed Message <span className="text-gray-400">(Optional)</span></Label>
+                  <Textarea
+                    placeholder="Type a message that will be pre-filled when scanning..."
+                    rows={3}
+                    value={(() => {
+                      const bodyMatch = (formData.content || '').match(/\?body=(.*)/);
+                      return bodyMatch ? decodeURIComponent(bodyMatch[1]) : '';
+                    })()}
+                    onChange={(e) => {
+                      const body = e.target.value;
+                      const phoneMatch = (formData.content || '').match(/^sms:([^?]*)/);
+                      const phone = phoneMatch ? phoneMatch[1] : (formData.content || '').replace(/^sms:/, '');
+                      const next = body ? `sms:${phone}?body=${encodeURIComponent(body)}` : `sms:${phone}`;
+                      handleChange('content', next);
+                      triggerPreview({ content: next });
+                    }}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">When scanned, the messaging app will open with this message ready to send.</p>
+                </div>
+              </div>
               }
                 </div>
               )}
