@@ -256,12 +256,50 @@ export default function Layout({ children, currentPageName }) {
                 </> :
 
               <>
-                  <Button variant="ghost" onClick={handleLogin} className="font-semibold transition-colors duration-200 text-foreground hover:text-primary">
-                    Login
-                  </Button>
-                  <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors duration-200">
-                    Get Started
-                  </Button>
+                  {/* Mobile: Hamburger Sheet for unauthenticated users */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="icon" className="md:hidden h-10 w-10">
+                        <Menu className="w-5 h-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-72 p-0">
+                      <SheetHeader className="p-6 border-b bg-muted/30">
+                        <SheetTitle className="text-left">Menu</SheetTitle>
+                      </SheetHeader>
+                      <div className="p-4 space-y-1">
+                        <Link to="/">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Home</button>
+                        </Link>
+                        <Link to="/WhyUs">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Why Us?</button>
+                        </Link>
+                        <Link to="/FAQ">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">FAQ</button>
+                        </Link>
+                        <Link to="/Pricing">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Pricing</button>
+                        </Link>
+                        <Link to="/Contact">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">Contact</button>
+                        </Link>
+                        <div className="pt-2 border-t mt-2 space-y-1">
+                          <button onClick={handleLogin} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium">Login</button>
+                          <button onClick={handleLogin} className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-semibold">Get Started</button>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Desktop auth buttons */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <Button variant="ghost" onClick={handleLogin} className="font-semibold transition-colors duration-200 text-foreground hover:text-primary">
+                      Login
+                    </Button>
+                    <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors duration-200">
+                      Get Started
+                    </Button>
+                  </div>
                 </>
               }
             </div>
