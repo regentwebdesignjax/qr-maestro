@@ -69,6 +69,14 @@ export const YoutubeIcon = ({ className }) => (
   <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/556927dc8_youtube.svg" alt="YouTube" className={className} />
 );
 
+export const DiscordIcon = ({ className }) => (
+  <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/e1d0d0439_discord.svg" alt="Discord" className={className} />
+);
+
+export const SoundCloudIcon = ({ className }) => (
+  <img src="https://media.base44.com/images/public/697bd26bb993b44c81affe97/cbb3bbd07_soundcloud.svg" alt="SoundCloud" className={className} />
+);
+
 // Registry: maps platform keys → branded SVG icon component
 export const SOCIAL_ICON_REGISTRY = {
   facebook:   FacebookIcon,
@@ -89,6 +97,8 @@ export const SOCIAL_ICON_REGISTRY = {
   twitter:    XTwitterIcon,
   yelp:       YelpIcon,
   youtube:    YoutubeIcon,
+  discord:    DiscordIcon,
+  soundcloud: SoundCloudIcon,
 };
 
 // Ordered list used in the platform dropdown in forms
@@ -110,6 +120,8 @@ export const SOCIAL_PLATFORMS = [
   { key: 'patreon',   label: 'Patreon' },
   { key: 'yelp',      label: 'Yelp' },
   { key: 'rss',       label: 'RSS' },
+  { key: 'discord',   label: 'Discord' },
+  { key: 'soundcloud', label: 'SoundCloud' },
 ];
 
 export function getSocialIcon(platform) {
