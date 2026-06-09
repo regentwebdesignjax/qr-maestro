@@ -226,7 +226,7 @@ export default function SupportChatWidget() {
     <>
       {/* Nudge prompt */}
       {showNudge && !open && (
-        <div className="fixed bottom-24 right-6 z-50 w-64 bg-white rounded-2xl shadow-xl border border-border p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed bottom-[calc(64px+80px)] md:bottom-24 right-6 z-50 w-64 bg-white rounded-2xl shadow-xl border border-border p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
           <button
             onClick={() => { setShowNudge(false); setNudgeDismissed(true); }}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -250,7 +250,7 @@ export default function SupportChatWidget() {
       {/* Floating button */}
       <button
         onClick={open ? () => setOpen(false) : handleOpen}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 flex items-center justify-center"
+        className="fixed bottom-[calc(64px+12px)] md:bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-200 flex items-center justify-center"
         aria-label="Open support chat"
       >
         {open ? <X className="w-5 h-5" /> : <MessageCircle className="w-6 h-6" />}
@@ -258,7 +258,7 @@ export default function SupportChatWidget() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[340px] sm:w-[380px] h-[500px] bg-white rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden">
+        <div className="fixed bottom-[calc(64px+80px)] md:bottom-24 right-6 z-50 w-[340px] sm:w-[380px] h-[500px] bg-white rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-primary px-4 py-3 flex items-center gap-3 shrink-0">
             <div className="w-8 h-8 rounded-full bg-primary-foreground/20 flex items-center justify-center text-sm">
