@@ -173,43 +173,6 @@ export default function BusinessPageForm({ data, onChange }) {
         </div>
       </div>
 
-      {/* Location */}
-      <div className="border rounded-xl p-4 space-y-4">
-        <h3 className="font-semibold text-sm">Location</h3>
-
-        <div>
-          <Label className="text-xs text-gray-500">Address</Label>
-          <Input
-            placeholder="123 Main Street, City, State 12345"
-            value={data.address || ''}
-            onChange={(e) => handleChange('address', e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs text-gray-500">Latitude</Label>
-            <Input
-              placeholder="40.7128"
-              type="number"
-              step="any"
-              value={data.latitude || ''}
-              onChange={(e) => handleChange('latitude', e.target.value)}
-            />
-          </div>
-          <div>
-            <Label className="text-xs text-gray-500">Longitude</Label>
-            <Input
-              placeholder="-74.0060"
-              type="number"
-              step="any"
-              value={data.longitude || ''}
-              onChange={(e) => handleChange('longitude', e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Social Links */}
       <div className="border rounded-xl p-4 space-y-4">
         <h3 className="font-semibold text-sm">Social Links</h3>
@@ -249,6 +212,43 @@ export default function BusinessPageForm({ data, onChange }) {
         <Button type="button" variant="outline" size="sm" onClick={addSocialLink}>
           <Plus className="w-3 h-3 mr-1" /> Add Link
         </Button>
+      </div>
+
+      {/* Location */}
+      <div className="border rounded-xl p-4 space-y-4">
+        <h3 className="font-semibold text-sm">Location</h3>
+
+        <div>
+          <Label className="text-xs text-gray-500">Address</Label>
+          <Input
+            placeholder="123 Main Street, City, State 12345"
+            value={data.address || ''}
+            onChange={(e) => handleChange('address', e.target.value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs text-gray-500">Latitude</Label>
+            <Input
+              placeholder="40.7128"
+              type="number"
+              step="any"
+              value={data.latitude || ''}
+              onChange={(e) => handleChange('latitude', e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-gray-500">Longitude</Label>
+            <Input
+              placeholder="-74.0060"
+              type="number"
+              step="any"
+              value={data.longitude || ''}
+              onChange={(e) => handleChange('longitude', e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Button Customization */}
