@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Clock } from 'lucide-react';
+import { Upload, X, Clock, Plus, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { SOCIAL_PLATFORMS, getSocialIcon } from '@/components/qr/SocialIcons';
 
 const DAYS_OF_WEEK = ['Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.', 'Sun.'];
 
@@ -71,6 +72,21 @@ function ImageUploader({ label, hint, value, onChange, id, previewSize = 'w-full
 export default function BusinessPageForm({ data, onChange }) {
   const handleChange = (field, value) => {
     onChange({ ...data, [field]: value });
+  };
+
+  const socialLinks = data.social_links || [];
+
+  const addSocialLink = () => {
+    onChange({ ...data, social_links: [...socialLinks, { platform: '', url: '' }] });
+  };
+
+  const updateSocialLink = (idx, field, value) => {
+    const updated = socialLinks.map((l, i) => i === idx ? { ...l, [field]: value } : l);
+    onChange({ ...data, social_links: updated });
+  };
+
+  const removeSocialLink = (idx) => {
+    onChange({ ...data, social_links: socialLinks.filter((_, i) => i !== idx) });
   };
 
   const handleScheduleChange = (dayIndex, field, value) => {
@@ -192,6 +208,47 @@ export default function BusinessPageForm({ data, onChange }) {
             />
           </div>
         </div>
+      </div>
+
+      {/* Social Links */}
+      <div className="border rounded-xl p-4 space-y-4">
+        <h3 className="font-semibold text-sm">Social Links</h3>
+        {socialLinks.map((link, idx) => {
+          const IconComp = getSocialIcon(link.platform);
+          return (
+            <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <div className="relative w-full sm:w-40 sm:shrink-0">
+                <select
+                  value={link.platform}
+                  onChange={(e) => updateSocialLink(idx, 'platform', e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none pr-8"
+                >
+                  <option value="">Select platform</option>
+                  {SOCIAL_PLATFORMS.map(p => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </select>
+                {IconComp && (
+                  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
+                    <IconComp className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+              <Input
+                placeholder="URL or handle"
+                value={link.url}
+                onChange={(e) => updateSocialLink(idx, 'url', e.target.value)}
+                className="w-full"
+              />
+              <Button type="button" variant="ghost" size="icon" className="shrink-0 self-center" onClick={() => removeSocialLink(idx)}>
+                <Trash2 className="w-4 h-4 text-gray-400" />
+              </Button>
+            </div>
+          );
+        })}
+        <Button type="button" variant="outline" size="sm" onClick={addSocialLink}>
+          <Plus className="w-3 h-3 mr-1" /> Add Link
+        </Button>
       </div>
 
       {/* Button Customization */}

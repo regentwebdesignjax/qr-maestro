@@ -1,5 +1,6 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Building2 } from 'lucide-react';
+import { Phone, Mail, MapPin, Building2, Link } from 'lucide-react';
+import { getSocialIcon } from '@/components/qr/SocialIcons';
 
 const formatPhone = (phone) => {
   const digits = phone.replace(/\D/g, '');
@@ -72,6 +73,20 @@ export default function BusinessPagePreview({ data = {} }) {
                 {pageData.contact_title && (
                   <p className="text-xs text-gray-500">{pageData.contact_title}</p>
                 )}
+              </div>
+            )}
+
+            {/* Social Icons Row */}
+            {pageData.social_links?.filter(l => l.platform && l.url).length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 pb-2">
+                {pageData.social_links.filter(l => l.platform && l.url).map((link, idx) => {
+                  const IconComp = getSocialIcon(link.platform);
+                  return (
+                    <div key={idx} className="w-7 h-7 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center">
+                      {IconComp ? <IconComp className="w-4 h-4" /> : <Link className="w-3 h-3 text-gray-500" />}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
