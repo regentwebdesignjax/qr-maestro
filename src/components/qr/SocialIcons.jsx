@@ -101,27 +101,27 @@ export const SOCIAL_ICON_REGISTRY = {
   soundcloud: SoundCloudIcon,
 };
 
-// Ordered list used in the platform dropdown in forms
+// Ordered list used in the platform dropdown in forms (alphabetical)
 export const SOCIAL_PLATFORMS = [
-  { key: 'facebook',  label: 'Facebook' },
-  { key: 'instagram', label: 'Instagram' },
-  { key: 'x',        label: 'X / Twitter' },
-  { key: 'linkedin',  label: 'LinkedIn' },
-  { key: 'youtube',   label: 'YouTube' },
-  { key: 'tiktok',    label: 'TikTok' },
-  { key: 'whatsapp',  label: 'WhatsApp' },
-  { key: 'telegram',  label: 'Telegram' },
-  { key: 'threads',   label: 'Threads' },
-  { key: 'snapchat',  label: 'Snapchat' },
-  { key: 'pinterest', label: 'Pinterest' },
-  { key: 'reddit',    label: 'Reddit' },
-  { key: 'github',    label: 'GitHub' },
-  { key: 'medium',    label: 'Medium' },
-  { key: 'patreon',   label: 'Patreon' },
-  { key: 'yelp',      label: 'Yelp' },
-  { key: 'rss',       label: 'RSS' },
-  { key: 'discord',   label: 'Discord' },
+  { key: 'discord',    label: 'Discord' },
+  { key: 'facebook',   label: 'Facebook' },
+  { key: 'github',     label: 'GitHub' },
+  { key: 'instagram',  label: 'Instagram' },
+  { key: 'linkedin',   label: 'LinkedIn' },
+  { key: 'medium',     label: 'Medium' },
+  { key: 'patreon',    label: 'Patreon' },
+  { key: 'pinterest',  label: 'Pinterest' },
+  { key: 'reddit',     label: 'Reddit' },
+  { key: 'rss',        label: 'RSS' },
+  { key: 'snapchat',   label: 'Snapchat' },
   { key: 'soundcloud', label: 'SoundCloud' },
+  { key: 'telegram',   label: 'Telegram' },
+  { key: 'threads',    label: 'Threads' },
+  { key: 'tiktok',     label: 'TikTok' },
+  { key: 'whatsapp',   label: 'WhatsApp' },
+  { key: 'x',          label: 'X / Twitter' },
+  { key: 'yelp',       label: 'Yelp' },
+  { key: 'youtube',    label: 'YouTube' },
 ];
 
 export function getSocialIcon(platform) {
