@@ -154,14 +154,14 @@ export default function WhyUs() {
              Thousands of teams are already using QR Sensei to create, manage, and track QR codes.
              Start free today and see why.
            </p>
-          <div className="flex gap-4 justify-center">
-            <Link to="/Dashboard">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/Dashboard" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
                 Create Your First QR Code
               </Button>
             </Link>
-            <Link to="/Pricing">
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200">
+            <Link to="/Pricing" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold transition-colors duration-200">
                 View Pricing
               </Button>
             </Link>
