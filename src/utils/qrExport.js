@@ -120,16 +120,14 @@ function getQRContent(qr) {
     return url;
   }
 
-  // For SMS QR codes, use SMSTO: prefix which is more reliably parsed by
-  // native iOS and Android camera apps (avoids "sms:" being pasted into To field)
+  // For SMS QR codes, encode just the raw digits so iOS/Android camera apps
+  // display a clean phone number without any URI prefix errors (red text).
   if (qr.content_type === 'sms' && qr.content) {
-    const match = qr.content.match(/^sms:([^?]*)(\?body=(.*))?$/i);
+    const match = qr.content.match(/^sms:([^?]*)/i);
     if (match) {
-      const phone = match[1];
-      const body = match[3] ? decodeURIComponent(match[3]) : '';
-      const smstoContent = body ? `SMSTO:${phone}:${body}` : `SMSTO:${phone}`;
-      console.log('[getQRContent] SMS → SMSTO format:', smstoContent);
-      return smstoContent;
+      const phone = match[1].replace(/\D/g, '');
+      console.log('[getQRContent] SMS → plain digits:', phone);
+      return phone;
     }
   }
 
