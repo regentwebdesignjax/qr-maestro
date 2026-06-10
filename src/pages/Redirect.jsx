@@ -377,7 +377,9 @@ export default function Redirect() {
           return;
         }
         if (data.content_type === 'sms') {
-          window.location.href = `sms:${data.content.trim()}`;
+          // Stored content already includes the sms: prefix — strip it to avoid sms:sms:number
+          const smsTarget = data.content.trim().replace(/^sms:/i, '');
+          window.location.href = `sms:${smsTarget}`;
           return;
         }
         if (data.content_type === 'vcard') {
