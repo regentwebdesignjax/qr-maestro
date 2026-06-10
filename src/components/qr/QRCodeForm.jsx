@@ -1057,17 +1057,22 @@ export default function QRCodeForm({ user, onGenerate, onSave, saving, onStepCha
                     value={(() => {
                       const c = formData.content || '';
                       const match = c.match(/^sms:([^?]*)/);
-                      return match ? match[1] : c;
+                      return match ? match[1] : c.replace(/^sms:/, '');
                     })()}
                     onChange={(e) => {
-                      const phone = e.target.value;
+                      // Strip all non-digit characters except a leading +
+                      const raw = e.target.value;
+                      const cleaned = raw.startsWith('+')
+                        ? '+' + raw.slice(1).replace(/\D/g, '')
+                        : raw.replace(/\D/g, '');
                       const bodyMatch = (formData.content || '').match(/\?body=(.*)/);
                       const body = bodyMatch ? decodeURIComponent(bodyMatch[1]) : '';
-                      const next = body ? `sms:${phone}?body=${encodeURIComponent(body)}` : `sms:${phone}`;
+                      const next = body ? `sms:${cleaned}?body=${encodeURIComponent(body)}` : `sms:${cleaned}`;
                       handleChange('content', next);
                       triggerPreview({ content: next });
                     }}
                   />
+                  <p className="text-xs text-gray-400 mt-1">Enter digits only, e.g. +12392883744 or 2392883744</p>
                 </div>
                 <div>
                   <Label className="text-xs text-gray-500">Pre-composed Message <span className="text-gray-400">(Optional)</span></Label>
