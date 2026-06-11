@@ -164,6 +164,12 @@ export default function Layout({ children, currentPageName }) {
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
+                          <Link to="/Profile" className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            My Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                           <Link to="/Contact" className="flex items-center">
                             <MessageCircle className="w-4 h-4 mr-2" />
                             Ask Support
@@ -211,6 +217,12 @@ export default function Layout({ children, currentPageName }) {
                         </div>
                       </SheetHeader>
                       <div className="p-4 space-y-1">
+                        <Link to="/Profile">
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">
+                            <User className="w-4 h-4 text-gray-400" />
+                            My Profile
+                          </button>
+                        </Link>
                         {user.role !== 'admin' && user.subscription_tier !== 'pro' &&
                       <Link to="/Pricing">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors">

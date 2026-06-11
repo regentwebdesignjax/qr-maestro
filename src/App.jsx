@@ -17,6 +17,7 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
+import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 
 // Pages that require authentication
@@ -60,6 +61,11 @@ const AuthenticatedApp = () => {
 
       {/* Protected pages — require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/Profile" element={
+          <LayoutWrapper currentPageName="Profile">
+            <Profile />
+          </LayoutWrapper>
+        } />
         {Object.entries(Pages)
           .filter(([path]) => PROTECTED_PAGES.includes(path))
           .map(([path, Page]) => (
