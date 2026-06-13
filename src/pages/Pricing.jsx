@@ -23,9 +23,9 @@ export default function Pricing() {
         setUser(currentUser);
       } catch (error) {
 
+
         // User not logged in
-      }};
-    fetchUser();
+      }};fetchUser();
   }, []);
 
   const isPro = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
@@ -256,7 +256,7 @@ export default function Pricing() {
                     Manage Subscription
                   </Button> :
 
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200" onClick={() => handleUpgrade('monthly')} disabled={loading || isPro && user?.subscription_period === 'annual'}>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200 text-sm" onClick={() => handleUpgrade('monthly')} disabled={loading || isPro && user?.subscription_period === 'annual'}>
                     <Zap className="w-4 h-4 mr-2" />
                     {user ? 'Upgrade to Pro' : 'Sign Up Now'}
                   </Button>
