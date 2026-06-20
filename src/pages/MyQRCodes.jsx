@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Lock, QrCode as QrCodeIcon, FolderOpen, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Lock, QrCode as QrCodeIcon, FolderOpen, Layers, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import QRCodeList from '../components/qr/QRCodeList';
 import FoldersSidebar from '../components/qr/FoldersSidebar';
 import QRMobileCard from '../components/qr/QRMobileCard';
@@ -22,6 +23,7 @@ export default function MyQRCodes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(() => {
     const saved = localStorage.getItem(PAGE_SIZE_KEY);
     return saved ? parseInt(saved, 10) : 25;
@@ -160,9 +162,18 @@ export default function MyQRCodes() {
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
   const canCreateStatic = isPro || staticCount < 10;
 
-  const filteredQrCodes = activeFolder === 'all'
-    ? qrCodes
-    : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
+  const filteredQrCodes = (() => {
+    let result = activeFolder === 'all'
+      ? qrCodes
+      : qrCodes.filter(qr => qrFolderMap[qr.id] === activeFolder);
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(qr => qr.name.toLowerCase().includes(term));
+    }
+
+    return result;
+  })();
 
   const handleSort = (column) => {
     if (sortColumn !== column) {
@@ -226,6 +237,11 @@ export default function MyQRCodes() {
     setCurrentPage(1);
   };
 
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
   const handleFolderChange = (folder) => {
     setActiveFolder(folder);
     setCurrentPage(1);
@@ -252,7 +268,7 @@ export default function MyQRCodes() {
     <div className="min-h-screen bg-background">
       <div className="w-full mx-auto px-4 sm:px-6 py-6 md:py-8">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-6">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My QR Codes</h1>
@@ -261,6 +277,27 @@ export default function MyQRCodes() {
               </Badge>
             </div>
             <p className="text-sm text-gray-600">Manage all your QR codes</p>
+          </div>
+
+          {/* Search */}
+          <div className="w-full sm:w-64">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search QR codes..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-9 pr-8 h-10 rounded-xl"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => handleSearchChange('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex gap-2">
             {isPro && (
