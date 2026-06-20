@@ -279,53 +279,55 @@ export default function MyQRCodes() {
             <p className="text-sm text-gray-600">Manage all your QR codes</p>
           </div>
 
-          {/* Search */}
-          <div className="w-full sm:w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search QR codes..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-9 pr-8 h-10 rounded-xl"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => handleSearchChange('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search */}
+            <div className="w-full sm:w-80">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search QR codes..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="pl-9 pr-8 h-10 rounded-xl"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => handleSearchChange('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {isPro && (
+                <Link to="/BulkCreate">
+                  <Button variant="outline" className="h-11">
+                    <Layers className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Bulk Create</span>
+                    <span className="sm:hidden">Bulk</span>
+                  </Button>
+                </Link>
+              )}
+              {canCreateStatic ? (
+                <Link to="/CreateQR">
+                  <Button className="h-11">
+                    <Plus className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Create New</span>
+                    <span className="sm:hidden">New</span>
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/Pricing">
+                  <Button className="h-11 bg-gray-400 hover:bg-gray-400 cursor-not-allowed" disabled>
+                    <Lock className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Limit Reached — Upgrade</span>
+                    <span className="sm:hidden">Upgrade</span>
+                  </Button>
+                </Link>
               )}
             </div>
-          </div>
-          <div className="flex gap-2">
-            {isPro && (
-              <Link to="/BulkCreate">
-                <Button variant="outline" className="h-11">
-                  <Layers className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Bulk Create</span>
-                  <span className="sm:hidden">Bulk</span>
-                </Button>
-              </Link>
-            )}
-            {canCreateStatic ? (
-              <Link to="/CreateQR">
-                <Button className="h-11">
-                  <Plus className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Create New</span>
-                  <span className="sm:hidden">New</span>
-                </Button>
-              </Link>
-            ) : (
-              <Link to="/Pricing">
-                <Button className="h-11 bg-gray-400 hover:bg-gray-400 cursor-not-allowed" disabled>
-                  <Lock className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Limit Reached — Upgrade</span>
-                  <span className="sm:hidden">Upgrade</span>
-                </Button>
-              </Link>
-            )}
           </div>
         </div>
 
