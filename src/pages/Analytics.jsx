@@ -14,6 +14,7 @@ import ScansOverTimeChart from '../components/analytics/ScansOverTimeChart';
 import ScanMap from '../components/analytics/ScanMap';
 import ScanLocationsTable from '../components/analytics/ScanLocationsTable';
 import TimeOfDayHeatmap from '../components/analytics/TimeOfDayHeatmap';
+import TimeOfDayMobile from '../components/analytics/TimeOfDayMobile';
 
 const PRESETS = [
   { value: 'today', label: 'Today', pro: false },
@@ -352,7 +353,7 @@ export default function Analytics() {
         </div>
 
         {/* Scans by Devices Used and Scans by Time of Day — side by side */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Scans by Devices Used */}
           <div>
             <Card className="border-0 shadow-sm">
@@ -418,7 +419,12 @@ export default function Analytics() {
 
           {/* Scans by Time of Day */}
           <div>
-            <TimeOfDayHeatmap scans={filteredScans} />
+            <div className="hidden md:block">
+              <TimeOfDayHeatmap scans={filteredScans} />
+            </div>
+            <div className="md:hidden">
+              <TimeOfDayMobile scans={filteredScans} />
+            </div>
           </div>
         </div>
 
