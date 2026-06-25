@@ -222,6 +222,9 @@ export default function SupportChatWidget() {
     (m) => m.role === 'assistant' && !m.content && m.status !== 'done'
   );
 
+  // Desktop only — hide on mobile
+  if (typeof window !== 'undefined' && window.innerWidth < 768) return null;
+
   return (
     <>
       {/* Nudge prompt */}
