@@ -2,10 +2,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.4.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
-const DBC_PRICE_MONTHLY            = 'price_1TNv2cQJqdSd3DGEgvCK2CZ2';
-const DBC_PRICE_ANNUAL             = 'price_1TNvFWQJqdSd3DGEGflRsrcM';
-const CUSTOM_DOMAIN_PRICE_MONTHLY  = 'price_1TVEhkQJqdSd3DGEtdZwvKpe';
-const CUSTOM_DOMAIN_PRICE_ANNUAL   = 'price_1TVEi3QJqdSd3DGEpemwH33m';
+const DBC_PRICE_MONTHLY   = 'price_1TNv2cQJqdSd3DGEgvCK2CZ2';
+const DBC_PRICE_ANNUAL    = 'price_1TNvFWQJqdSd3DGEGflRsrcM';
+const GM_PRICE_MONTHLY    = 'price_1TnpcVQJqdSd3DGEU7IHrfXu';
+const GM_PRICE_ANNUAL     = 'price_1TnpeiQJqdSd3DGEXMWPIP8P';
 
 Deno.serve(async (req) => {
   try {
@@ -16,13 +16,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { period, total_seats, include_custom_domain } = await req.json();
+    const { plan = 'black_belt', period, total_seats } = await req.json();
 
-    const basePriceId = period === 'monthly'
-      ? Deno.env.get('PRICE_ID_MONTHLY')
-      : Deno.env.get('PRICE_ID_ANNUAL');
+    const isAnnual = period === 'annual';
+    const isGrandMaster = plan === 'grand_master';
 
-    const extraDbcPriceId = period === 'annual' ? DBC_PRICE_ANNUAL : DBC_PRICE_MONTHLY;
+    const basePriceId = isGrandMaster
+      ? (isAnnual ? GM_PRICE_ANNUAL : GM_PRICE_MONTHLY)
+      : (isAnnual ? Deno.env.get('PRICE_ID_ANNUAL') : Deno.env.get('PRICE_ID_MONTHLY'));
+
+    const extraDbcPriceId = isAnnual ? DBC_PRICE_ANNUAL : DBC_PRICE_MONTHLY;
 
     // Ensure customer exists
     let customerId = user.stripe_customer_id;
@@ -53,11 +56,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (include_custom_domain) {
-      const customDomainPriceId = period === 'annual' ? CUSTOM_DOMAIN_PRICE_ANNUAL : CUSTOM_DOMAIN_PRICE_MONTHLY;
-      lineItems.push({ price: customDomainPriceId, quantity: 1 });
-    }
-
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
@@ -66,7 +64,7 @@ Deno.serve(async (req) => {
       allow_promotion_codes: true,
       success_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Dashboard?success=true`,
       cancel_url: `${req.headers.get('origin') || 'https://app.base44.app'}/Pricing?canceled=true`,
-      metadata: { user_id: user.id, period, include_custom_domain: include_custom_domain ? 'true' : 'false' },
+      metadata: { user_id: user.id, plan, period },
     });
 
     return Response.json({ url: session.url });
