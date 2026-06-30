@@ -114,7 +114,7 @@ export default function Dashboard() {
     );
   }
 
-  const isPro = user.role === 'admin' || (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
+  const isPro = user.role === 'admin' || (['black_belt', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
   const isGrandMaster = user.subscription_tier === 'grand_master' && user.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const qrLimit = user.role === 'admin' ? Infinity : isGrandMaster ? 1500 : isPro ? 500 : 10;
@@ -306,7 +306,7 @@ export default function Dashboard() {
                 <Link to="/Pricing">
                   <Button className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors duration-200">
                     <Zap className="w-4 h-4 mr-2" />
-                    Upgrade to Pro
+                    Upgrade to Black Belt
                   </Button>
                 </Link>
               </div>
@@ -321,7 +321,7 @@ export default function Dashboard() {
               <p className="text-orange-800">
                 You've reached the free tier limit of 10 static QR codes.{' '}
                 <Link to="/Pricing" className="font-semibold underline">
-                  Upgrade to Pro
+                  Upgrade to Black Belt
                 </Link>{' '}
                 for unlimited QR codes, dynamic codes, and analytics.
               </p>

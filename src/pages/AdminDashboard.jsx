@@ -135,8 +135,8 @@ export default function AdminDashboard() {
     );
   }
 
-  const proUsers = allUsers.filter(u => ['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) && u.subscription_status === 'active');
-  const freeUsers = allUsers.filter(u => !['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) || u.subscription_status !== 'active');
+  const proUsers = allUsers.filter(u => ['black_belt', 'grand_master'].includes(u.subscription_tier) && u.subscription_status === 'active');
+  const freeUsers = allUsers.filter(u => !['black_belt', 'grand_master'].includes(u.subscription_tier) || u.subscription_status !== 'active');
   const adminUsers = allUsers.filter(u => u.role === 'admin');
 
   return (
@@ -242,15 +242,14 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={['pro', 'black_belt', 'grand_master'].includes(u.subscription_tier) ? 'default' : 'outline'}
+                          variant={['black_belt', 'grand_master'].includes(u.subscription_tier) ? 'default' : 'outline'}
                           className={
                             u.subscription_tier === 'grand_master' ? 'bg-purple-600 text-white' :
-                            u.subscription_tier === 'black_belt' || u.subscription_tier === 'pro' ? 'bg-primary text-primary-foreground' : ''
+                            u.subscription_tier === 'black_belt' ? 'bg-primary text-primary-foreground' : ''
                           }
                         >
                           {u.subscription_tier === 'grand_master' ? 'Grand Master' :
-                           u.subscription_tier === 'black_belt' ? 'Black Belt' :
-                           u.subscription_tier === 'pro' ? 'Black Belt' : 'White Belt'}
+                           u.subscription_tier === 'black_belt' ? 'Black Belt' : 'White Belt'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -300,7 +299,7 @@ export default function AdminDashboard() {
                                 <div>
                                   <h4 className="font-semibold mb-2">Subscription</h4>
                                   <div className="space-y-2">
-                                    {['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) && u.subscription_status === 'active' ? (
+                                    {['black_belt', 'grand_master'].includes(u.subscription_tier) && u.subscription_status === 'active' ? (
                                       <Button
                                         onClick={() => handleRevokePro(u.id)}
                                         variant="outline"
