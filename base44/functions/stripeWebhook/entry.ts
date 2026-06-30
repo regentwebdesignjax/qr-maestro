@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
 
         if (userToUpdate) {
           await base44.asServiceRole.entities.User.update(userToUpdate.id, {
-            subscription_tier: grandMaster ? 'grand_master' : 'pro',
+            subscription_tier: grandMaster ? 'grand_master' : 'black_belt',
             subscription_status: 'active',
             subscription_period: period,
             purchased_extra_dbcs: extraDbcs,

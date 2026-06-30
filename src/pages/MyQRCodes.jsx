@@ -156,8 +156,8 @@ export default function MyQRCodes() {
     moveToFolderMutation.mutate({ qrIds, folderId });
   };
 
-  const isPro = user ? (user.role === 'admin' || (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active')) : false;
-  const subActive = user ? (user.role === 'admin' || !['pro', 'grand_master'].includes(user.subscription_tier) || user.subscription_status === 'active') : false;
+  const isPro = user ? (user.role === 'admin' || (['black_belt', 'pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active')) : false;
+  const subActive = user ? (user.role === 'admin' || !['black_belt', 'pro', 'grand_master'].includes(user.subscription_tier) || user.subscription_status === 'active') : false;
   const isGrandMaster = user?.subscription_tier === 'grand_master' && user?.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;

@@ -107,7 +107,7 @@ export default function AdminDashboard() {
     trialEnd.setDate(trialEnd.getDate() + 30); // 30-day trial
     updateSubscriptionMutation.mutate({
       userId,
-      tier: 'pro',
+      tier: 'black_belt',
       status: 'active',
       trialEndDate: trialEnd.toISOString(),
     });
@@ -135,8 +135,8 @@ export default function AdminDashboard() {
     );
   }
 
-  const proUsers = allUsers.filter(u => u.subscription_tier === 'pro' && u.subscription_status === 'active');
-  const freeUsers = allUsers.filter(u => u.subscription_tier !== 'pro' || u.subscription_status !== 'active');
+  const proUsers = allUsers.filter(u => ['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) && u.subscription_status === 'active');
+  const freeUsers = allUsers.filter(u => !['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) || u.subscription_status !== 'active');
   const adminUsers = allUsers.filter(u => u.role === 'admin');
 
   return (
@@ -300,20 +300,20 @@ export default function AdminDashboard() {
                                 <div>
                                   <h4 className="font-semibold mb-2">Subscription</h4>
                                   <div className="space-y-2">
-                                    {u.subscription_tier === 'pro' && u.subscription_status === 'active' ? (
+                                    {['black_belt', 'grand_master', 'pro'].includes(u.subscription_tier) && u.subscription_status === 'active' ? (
                                       <Button
                                         onClick={() => handleRevokePro(u.id)}
                                         variant="outline"
                                         className="w-full"
                                       >
-                                        Revoke Pro Access
+                                        Revoke Access
                                       </Button>
                                     ) : (
                                       <Button
                                         onClick={() => handleGrantPro(u.id)}
                                         className="w-full"
                                       >
-                                        Grant 30-Day Pro Trial
+                                        Grant 30-Day Black Belt Trial
                                       </Button>
                                     )}
                                   </div>

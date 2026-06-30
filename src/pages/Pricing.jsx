@@ -35,9 +35,9 @@ export default function Pricing() {
   const isAnnual = billingPeriod === 'annual';
 
   const isPaidActive = (tier) =>
-    ['pro', 'grand_master'].includes(tier) && user?.subscription_status === 'active';
+    ['black_belt', 'grand_master', 'pro'].includes(tier) && user?.subscription_status === 'active';
 
-  const isBlackBelt = user?.subscription_tier === 'pro' && user?.subscription_status === 'active';
+  const isBlackBelt = ['black_belt', 'pro'].includes(user?.subscription_tier) && user?.subscription_status === 'active';
   const isGrandMaster = user?.subscription_tier === 'grand_master' && user?.subscription_status === 'active';
   const isAnyPro = isPaidActive(user?.subscription_tier);
 
