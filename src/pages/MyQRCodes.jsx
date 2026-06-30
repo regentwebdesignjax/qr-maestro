@@ -158,9 +158,13 @@ export default function MyQRCodes() {
 
   const isPro = user ? (user.role === 'admin' || (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active')) : false;
   const subActive = user ? (user.role === 'admin' || !['pro', 'grand_master'].includes(user.subscription_tier) || user.subscription_status === 'active') : false;
+  const isGrandMaster = user?.subscription_tier === 'grand_master' && user?.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const dynamicCount = qrCodes.filter(qr => qr.type === 'dynamic').length;
-  const canCreateStatic = isPro || staticCount < 10;
+  const qrLimit = user?.role === 'admin' ? Infinity : isGrandMaster ? 1500 : isPro ? 500 : 10;
+  const qrLimitReached = user?.role !== 'admin' && qrCodes.length >= qrLimit;
+  const canCreateStatic = !qrLimitReached && (isPro || staticCount < 10);
+  const canCreate = !qrLimitReached;
 
   const filteredQrCodes = (() => {
     let result = activeFolder === 'all'
@@ -273,7 +277,7 @@ export default function MyQRCodes() {
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My QR Codes</h1>
               <Badge variant={isPro ? 'default' : 'secondary'} className="text-sm">
-                {isPro ? 'Black Belt' : 'White Belt'}
+                {isGrandMaster ? 'Grand Master' : isPro ? 'Black Belt' : 'White Belt'}
               </Badge>
             </div>
             <p className="text-sm text-gray-600">Manage all your QR codes</p>
@@ -301,7 +305,7 @@ export default function MyQRCodes() {
               </div>
             </div>
             <div className="flex gap-2">
-              {isPro && (
+              {isPro && canCreate && (
                 <Link to="/BulkCreate">
                   <Button variant="outline" className="h-11">
                     <Layers className="w-4 h-4 mr-2" />
@@ -331,6 +335,19 @@ export default function MyQRCodes() {
           </div>
         </div>
 
+        {/* QR limit warning for paid users */}
+        {isPro && qrLimitReached && (
+          <div className="mb-6 border border-orange-200 bg-orange-50 rounded-xl px-5 py-4 flex items-start gap-3">
+            <span className="text-orange-500 mt-0.5">⚠️</span>
+            <p className="text-orange-800 text-sm">
+              You've reached your QR code limit ({qrCodes.length}/{qrLimit}).{' '}
+              {isGrandMaster
+                ? 'Please delete unused codes to free up space.'
+                : <><Link to="/Pricing" className="font-semibold underline">Upgrade to Grand Master</Link> for up to 1,500 QR codes.</>}
+            </p>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3 md:gap-6 mb-6">
           <Card>
@@ -338,7 +355,10 @@ export default function MyQRCodes() {
               <CardTitle className="text-xs font-medium text-gray-600">Total</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <div className="text-2xl font-bold">{qrCodes.length}</div>
+              <div className="text-2xl font-bold">
+                {qrCodes.length}
+                {user?.role !== 'admin' && <span className="text-sm text-gray-500"> / {qrLimit}</span>}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -348,7 +368,6 @@ export default function MyQRCodes() {
             <CardContent className="px-4 pb-4">
               <div className="text-2xl font-bold text-gray-700">
                 {staticCount}
-                {!isPro && <span className="text-sm text-gray-500"> / 10</span>}
               </div>
             </CardContent>
           </Card>

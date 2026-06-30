@@ -119,6 +119,8 @@ export default function BulkCreate() {
   }, []);
 
   const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
+  const isGrandMaster = user?.subscription_tier === 'grand_master' && user?.subscription_status === 'active';
+  const qrLimit = user?.role === 'admin' ? Infinity : isGrandMaster ? 1500 : isPro ? 500 : 10;
 
   const handleFile = (file) => {
     setError('');
@@ -159,6 +161,20 @@ export default function BulkCreate() {
       const remaining = dbcCapacity - activeDbcCount;
       if (dbcRows.length > remaining) {
         setError(`You only have ${remaining} DBC seat(s) remaining (capacity: ${dbcCapacity}, used: ${activeDbcCount}). Your CSV contains ${dbcRows.length} business card rows. Please reduce the number of DBC rows or purchase more seats.`);
+        return;
+      }
+    }
+
+    // Pre-flight: enforce total QR limit
+    if (user?.role !== 'admin') {
+      const existingAll = await base44.entities.QRCode.filter({ owner_email: user.email });
+      const remaining = qrLimit - existingAll.length;
+      if (remaining <= 0) {
+        setError(`You've reached your QR code limit (${existingAll.length}/${qrLimit}). ${isGrandMaster ? 'Delete unused codes to free up space.' : 'Upgrade to Grand Master for up to 1,500 QR codes.'}`);
+        return;
+      }
+      if (rows.length > remaining) {
+        setError(`Only ${remaining} of ${rows.length} codes will be created — you have ${remaining} slot(s) remaining on your plan (${existingAll.length}/${qrLimit} used). Remove rows from your CSV or upgrade your plan.`);
         return;
       }
     }
