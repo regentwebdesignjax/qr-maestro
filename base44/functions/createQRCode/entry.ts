@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     // Determine if user is Pro (Black Belt or Grand Master)
     const isGrandMaster = user.subscription_tier === 'grand_master' && user.subscription_status === 'active';
     const isPro = user.role === 'admin' ||
-      (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
+      (['black_belt', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
 
     // Enforce: non-Pro users cannot create dynamic QR codes
     if (!isPro && qrCodeData.type === 'dynamic') {

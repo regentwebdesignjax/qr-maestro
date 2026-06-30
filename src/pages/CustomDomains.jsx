@@ -134,7 +134,7 @@ export default function CustomDomains() {
     );
   }
 
-  const isPro = ['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active';
+  const isPro = ['black_belt', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active';
   const hasAddon = user?.custom_domain_addon === true;
 
   // Not Pro at all

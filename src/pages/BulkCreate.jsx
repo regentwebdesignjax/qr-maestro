@@ -118,7 +118,7 @@ export default function BulkCreate() {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/BulkCreate'));
   }, []);
 
-  const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
+  const isPro = user?.role === 'admin' || (['black_belt', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
   const isGrandMaster = user?.subscription_tier === 'grand_master' && user?.subscription_status === 'active';
   const qrLimit = user?.role === 'admin' ? Infinity : isGrandMaster ? 1500 : isPro ? 500 : 10;
 

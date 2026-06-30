@@ -444,7 +444,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
+    const isPro = user.role === 'admin' || (['black_belt', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
     if (!isPro) return Response.json({ error: 'Pro plan required' }, { status: 403 });
 
     let body = {};

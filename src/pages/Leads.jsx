@@ -252,7 +252,7 @@ export default function Leads() {
     return map;
   }, [qrCodes]);
 
-  const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
+  const isPro = user?.role === 'admin' || (['black_belt', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
   const dupeGroups = useMemo(() => getDupeGroups(leads), [leads]);
   const dupeEmailCount = Object.keys(dupeGroups).length;
 

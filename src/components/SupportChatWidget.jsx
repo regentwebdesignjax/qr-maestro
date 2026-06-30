@@ -128,7 +128,7 @@ export default function SupportChatWidget() {
 
   const buildUserContext = (u) => {
     if (!u) return { visitor_type: 'guest', is_authenticated: false };
-    const isPro = u.role === 'admin' || (['pro', 'grand_master'].includes(u.subscription_tier) && u.subscription_status === 'active');
+    const isPro = u.role === 'admin' || (['black_belt', 'grand_master'].includes(u.subscription_tier) && u.subscription_status === 'active');
     return {
       visitor_type: u.role === 'admin' ? 'admin' : isPro ? 'black_belt_customer' : 'white_belt_customer',
       is_authenticated: true,

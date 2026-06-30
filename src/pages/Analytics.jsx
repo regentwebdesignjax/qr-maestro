@@ -82,7 +82,7 @@ export default function Analytics() {
         setUser(currentUser);
 
         const isPro = currentUser.role === 'admin' ||
-          (['pro', 'grand_master'].includes(currentUser.subscription_tier) && currentUser.subscription_status === 'active');
+          (['black_belt', 'grand_master'].includes(currentUser.subscription_tier) && currentUser.subscription_status === 'active');
         if (!isPro) { setLoading(false); return; }
 
         const qrCodes = await base44.entities.QRCode.filter({ id });
@@ -117,7 +117,7 @@ export default function Analytics() {
     fetchData();
   }, []);
 
-  const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
+  const isPro = user?.role === 'admin' || (['black_belt', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
 
   const dateRange = useMemo(() => {
     if (preset === 'custom' && customRange?.from) return customRange;

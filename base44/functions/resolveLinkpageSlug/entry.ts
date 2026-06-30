@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       if (owner && owner.role !== 'admin') {
         const subStatus = owner.subscription_status;
         const subTier = owner.subscription_tier;
-        if (subTier === 'pro' && subStatus !== 'active') {
+        if (['black_belt', 'grand_master'].includes(subTier) && subStatus !== 'active') {
           return Response.json({
             content_type: 'inactive',
             message: 'This professional identity is currently resting. Please contact the owner to reactivate.',

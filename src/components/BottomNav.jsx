@@ -4,7 +4,7 @@ import { Home, QrCode, Plus, Users } from 'lucide-react';
 
 export default function BottomNav({ user }) {
   const location = useLocation();
-  const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
+  const isPro = user?.role === 'admin' || (['black_belt', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '?');
 

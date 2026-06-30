@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === 'admin';
 
     if (!isAdmin) {
-      if (user.subscription_tier !== 'pro' || user.subscription_status !== 'active') {
+      if (!['black_belt', 'grand_master'].includes(user.subscription_tier) || user.subscription_status !== 'active') {
         return Response.json({ error: 'Pro subscription required' }, { status: 403 });
       }
 

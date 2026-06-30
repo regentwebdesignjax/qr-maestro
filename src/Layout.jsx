@@ -98,7 +98,7 @@ export default function Layout({ children, currentPageName }) {
                     <QrCode className="w-4 h-4 shrink-0" />
                     Create QR
                   </Link>
-                  {(['black_belt', 'pro', 'grand_master'].includes(user?.subscription_tier) || user?.role === 'admin') &&
+                  {(['black_belt', 'grand_master'].includes(user?.subscription_tier) || user?.role === 'admin') &&
                 <Link to="/Leads" className="text-foreground/70 hover:text-primary transition-colors font-medium flex items-center gap-1.5 text-sm whitespace-nowrap">
                       <Users className="w-4 h-4 shrink-0" />
                       Leads
@@ -146,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
               <>
                   {/* Desktop: Upgrade + Dropdown */}
                   <div className="hidden md:flex items-center gap-3">
-                    {user.role !== 'admin' && !['black_belt', 'pro', 'grand_master'].includes(user.subscription_tier) &&
+                    {user.role !== 'admin' && !['black_belt', 'grand_master'].includes(user.subscription_tier) &&
                   <Link to="/Pricing">
                         <Button variant="outline" className="font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-200">
                           Upgrade Rank
@@ -179,7 +179,7 @@ export default function Layout({ children, currentPageName }) {
                           <CreditCard className="w-4 h-4 mr-2" />
                           Billing & Subscription
                         </DropdownMenuItem>
-                        {(user?.custom_domain_addon || ['black_belt', 'pro', 'grand_master'].includes(user?.subscription_tier)) &&
+                        {(user?.custom_domain_addon || ['black_belt', 'grand_master'].includes(user?.subscription_tier)) &&
                       <DropdownMenuItem asChild>
                             <Link to="/CustomDomains" className="flex items-center">
                               <Globe className="w-4 h-4 mr-2" />
@@ -223,7 +223,7 @@ export default function Layout({ children, currentPageName }) {
                             My Profile
                           </button>
                         </Link>
-                        {user.role !== 'admin' && !['black_belt', 'pro', 'grand_master'].includes(user.subscription_tier) &&
+                        {user.role !== 'admin' && !['black_belt', 'grand_master'].includes(user.subscription_tier) &&
                       <Link to="/Pricing">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors">
                               <CreditCard className="w-4 h-4" />
@@ -238,7 +238,7 @@ export default function Layout({ children, currentPageName }) {
                           <CreditCard className="w-4 h-4 text-gray-400" />
                           Billing & Subscription
                         </button>
-                        {(user?.custom_domain_addon || ['black_belt', 'pro', 'grand_master'].includes(user?.subscription_tier)) &&
+                        {(user?.custom_domain_addon || ['black_belt', 'grand_master'].includes(user?.subscription_tier)) &&
                       <Link to="/CustomDomains">
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors text-sm">
                               <Globe className="w-4 h-4 text-gray-400" />
