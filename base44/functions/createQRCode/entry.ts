@@ -15,9 +15,10 @@ Deno.serve(async (req) => {
 
     const qrCodeData = await req.json();
 
-    // Determine if user is Pro
+    // Determine if user is Pro (Black Belt or Grand Master)
+    const isGrandMaster = user.subscription_tier === 'grand_master' && user.subscription_status === 'active';
     const isPro = user.role === 'admin' ||
-      (user.subscription_tier === 'pro' && user.subscription_status === 'active');
+      (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
 
     // Enforce: non-Pro users cannot create dynamic QR codes
     if (!isPro && qrCodeData.type === 'dynamic') {
@@ -29,6 +30,19 @@ Deno.serve(async (req) => {
       const existing = await base44.entities.QRCode.filter({ created_by: user.email, type: 'static' });
       if (existing.length >= 10) {
         return Response.json({ error: 'Free tier limit of 10 static QR codes reached. Upgrade to Black Belt for unlimited QR codes.' }, { status: 403 });
+      }
+    }
+
+    // Enforce: paid users cannot exceed their total QR code limit
+    if (isPro && user.role !== 'admin') {
+      const qrLimit = isGrandMaster ? 1500 : 500;
+      const allQRs = await base44.entities.QRCode.filter({ created_by: user.email });
+      if (allQRs.length >= qrLimit) {
+        return Response.json({
+          error: `You have reached your QR code limit (${allQRs.length}/${qrLimit}). ${isGrandMaster ? 'Please delete unused codes to free up space.' : 'Upgrade to Grand Master for up to 1,500 QR codes.'}`,
+          current: allQRs.length,
+          limit: qrLimit
+        }, { status: 403 });
       }
     }
 

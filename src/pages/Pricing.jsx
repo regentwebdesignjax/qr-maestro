@@ -253,7 +253,7 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Unlimited Static & Dynamic QRs</span>
+                  <span className="font-semibold">Up to 500 QR Codes (Static & Dynamic)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
@@ -345,7 +345,11 @@ export default function Pricing() {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
-                  <span className="font-semibold">Everything in Black Belt</span>
+                  <span className="font-semibold">Up to 1,500 QR Codes (Static & Dynamic)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                  <span className="font-semibold">All Black Belt Features Included</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-green-600 mr-2 mt-0.5" />

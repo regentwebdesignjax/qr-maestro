@@ -115,8 +115,11 @@ export default function Dashboard() {
   }
 
   const isPro = user.role === 'admin' || (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
+  const isGrandMaster = user.subscription_tier === 'grand_master' && user.subscription_status === 'active';
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
-  const canCreateStatic = isPro || staticCount < 10;
+  const qrLimit = user.role === 'admin' ? Infinity : isGrandMaster ? 1500 : isPro ? 500 : 10;
+  const qrLimitReached = user.role !== 'admin' && qrCodes.length >= qrLimit;
+  const canCreateStatic = !qrLimitReached && (isPro || staticCount < 10);
 
   const dbcCapacity = 10 + (user.purchased_extra_dbcs || 0);
   const activeDbcCount = qrCodes.filter(qr => (qr.content_type === 'vcard' || qr.content_type === 'business_card') && qr.is_active !== false).length;
@@ -147,6 +150,13 @@ export default function Dashboard() {
                   DBC Limit Reached — Purchase More
                 </Button>
               </Link>
+            ) : qrLimitReached ? (
+              <Link to="/Pricing">
+                <Button className="bg-gray-400 hover:bg-gray-400 text-white font-semibold cursor-not-allowed" disabled>
+                  <Lock className="w-4 h-4 mr-2" />
+                  QR Limit Reached — Upgrade
+                </Button>
+              </Link>
             ) : (!isPro && !canCreateStatic) ? (
               <Link to="/Pricing">
                 <Button className="bg-gray-400 hover:bg-gray-400 text-white font-semibold cursor-not-allowed" disabled>
@@ -175,7 +185,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
               <Badge variant={isPro ? 'default' : 'secondary'} className="text-lg">
-                {isPro ? 'Black Belt' : 'White Belt'}
+                {isGrandMaster ? 'Grand Master' : isPro ? 'Black Belt' : 'White Belt'}
               </Badge>
             </CardContent>
           </Card>
@@ -188,7 +198,10 @@ export default function Dashboard() {
               <p className="text-xs text-gray-500 mt-1">Total QR Codes</p>
               </CardHeader>
               <CardContent>
-              <div className="text-3xl font-bold">{qrCodes.length}</div>
+              <div className="text-3xl font-bold">
+                {qrCodes.length}
+                {user.role !== 'admin' && <span className="text-lg text-gray-500"> / {qrLimit}</span>}
+              </div>
               </CardContent>
           </Card>
 
@@ -199,10 +212,7 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">
-                {staticCount}
-                {!isPro && <span className="text-lg text-gray-500"> / 10</span>}
-              </div>
+              <div className="text-3xl font-bold">{staticCount}</div>
             </CardContent>
           </Card>
 
@@ -251,6 +261,34 @@ export default function Dashboard() {
                     Purchase More Seats
                   </Button>
                 </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Paid Tier QR Limit Warning */}
+        {isPro && qrLimitReached && (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardContent className="pt-5 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-orange-800">QR code limit reached</p>
+                    <p className="text-sm text-orange-700 mt-0.5">
+                      You have {qrCodes.length} QR codes — your {isGrandMaster ? 'Grand Master' : 'Black Belt'} plan includes {qrLimit}.{' '}
+                      {isGrandMaster ? 'Delete unused codes to free up space.' : 'Upgrade to Grand Master for up to 1,500 QR codes.'}
+                    </p>
+                  </div>
+                </div>
+                {!isGrandMaster && (
+                  <Link to="/Pricing">
+                    <Button className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Upgrade to Grand Master
+                    </Button>
+                  </Link>
+                )}
               </div>
             </CardContent>
           </Card>
