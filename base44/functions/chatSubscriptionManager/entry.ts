@@ -26,10 +26,12 @@ Deno.serve(async (req) => {
         subscription_period: user.subscription_period || null,
         custom_domain_addon: user.custom_domain_addon || false,
         trial_end_date: user.trial_end_date || null,
-        plan_label: (user.subscription_tier === 'pro' || user.subscription_tier === 'black_belt')
-          ? 'Black Belt'
-          : 'White Belt (Free)',
-        is_black_belt: (user.subscription_tier === 'pro' || user.subscription_tier === 'black_belt'),
+        plan_label: user.subscription_tier === 'grand_master'
+          ? 'Grand Master'
+          : ['black_belt', 'grand_master'].includes(user.subscription_tier)
+            ? 'Black Belt'
+            : 'White Belt (Free)',
+        is_black_belt: ['black_belt', 'grand_master'].includes(user.subscription_tier),
       });
     }
 

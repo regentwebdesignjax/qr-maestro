@@ -42,8 +42,8 @@ export default function Profile() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Plan</p>
-            <Badge variant={['pro', 'grand_master'].includes(user.subscription_tier) ? 'default' : 'secondary'}>
-              {user.subscription_tier === 'grand_master' ? 'Grand Master' : user.subscription_tier === 'pro' ? 'Black Belt (Pro)' : 'White Belt (Free)'}
+            <Badge variant={['black_belt', 'grand_master'].includes(user.subscription_tier) ? 'default' : 'secondary'}>
+              {user.subscription_tier === 'grand_master' ? 'Grand Master' : user.subscription_tier === 'black_belt' ? 'Black Belt' : 'White Belt (Free)'}
             </Badge>
           </div>
         </CardContent>
