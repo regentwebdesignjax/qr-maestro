@@ -118,7 +118,7 @@ export default function BulkCreate() {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin('/BulkCreate'));
   }, []);
 
-  const isPro = user?.role === 'admin' || (user?.subscription_tier === 'pro' && user?.subscription_status === 'active');
+  const isPro = user?.role === 'admin' || (['pro', 'grand_master'].includes(user?.subscription_tier) && user?.subscription_status === 'active');
 
   const handleFile = (file) => {
     setError('');

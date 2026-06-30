@@ -6,6 +6,7 @@ const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 
 const DBC_PRICE_IDS = new Set(['price_1TNv2cQJqdSd3DGEgvCK2CZ2', 'price_1TNvFWQJqdSd3DGEGflRsrcM']);
 const CUSTOM_DOMAIN_PRICE_IDS = new Set(['price_1TVEhkQJqdSd3DGEtdZwvKpe', 'price_1TVEi3QJqdSd3DGEpemwH33m']);
+const GM_PRICE_IDS = new Set(['price_1TnpcVQJqdSd3DGEU7IHrfXu', 'price_1TnpeiQJqdSd3DGEXMWPIP8P']);
 
 const CF_API = 'https://api.cloudflare.com/client/v4';
 
@@ -16,6 +17,10 @@ function getExtraDbcs(lineItems) {
 
 function hasCustomDomainAddon(lineItems) {
   return lineItems?.data?.some(i => CUSTOM_DOMAIN_PRICE_IDS.has(i.price?.id)) ?? false;
+}
+
+function isGrandMasterPlan(lineItems) {
+  return lineItems?.data?.some(i => GM_PRICE_IDS.has(i.price?.id)) ?? false;
 }
 
 async function deactivateCustomDomain(base44ServiceRole: any, userEmail: string) {
@@ -60,15 +65,15 @@ Deno.serve(async (req) => {
         const userId = session.metadata.user_id;
         const customerId = session.customer;
         const period = session.metadata.period;
+        const plan = session.metadata.plan || 'black_belt';
         const amountTotal = session.amount_total ? session.amount_total / 100 : null;
-        const includesCustomDomain = session.metadata.include_custom_domain === 'true';
 
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { expand: ['data.price'] });
         const extraDbcs = getExtraDbcs(lineItems);
+        const grandMaster = plan === 'grand_master' || isGrandMasterPlan(lineItems);
 
         let userToUpdate = null;
 
-        // Try to find user by user_id from metadata (primary lookup)
         if (userId) {
           const usersByIdResult = await base44.asServiceRole.entities.User.filter({ id: userId }).catch((e) => {
             console.error('Error filtering user by ID:', e.message);
@@ -80,7 +85,6 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Fallback: try to find user by stripe_customer_id if ID lookup failed
         if (!userToUpdate && customerId) {
           const usersByCustomerResult = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: customerId }).catch((e) => {
             console.error('Error filtering user by customer ID:', e.message);
@@ -94,11 +98,11 @@ Deno.serve(async (req) => {
 
         if (userToUpdate) {
           await base44.asServiceRole.entities.User.update(userToUpdate.id, {
-            subscription_tier: 'pro',
+            subscription_tier: grandMaster ? 'grand_master' : 'pro',
             subscription_status: 'active',
             subscription_period: period,
             purchased_extra_dbcs: extraDbcs,
-            ...(includesCustomDomain && {
+            ...(grandMaster && {
               custom_domain_addon: true,
               custom_domain_addon_period: period,
             }),
@@ -110,7 +114,7 @@ Deno.serve(async (req) => {
 
         await base44.asServiceRole.entities.ConversionEvent.create({
           event_type: 'upgrade_conversion',
-          plan: 'black_belt',
+          plan: plan,
           period: period ?? 'unknown',
           revenue: amountTotal,
           user_id: userToUpdate?.id || userId,
@@ -131,15 +135,16 @@ Deno.serve(async (req) => {
                         subscription.status === 'past_due' ? 'past_due' : 'canceled';
           const extraDbcs = getExtraDbcs(subscription.items);
           const addonActive = hasCustomDomainAddon(subscription.items);
+          const grandMasterActive = isGrandMasterPlan(subscription.items);
 
           const wasAddonActive = user.custom_domain_addon === true;
-          const addonJustRemoved = wasAddonActive && !addonActive;
+          const addonJustRemoved = wasAddonActive && !addonActive && !grandMasterActive;
 
           await base44.asServiceRole.entities.User.update(user.id, {
             subscription_status: status,
             purchased_extra_dbcs: extraDbcs,
-            custom_domain_addon: addonActive,
-            ...(!addonActive && { custom_domain_addon_period: 'none' }),
+            custom_domain_addon: addonActive || grandMasterActive,
+            ...(!addonActive && !grandMasterActive && { custom_domain_addon_period: 'none' }),
           });
 
           if (addonJustRemoved) {

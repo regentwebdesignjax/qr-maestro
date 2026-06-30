@@ -114,7 +114,7 @@ export default function Dashboard() {
     );
   }
 
-  const isPro = user.role === 'admin' || (user.subscription_tier === 'pro' && user.subscription_status === 'active');
+  const isPro = user.role === 'admin' || (['pro', 'grand_master'].includes(user.subscription_tier) && user.subscription_status === 'active');
   const staticCount = qrCodes.filter(qr => qr.type === 'static').length;
   const canCreateStatic = isPro || staticCount < 10;
 
