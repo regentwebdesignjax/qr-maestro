@@ -242,10 +242,15 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={u.subscription_tier === 'pro' ? 'default' : 'outline'}
-                          className={u.subscription_tier === 'pro' ? 'bg-primary text-primary-foreground' : ''}
+                          variant={['pro', 'black_belt', 'grand_master'].includes(u.subscription_tier) ? 'default' : 'outline'}
+                          className={
+                            u.subscription_tier === 'grand_master' ? 'bg-purple-600 text-white' :
+                            u.subscription_tier === 'black_belt' || u.subscription_tier === 'pro' ? 'bg-primary text-primary-foreground' : ''
+                          }
                         >
-                          {u.subscription_tier === 'pro' ? 'Pro' : 'Free'}
+                          {u.subscription_tier === 'grand_master' ? 'Grand Master' :
+                           u.subscription_tier === 'black_belt' ? 'Black Belt' :
+                           u.subscription_tier === 'pro' ? 'Black Belt' : 'White Belt'}
                         </Badge>
                       </TableCell>
                       <TableCell>
