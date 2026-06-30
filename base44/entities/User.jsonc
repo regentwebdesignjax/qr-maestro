@@ -15,8 +15,7 @@
       "enum": [
         "free",
         "black_belt",
-        "grand_master",
-        "pro"
+        "grand_master"
       ],
       "default": "free"
     },
