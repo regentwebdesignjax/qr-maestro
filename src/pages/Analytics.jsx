@@ -175,9 +175,9 @@ export default function Analytics() {
             <CardContent className="py-16">
               <div className="text-center">
                 <Lock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Analytics Available on Pro Plan</h2>
-                <p className="text-gray-600 mb-6">Upgrade to Pro to access detailed scan analytics, location data, and insights.</p>
-                <Link to="/Pricing"><Button className="bg-blue-600 hover:bg-blue-700">Upgrade to Pro</Button></Link>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Analytics Available on Black Belt</h2>
+                <p className="text-gray-600 mb-6">Upgrade to Black Belt to access detailed scan analytics, location data, and insights.</p>
+                <Link to="/Pricing"><Button className="bg-primary hover:bg-primary/90">Upgrade to Black Belt</Button></Link>
               </div>
             </CardContent>
           </Card>

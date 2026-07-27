@@ -79,7 +79,7 @@ export default function Dashboard() {
 
   const { data: qrCodes = [], isLoading } = useQuery({
     queryKey: ['qr-codes'],
-    queryFn: () => base44.entities.QRCode.filter({ created_by: user?.email }),
+    queryFn: () => base44.entities.QRCode.filter({ owner_email: user?.email }),
     enabled: !!user,
   });
 

@@ -124,24 +124,29 @@ Deno.serve(async (req) => {
 
     console.log('[redirect] Final geo:', { country, city, state, lat, lng });
 
-    // Record analytics (fire-and-forget)
-    Promise.all([
-      base44.asServiceRole.entities.Scan.create({
-        qr_code_id: qrCode.id,
-        device_type,
-        os,
-        browser,
-        country: country || undefined,
-        city: city || undefined,
-        state: state || undefined,
-        lat,
-        lng,
-        referrer: referrer || undefined,
-      }),
-      base44.asServiceRole.entities.QRCode.update(qrCode.id, {
-        scan_count: (qrCode.scan_count || 0) + 1,
-      }),
-    ]).catch((e) => console.error('[redirect] Analytics error:', e));
+    // Record analytics — MUST be awaited so Deno doesn't terminate the worker
+    // before the Scan record and scan_count update are persisted.
+    try {
+      await Promise.all([
+        base44.asServiceRole.entities.Scan.create({
+          qr_code_id: qrCode.id,
+          device_type,
+          os,
+          browser,
+          country: country || undefined,
+          city: city || undefined,
+          state: state || undefined,
+          lat,
+          lng,
+          referrer: referrer || undefined,
+        }),
+        base44.asServiceRole.entities.QRCode.update(qrCode.id, {
+          scan_count: (qrCode.scan_count || 0) + 1,
+        }),
+      ]);
+    } catch (e) {
+      console.error('[redirect] Analytics error:', e);
+    }
 
     if (qrCode.content_type === 'url') {
       return Response.json({ content_type: 'url', url: qrCode.content });
